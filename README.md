@@ -23,7 +23,7 @@ This is a simulation model implementation of the RICE2010 model by Nordhaus. It 
 
 ## 1. General Remarks
 
-This project has been developed within an internship at the **Hippo DAI Lab** at the **TU Delft** during the academic year 2021/22 between quarter 1 and quarter 2. This model is based on the work of Ivar Tjallingii who developed a working version of PyRICE. The contribution of Max Reddel lies in refactoring the PyRICE model, such that modularity, object-orientation, and thus reusability are enabled. Ivar's original model can be found in [this repository](https://github.com/itjallingii/PyRICE2020).
+This project has been developed within a master's thesis at the **TU Delft** during the academic year 2021/22 Q3 and Q4. It is a continuation of the same author's work during his internship at the **Hippo DAI Lab** at the **TU Delft** during the academic year 2021/22 between Q1 and Q2. This model is based on the work of Ivar Tjallingii who developed a working version of PyRICE. The initial contribution (during the internship) of Max Reddel lies in refactoring the PyRICE model, such that modularity, object-orientation, and thus reusability are enabled. Ivar's original model can be found in [this repository](https://github.com/itjallingii/PyRICE2020). Further changes with respect to the exact design of the social welfare functions and the disaggregation of utility and disutility follow during this project.
 
 ---
 
