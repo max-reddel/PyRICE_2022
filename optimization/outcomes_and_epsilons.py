@@ -246,7 +246,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
 
         # Outcomes that should be optimized
         outcomes_maximize_names = []
-        outcomes_minimize_names = ['Intratemporal utility GINI', 'Intratemporal impact GINI 2055']
+        outcomes_minimize_names = ['Intratemporal utility GINI', 'Intratemporal impact GINI']
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = ['Total Aggregated Utility']
@@ -263,7 +263,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
 
 if __name__ == '__main__':
 
-    results = get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN)
+    results = get_outcomes_and_epsilons(welfare_function=WelfareFunction.EGALITARIAN)
     outcomes_list, eps = results
 
     print('Outcomes:')
