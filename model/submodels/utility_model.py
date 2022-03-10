@@ -2,7 +2,6 @@
 This module contains the utility model class and the results class.
 """
 
-
 import numpy as np
 from model.enumerations import WelfareFunction
 import pandas as pd
@@ -26,7 +25,7 @@ class UtilityModel:
         # output metrics
         self.util_sdr = np.zeros((self.n_regions, steps))
         self.inst_util = np.zeros((self.n_regions, steps))
-        self.per_util = np.zeros((self.n_regions, steps))
+        self.period_utility = np.zeros((self.n_regions, steps))
 
         self.cum_util = np.zeros((self.n_regions, steps))
         self.reg_cum_util = np.zeros((self.n_regions, steps))
@@ -50,7 +49,7 @@ class UtilityModel:
         self.additative_scaling_weights = data_sets.RICE_DATA.iloc[167:179, 14:17].to_numpy()
         self.multiplutacive_scaling_weights = data_sets.RICE_DATA.iloc[232:244, 1:2].to_numpy() / 1000
 
-        # Ooutcome variables
+        # Outcome variables
 
         # Dictionaries for quintile outputs
         self.quintile_inst_util = {}
@@ -117,10 +116,10 @@ class UtilityModel:
         self.inst_util[:, 0] = ((1 / (1 - self.elasmu)) * (CPC[:, 0]) ** (1 - self.elasmu) + 1)
 
         # CEMU period utility
-        self.per_util[:, 0] = self.inst_util[:, 0] * region_pop[:, 0] * self.util_sdr[:, 0]
+        self.period_utility[:, 0] = self.inst_util[:, 0] * region_pop[:, 0] * self.util_sdr[:, 0]
 
         # Cummulative period utility without WW
-        self.cum_per_util[:, 0] = self.per_util[:, 0]
+        self.cum_per_util[:, 0] = self.period_utility[:, 0]
 
         # Instantaneous utility function with welfare weights
         self.inst_util_ww[:, 0] = self.inst_util[:, 0] * self.Alpha_data[:, 0]
@@ -129,7 +128,7 @@ class UtilityModel:
         self.per_util_ww[:, 0] = self.inst_util_ww[:, 0] * region_pop[:, 0] * self.util_sdr[:, 0]
 
         # cummulative utility with ww
-        self.reg_cum_util[:, 0] = self.per_util[:, 0]
+        self.reg_cum_util[:, 0] = self.period_utility[:, 0]
         self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
 
         # initialise objectives for principles
@@ -152,7 +151,8 @@ class UtilityModel:
         # calculate instantaneous welfare equivalent of minimum capita per head
         self.sufficientarian_threshold[0] = ini_suf_threshold  # specified in consumption per capita thousand/year
 
-        self.inst_util_tres[0] = ((1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[0]) ** (1 - self.elasmu) + 1)
+        self.inst_util_tres[0] = (
+                (1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[0]) ** (1 - self.elasmu) + 1)
 
         # calculate instantaneous welfare equivalent of minimum capita per head with PPP
         self.inst_util_tres_ww[:, 0] = self.inst_util_tres[0] * self.Alpha_data[:, 0]
@@ -234,8 +234,8 @@ class UtilityModel:
 
         if self.welfare_function.__eq__(WelfareFunction.UTILITARIAN):
 
-            self. run_utilitarian(t, year, irstp, tstep, CPC, region_pop, damages, Y, CPC_lo,
-                                  climate_impact_relative_to_capita, CPC_post_damage)
+            self.run_utilitarian(t, year, irstp, tstep, CPC, region_pop, damages, Y, CPC_lo,
+                                 climate_impact_relative_to_capita, CPC_post_damage)
 
         elif self.welfare_function.__eq__(WelfareFunction.PRIORITARIAN):
 
@@ -445,27 +445,44 @@ class UtilityModel:
         # egalitarian objectives troubles with NaN
         self.take_care_of_nans()
 
-        objectives_list_timeseries = [self.global_damages, self.global_per_util_ww,
-                                      self.worst_off_income_class,
-                                      self.worst_off_climate_impact,
-                                      self.max_utility_distance_threshold,
-                                      self.population_under_threshold,
-                                      self.CPC_intra_gini,
-                                      self.climate_impact_per_dollar_gini,
-                                      temp_atm, E_worldwilde_per_year, self.global_ouput
-                                      ]
+        objectives_list_timeseries = [
+            self.global_damages, self.global_per_util_ww,
+            self.worst_off_income_class,
+            self.worst_off_climate_impact,
+            self.max_utility_distance_threshold,
+            self.population_under_threshold,
+            self.CPC_intra_gini,
+            self.climate_impact_per_dollar_gini,
+            temp_atm, E_worldwilde_per_year, self.global_ouput
+        ]
 
-        objectives_list = [self.intertemporal_utility_gini, self.intertemporal_impact_gini, self.utility,
-                           self.regions_under_threshold]
+        objectives_list = [
+            self.intertemporal_utility_gini,
+            self.intertemporal_impact_gini,
+            self.utility,
+            self.regions_under_threshold
+        ]
 
-        objectives_list_name = ['Intertemporal utility GINI', 'Intertemporal impact GINI', 'Total Aggregated Utility',
-                                'Regions below threshold']
+        objectives_list_name = [
+            'Intertemporal utility GINI',
+            'Intertemporal impact GINI',
+            'Total Aggregated Utility',
+            'Regions below threshold'
+        ]
 
-        objectives_list_timeseries_name = ['Damages ', 'Utility ',
-                                           'Lowest income per capita ', 'Highest climate impact per capita ',
-                                           'Distance to threshold ', 'Population under threshold ',
-                                           'Intratemporal utility GINI ', 'Intratemporal impact GINI ',
-                                           'Atmospheric Temperature ', 'Industrial Emission ', 'Total Output ']
+        objectives_list_timeseries_name = [
+            'Damages ',
+            'Utility ',
+            'Lowest income per capita ',
+            'Highest climate impact per capita ',
+            'Distance to threshold ',
+            'Population under threshold ',
+            'Intratemporal utility GINI ',
+            'Intratemporal impact GINI ',
+            'Atmospheric Temperature ',
+            'Industrial Emission ',
+            'Total Output '
+        ]
 
         supplementary_list_timeseries = [CPC, region_pop]
         supplementary_list_quintile = [CPC_pre_damage, CPC_post_damage]
@@ -571,22 +588,26 @@ class UtilityModel:
         """
 
         # irstp: Initial rate of social time preference per year
+
+        # social discount factor for utility
         self.util_sdr[:, t] = 1 / ((1 + irstp) ** (tstep * t))
 
         # instantaneous welfare without welfare weights
-        self.inst_util[:, t] = ((1 / (1 - self.elasmu)) * (CPC[:, t]) ** (1 - self.elasmu) + 1)
+        self.inst_util[:, t] = (1 / (1 - self.elasmu)) * (CPC[:, t]) ** (1 - self.elasmu) + 1
+        # Should it be -1 in the end because that's what the CRRA equation says
 
         # period utility
-        self.per_util[:, t] = self.inst_util[:, t] * region_pop[:, t] * self.util_sdr[:, t]
+        self.period_utility[:, t] = self.inst_util[:, t] * region_pop[:, t] * self.util_sdr[:, t]
 
         # cumulative period utilty without welfare weights
-        self.cum_per_util[:, 0] = self.cum_per_util[:, t - 1] + self.per_util[:, t]
+        self.cum_per_util[:, 0] = self.cum_per_util[:, t - 1] + self.period_utility[:, t]
 
         # Instantaneous utility function with welfare weights
         self.inst_util_ww[:, t] = self.inst_util[:, t] * self.Alpha_data[:, t]
 
-    def calculate_alternative_principles_objectives(self, t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop,
-                                                    welfare_function, climate_impact_relative_to_capita, Y):
+    def calculate_alternative_principles_objectives(
+            self, t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop, welfare_function,
+            climate_impact_relative_to_capita, Y):
         """
         @param t: int
         @param year: int
@@ -608,7 +629,7 @@ class UtilityModel:
             self.reg_util = 10 * self.multiplutacive_scaling_weights[:, 0] * self.reg_cum_util[:, t] + \
                             self.additative_scaling_weights[:, 0] - self.additative_scaling_weights[:, 2]
 
-            # calculate worldwide utility
+        # calculate worldwide utility
         self.utility = self.reg_util.sum()
 
         # ###### GINI calculations INTERTEMPORAL #########
@@ -680,7 +701,8 @@ class UtilityModel:
                 1 + self.average_growth_CPC[t])
 
         # calculate instantaneous welfare equivalent of minimum capita per head
-        self.inst_util_tres[t] = ((1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[t]) ** (1 - self.elasmu) + 1)
+        self.inst_util_tres[t] = (
+                (1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[t]) ** (1 - self.elasmu) + 1)
 
         # calculate instantaneous welfare equivalent of threshold
         self.inst_util_tres_ww[:, t] = self.inst_util_tres[t] * self.Alpha_data[:, t]
@@ -754,9 +776,9 @@ class Results:
                    'Regions below threshold']
 
         self.df_main = pd.DataFrame(list(zip(damages, utility, lowest, highest, distance, population, utility_gini,
-                                         impact_gini, temp, emission, output, regions_under_threshold)),
-                                   index=years,
-                                   columns=columns)
+                                             impact_gini, temp, emission, output, regions_under_threshold)),
+                                    index=years,
+                                    columns=columns)
 
         # Highly aggregated variables
         self.aggregated_utility_gini = self.data_dict["Intertemporal utility GINI"]

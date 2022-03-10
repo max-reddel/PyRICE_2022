@@ -30,7 +30,6 @@ irstp = 0.015
 
 results = model(sr=sr, miu=miu, irstp=irstp)
 
-
 # View results
 
 # `results` is a dictionary containing all outcomes (including time series data)
