@@ -20,6 +20,8 @@ class EconomyModel:
         @param regions_list: list with 12 regions as strings
         """
 
+        self.data_sets = data_sets
+        self.regions_list = regions_list
         self.n_regions = len(regions_list)
 
         # Population parameters
@@ -134,9 +136,8 @@ class EconomyModel:
         self.decl_back_gr = self.abatement_data[:, 3]
         self.expcost2 = 2.8  # RICE 2010 OPT
 
-    def init_economic_parameters(self, data_sets, damage_function, damage_parameters, temp_atm, dam_frac_global, miu):
+    def init_economic_parameters(self, damage_function, damage_parameters, temp_atm, dam_frac_global, miu):
         """
-        @param data_sets: DataSets
         @param damage_function: DamageFunction
         @param damage_parameters: numpy array (12, 8)
         @param temp_atm: numpy array (31,): atmospheric temperature
@@ -168,14 +169,14 @@ class EconomyModel:
             dam_frac_global[0] = (1 - (np.exp(-0.0025 * temp_atm[0] * 2.45)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
-            self.dam_frac[:, 0] = dam_frac_global[0] * data_sets.RICE_regional_damage_factor[:, 0]
+            self.dam_frac[:, 0] = dam_frac_global[0] * self.data_sets.RICE_regional_damage_factor[:, 0]
 
         # Damage function Weitzman
         elif damage_function == DamageFunction.WEITZMAN:
             dam_frac_global[0] = (1 - 1 / (1 + 0.0028388 ** 2 + 0.0000050703 * (temp_atm[0] * 6.754)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
-            self.dam_frac[:, 0] = dam_frac_global[0] * data_sets.RICE_regional_damage_factor[:, 0]
+            self.dam_frac[:, 0] = dam_frac_global[0] * self.data_sets.RICE_regional_damage_factor[:, 0]
 
         # Net output damages
         self.ynet[:, 0] = self.Y_gross[:, 0] / (1.0 + self.dam_frac[:, 0])
@@ -201,9 +202,8 @@ class EconomyModel:
         self.CCA[:, 0] = self.Eind[:, 0]
         self.CCA_tot[:, 0] = self.CCA[:, 0] + self.cumetree[:, 0]
 
-    def init_net_economy(self, data_sets, miu, S, elasticity_of_damages):
+    def init_net_economy(self, miu, S, elasticity_of_damages):
         """
-        @param data_sets: DataSets
         @param miu: numpy array (12, 31)
         @param S: numpy array (12, 31): savings rates as numpy array with dimensions (regions, steps)
         @param elasticity_of_damages: int: damage relation for lower income groups
@@ -244,7 +244,7 @@ class EconomyModel:
         self.pre_damage_total__region_consumption[:, 0] = self.C[:, 0] + self.damages[:, 0]
 
         # damage share elasticity function derived from Denig et al 2015
-        self.damage_share = data_sets.RICE_income_shares ** elasticity_of_damages
+        self.damage_share = self.data_sets.RICE_income_shares ** elasticity_of_damages
         sum_damage = np.sum(self.damage_share, axis=1)
 
         for i in range(0, self.n_regions):
@@ -252,7 +252,7 @@ class EconomyModel:
 
         # calculate disaggregated per capita consumption based on income shares BEFORE damages
         self.CPC_pre_damage[2005] = ((self.pre_damage_total__region_consumption[:,
-                                      0] * data_sets.RICE_income_shares.transpose()) / (
+                                      0] * self.data_sets.RICE_income_shares.transpose()) / (
                                              self.region_pop[:, 0] * (1 / 5))) * 1000
 
         # calculate disaggregated per capita consumption based on income shares AFTER damages
@@ -271,11 +271,10 @@ class EconomyModel:
         return self.climate_impact_relative_to_capita, self.CPC_post_damage, self.CPC, self.region_pop, self.damages, \
                self.Y
 
-    def run_gross_economy(self, data_sets, scenario_pop_gdp, tstep, t, longrun_scenario, long_run_nordhaus_pop_gr,
+    def run_gross_economy(self, scenario_pop_gdp, tstep, t, longrun_scenario, long_run_nordhaus_pop_gr,
                           long_run_nordhaus_tfp_gr, long_run_nordhaus_sigma, scenario_sigma, model_spec,
                           miu, limmiu, miu_period, fosslim):
         """
-        @param data_sets: DataSets
         @param scenario_pop_gdp: int
         @param tstep: int: time step size
         @param t: int: current time step
@@ -299,9 +298,9 @@ class EconomyModel:
             # load population and gdp projections from SSP scenarios on first timestep
             if t == 1:
                 for region in range(0, self.n_regions):
-                    self.region_pop[region, :] = data_sets.POP_ssp.iloc[:, (scenario_pop_gdp - 1) + (region * 5)]
+                    self.region_pop[region, :] = self.data_sets.POP_ssp.iloc[:, (scenario_pop_gdp - 1) + (region * 5)]
 
-                    self.Y_gross[region, :] = data_sets.GDP_ssp.iloc[:, (scenario_pop_gdp - 1) + (region * 5)] / 1000
+                    self.Y_gross[region, :] = self.data_sets.GDP_ssp.iloc[:, (scenario_pop_gdp - 1) + (region * 5)] / 1000
 
             self.Y_gross[:, t] = np.where(self.Y_gross[:, t] > 0, self.Y_gross[:, t], 0)
 
@@ -469,10 +468,9 @@ class EconomyModel:
 
         return self.E, self.Y_gross
 
-    def run_net_economy(self, data_sets, t, year, damage_function, damage_parameters, temp_atm, SLRDAMAGES,
-                        dam_frac_global, miu, elasticity_of_damages, S, model_spec, irstp, sr, elasmu):
+    def run_net_economy(self, t, year, damage_function, damage_parameters, temp_atm, SLRDAMAGES,
+                        dam_frac_global, miu, elasticity_of_damages, S, model_spec, irstp_consumption, sr, elasmu):
         """
-        @param data_sets: DataSets
         @param t: int
         @param year: int
         @param damage_function: DamageFunction
@@ -484,7 +482,7 @@ class EconomyModel:
         @param elasticity_of_damages: int
         @param S: numpy array (12, 31)
         @param model_spec: ModelSpecification
-        @param irstp: float
+        @param irstp_consumption: float
         @param sr: float
         @param elasmu: float
         @return:
@@ -509,7 +507,7 @@ class EconomyModel:
             dam_frac_global[t] = (1 - (np.exp(-0.0025 * temp_atm[t] ** 2.45)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
-            self.dam_frac[:, t] = dam_frac_global[t] * data_sets.RICE_regional_damage_factor[:, t]
+            self.dam_frac[:, t] = dam_frac_global[t] * self.data_sets.RICE_regional_damage_factor[:, t]
 
             # calculate damages to economy
             self.damages[:, t] = self.Y_gross[:, t] * self.dam_frac[:, t]
@@ -519,7 +517,7 @@ class EconomyModel:
             dam_frac_global[t] = (1 - 1 / (1 + 0.0028388 ** 2 + 0.0000050703 * (temp_atm[t] ** 6.754)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
-            self.dam_frac[:, t] = dam_frac_global[t] * data_sets.RICE_regional_damage_factor[:, t]
+            self.dam_frac[:, t] = dam_frac_global[t] * self.data_sets.RICE_regional_damage_factor[:, t]
 
             # calculate damages to economy
             self.damages[:, t] = self.Y_gross[:, t] * self.dam_frac[:, t]
@@ -558,7 +556,7 @@ class EconomyModel:
         if not model_spec == ModelSpec.Validation_1:
             # Optimal long-run savings rate used for transversality --> SEE THESIS SHAJEE
             optlrsav = ((self.dk + 0.004) / (
-                        self.dk + 0.004 * elasmu + irstp) * self.gama)
+                    self.dk + 0.004 * elasmu + irstp_consumption) * self.gama)
 
             if model_spec == ModelSpec.Validation_2:
                 if t > 12:
@@ -593,7 +591,7 @@ class EconomyModel:
         self.pre_damage_total__region_consumption[:, t] = self.C[:, t] + self.damages[:, t]
 
         # damage share elasticity function derived from Denig et al 2015
-        self.damage_share = data_sets.RICE_income_shares ** elasticity_of_damages
+        self.damage_share = self.data_sets.RICE_income_shares ** elasticity_of_damages
         sum_damage = np.sum(self.damage_share, axis=1)
 
         for i in range(0, self.n_regions):
@@ -601,7 +599,7 @@ class EconomyModel:
 
             # calculate disaggregated per capita consumption based on income shares BEFORE damages
         self.CPC_pre_damage[year] = \
-            ((self.pre_damage_total__region_consumption[:, t] * data_sets.RICE_income_shares.transpose()) /
+            ((self.pre_damage_total__region_consumption[:, t] * self.data_sets.RICE_income_shares.transpose()) /
              (self.region_pop[:, t] * (1 / 5))) * 1000
 
         # calculate disaggregated per capita consumption based on income shares AFTER damages

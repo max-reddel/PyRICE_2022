@@ -98,7 +98,7 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     # Set levers, one for each time step
     model.levers = [RealParameter('sr', 0.1, 0.5),
                     RealParameter('miu', 2065, 2300),
-                    RealParameter('irstp', 0.001, 0.015)]
+                    RealParameter('irstp_consumption', 0.001, 0.015)]
 
     # Specify outcomes
     model.outcomes, epsilons = get_outcomes_and_epsilons(welfare_function=welfare_function)

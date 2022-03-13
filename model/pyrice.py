@@ -17,8 +17,8 @@ from model.submodels.carbon_cycle_model import *
 from model.submodels.climate_model import *
 from model.submodels.utility_model import *
 
-pydice_folder = os.path.dirname(os.getcwd()) + "/PyRICE2020-main/model"
-sys.path.append(pydice_folder)
+pyrice_folder = os.path.dirname(os.getcwd()) + "/PyRICE2020-main/model"
+sys.path.append(pyrice_folder)
 
 
 class PyRICE(object):
@@ -80,10 +80,10 @@ class PyRICE(object):
                  long_run_nordhaus_pop_gr=1,
                  sr=0.248,
                  miu=2135,
-                 irstp=0.015,
+                 irstp_consumption=0.015,
                  irstp_damage=0.00000000001,
-                 precision=10,
                  tau=-0.55,
+                 precision=10,
                  **kwargs):
         """
         @param growth_factor_prio: int: growth factor when prioritarian (0 = no discounting or 1 = conditional_growth)
@@ -107,10 +107,10 @@ class PyRICE(object):
         @param long_run_nordhaus_pop_gr: int: range in DICE [0.1 0.15]   0.75 - 1.25
         @param sr: float: savings rate
         @param miu: int: global emissions target in which emissions are near zero
-        @param irstp: float: initial rate of social time preference of consumption
+        @param irstp_consumption: float: initial rate of social time preference of consumption
         @param irstp_damage: float: initial rate of social time preference of damages
-        @param precision: int: precision of outcomes, {10, 20, 30}
         @param tau: float: coefficient of relative risk aversion for climate damage
+        @param precision: int: precision of outcomes, {10, 20, 30}
         @param kwargs:
         @return:
             self.data_dict: dictionary: all outcomes
@@ -124,13 +124,15 @@ class PyRICE(object):
                              "Middle East", "Africa", "Latin America", "OHI", "Other non-OECD Asia"]
 
         # Set up levers
-        self.set_up_levers(sr, irstp, irstp_damage, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
-                           egalitarian_discounting, prioritarian_discounting, miu_period)
+        self.set_up_levers(
+            sr, irstp_consumption, irstp_damage, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
+            egalitarian_discounting, prioritarian_discounting, miu_period
+        )
 
         # Equilibrium temperature impact [dC per doubling CO2]/(3.2 RICE OPT)
         self.t2xco2 = self.samples_t2xco2[t2xco2_dist][t2xco2_index]
 
-        # Choice of the damage function (structural deep uncertainty) #derived from Lingerewan (2020)
+        # Choice of the damage function (structural deep uncertainty)  # derived from Lingerewan (2020)
         if self.overwrite_damage_function:
             self.damage_function = damage_function
 
@@ -160,54 +162,54 @@ class PyRICE(object):
         self.econ_model = EconomyModel(self.data_sets, self.steps, scenario_cback, self.regions_list)
 
         # Instantiate the utility sub-model
-        self.utility_model = UtilityModel(self.steps, self.data_sets, self.regions_list, self.limits)
+        self.utility_model = UtilityModel(
+            self.steps, self.data_sets, self.regions_list, self.limits, self.welfare_function, self.damage_function
+        )
 
         # Set up economic parameters
-        self.econ_model.init_economic_parameters(self.data_sets, self.damage_function, self.damage_parameters,
+        self.econ_model.init_economic_parameters(self.damage_function, self.damage_parameters,
                                                  self.climate_model.temp_atm, self.dam_frac_global, self.miu)
 
         # Instantiate the net economy in economic sub-model
         self.climate_impact_relative_to_capita, self.CPC_post_damage, self.CPC, self.region_pop, self.damages, self.Y \
-            = self.econ_model.init_net_economy(self.data_sets, self.miu, self.S, self.elasticity_of_damages)
+            = self.econ_model.init_net_economy(self.miu, self.S, self.elasticity_of_damages)
 
         # Set up Utility
-        self.utility_model.set_up_utility(self.regions_list, ini_suf_threshold, self.climate_impact_relative_to_capita,
+        self.utility_model.set_up_utility(ini_suf_threshold, self.climate_impact_relative_to_capita,
                                  self.CPC_post_damage, self.CPC, self.region_pop, self.damages, self.Y)
 
         # Run model
-
         for t in range(1, self.steps):
 
             # keep track of year per timestep for dicts used
             self.year = self.start_year + self.tstep * t
 
             # Run gross economy in economic sub-model
-            E, Y_gross = self.econ_model.run_gross_economy(self.data_sets, scenario_pop_gdp, self.tstep, t,
-                                                           longrun_scenario, long_run_nordhaus_pop_gr,
-                                                           long_run_nordhaus_tfp_gr, long_run_nordhaus_sigma,
-                                                           scenario_sigma, self.model_spec, self.miu,
-                                                           self.limmiu, self.miu_period, self.fosslim)
+            E, Y_gross = self.econ_model.run_gross_economy(
+                scenario_pop_gdp, self.tstep, t, longrun_scenario, long_run_nordhaus_pop_gr,
+                long_run_nordhaus_tfp_gr, long_run_nordhaus_sigma, scenario_sigma, self.model_spec, self.miu,
+                self.limmiu, self.miu_period, self.fosslim)
 
             # Run carbon cycle sub-model
-            fco22x, forc, self.E_worldwilde_per_year = self.carbon_model.run(t, E, self.limits)
+            fco22x, forc, self.E_worldwilde_per_year = self.carbon_model.run(t, E)
 
             # Run climate sub-model
-            self.temp_atm = self.climate_model.run(t, fco22x, forc, self.t2xco2, self.limits, Y_gross)
+            self.temp_atm = self.climate_model.run(t, fco22x, forc, self.t2xco2, Y_gross)
 
             # Run net economy
             self.CPC, self.region_pop, self.damages, self.Y, self.CPC_lo, self.CPC_pre_damage = \
                 self.econ_model.run_net_economy(
-                    self.data_sets, t, self.year, self.damage_function,  self.damage_parameters, self.temp_atm,
+                    t, self.year, self.damage_function,  self.damage_parameters, self.temp_atm,
                     self.climate_model.SLRDAMAGES, self.dam_frac_global, self.miu, self.elasticity_of_damages,  self.S,
-                    self.model_spec, self.irstp, self.sr, self.utility_model.elasmu)
+                    self.model_spec, self.irstp_consumption, self.sr, self.utility_model.elasmu)
 
             # Compute Utility
             climate_impact_relative_to_capita = self.econ_model.get_climate_impact_relative_to_capita()
             CPC_post_damage = self.econ_model.get_cpc_post_damage()
 
             self.CPC, self.CPC_post_damage = self.utility_model.run(
-                t, self.year, self.welfare_function, self.irstp, self.irstp_damages, self.tstep, growth_factor_prio, growth_factor_suf,
-                sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting, self.regions_list,
+                t, self.year, self.irstp_consumption, self.irstp_damage, self.tstep, growth_factor_prio, growth_factor_suf,
+                sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting,
                 self.CPC, self.region_pop, self.damages, self.Y, self.CPC_lo, climate_impact_relative_to_capita,
                 CPC_post_damage, tau)
 
@@ -273,13 +275,13 @@ class PyRICE(object):
 
         return samples_t2xco2
 
-    def set_up_levers(self, sr, irstp, irstp_damages, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
+    def set_up_levers(self, sr, irstp, irstp_damage, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
                       egalitarian_discounting, prioritarian_discounting, miu_period):
         """
         Setting up the levers.
         @param sr: float: savings rate
         @param irstp: flaot: initial rate of social time preference of consumption
-        @param irstp_damages: flaot: initial rate of social time preference of damages
+        @param irstp_damage: flaot: initial rate of social time preference of damages
         @param fosslim: int: availability of fossil fuel
         @param scenario_limmiu: int: availability of negative emissions technology (yes, no)
         @param scenario_elasticity_of_damages: int: damage relation for lower income groups
@@ -311,7 +313,7 @@ class PyRICE(object):
 
             # set emission control rate for the whole run according to RICE2010 opt.
             self.miu = miu_opt_series
-            self.irstp = irstp
+            self.irstp_consumption = irstp
             self.miu_period = np.full((12, 1), miu_period)  # new
             self.sr = sr
 
@@ -327,7 +329,7 @@ class PyRICE(object):
 
             # set uncertainties that drive MIU
             self.limmiu = 1
-            self.irstp = irstp
+            self.irstp_consumption = irstp
             self.miu_period = [12, 15, 15, 10, 10, 11, 13, 13, 13, 14, 13, 14]
             self.sr = sr
 
@@ -335,8 +337,8 @@ class PyRICE(object):
             raise ValueError('Oh, no! Apparently, your model specification is unknown!')
 
         # define other uncertainties
-        self.irstp = irstp
-        self.irstp_damages = irstp_damages
+        self.irstp_consumption = irstp
+        self.irstp_damage = irstp_damage
         self.fosslim = fosslim
 
         # SSP CCS and negative emissions possibilities
@@ -358,10 +360,10 @@ class PyRICE(object):
         # overwrite IRSTP for non discounting levers
         if self.welfare_function == WelfareFunction.PRIORITARIAN:
             if prioritarian_discounting == 0:
-                self.irstp = 0
+                self.irstp_consumption = 0
         elif self.welfare_function == WelfareFunction.EGALITARIAN:
             if egalitarian_discounting == 0:
-                self.irstp = 0
+                self.irstp_consumption = 0
 
     def get_better_formatted_results(self):
         """

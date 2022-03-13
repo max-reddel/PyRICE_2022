@@ -18,6 +18,8 @@ class ClimateModel:
         @param regions_list: list with 12 regions as strings
         """
 
+        self.limits = limits
+
         # Initial lower stratum temperature change [dC from 1900]
         self.tocean0 = 0.0068
         # Initial atmospheric temperature change [dC from 1900]
@@ -41,18 +43,18 @@ class ClimateModel:
         self.temp_atm[0] = self.tatm0
         self.temp_atm[1] = 0.980
 
-        if self.temp_atm[0] < limits.temp_atm_lo:
-            self.temp_atm[0] = limits.temp_atm_lo
-        if self.temp_atm[0] > limits.temp_atm_up:
-            self.temp_atm[0] = limits.temp_atm_up
+        if self.temp_atm[0] < self.limits.temp_atm_lo:
+            self.temp_atm[0] = self.limits.temp_atm_lo
+        if self.temp_atm[0] > self.limits.temp_atm_up:
+            self.temp_atm[0] = self.limits.temp_atm_up
 
         # Oceanic temperature
         self.temp_ocean[0] = 0.007
 
-        if self.temp_ocean[0] < limits.temp_ocean_lo:
-            self.temp_ocean[0] = limits.temp_ocean_lo
-        if self.temp_ocean[0] > limits.temp_ocean_up:
-            self.temp_ocean[0] = limits.temp_ocean_up
+        if self.temp_ocean[0] < self.limits.temp_ocean_lo:
+            self.temp_ocean[0] = self.limits.temp_ocean_lo
+        if self.temp_ocean[0] > self.limits.temp_ocean_up:
+            self.temp_ocean[0] = self.limits.temp_ocean_up
 
         # SLR parameters
 
@@ -124,38 +126,36 @@ class ClimateModel:
 
         self.SLRDAMAGES[:, 0] = 0
 
-    def run(self, t, fco22x, forc, t2xco2, limits, Y_gross):
+    def run(self, t, fco22x, forc, t2xco2, Y_gross):
         """
         @param t: int: time step
         @param fco22x: float: forcing equilibrium
         @param forc: numpy array (31,): forcing
         @param t2xco2: float
-        @param limits: ModelLimits
         @param Y_gross: numpy array (12, 31): gross GDP
         @return:
             temp_atm: numpy array (31,: atmospheric temperature
         """
         # heating of oceans and atmospheric according to matrix equations
-
         if t > 1:
             self.temp_atm[t] = (self.temp_atm[t - 1] + self.c1 * ((forc[t] - ((fco22x / t2xco2) * self.temp_atm[t - 1]))
                                    - (self.c3 * (self.temp_atm[t - 1] - self.temp_ocean[t - 1]))))
 
         # setting up lower and upper bound for temperatures
-        if self.temp_atm[t] < limits.temp_atm_lo:
-            self.temp_atm[t] = limits.temp_atm_lo
+        if self.temp_atm[t] < self.limits.temp_atm_lo:
+            self.temp_atm[t] = self.limits.temp_atm_lo
 
-        if self.temp_atm[t] > limits.temp_atm_up:
-            self.temp_atm[t] = limits.temp_atm_up
+        if self.temp_atm[t] > self.limits.temp_atm_up:
+            self.temp_atm[t] = self.limits.temp_atm_up
 
         self.temp_ocean[t] = self.temp_ocean[t - 1] + self.c4 * (self.temp_atm[t - 1] - self.temp_ocean[t - 1])
 
         # setting up lower and upper bound for temperatures
-        if self.temp_ocean[t] < limits.temp_ocean_lo:
-            self.temp_ocean[t] = limits.temp_ocean_lo
+        if self.temp_ocean[t] < self.limits.temp_ocean_lo:
+            self.temp_ocean[t] = self.limits.temp_ocean_lo
 
-        if self.temp_ocean[t] > limits.temp_ocean_up:
-            self.temp_ocean[t] = limits.temp_ocean_up
+        if self.temp_ocean[t] > self.limits.temp_ocean_up:
+            self.temp_ocean[t] = self.limits.temp_ocean_up
 
         # thermal expansion
         self.THERMEQUIL[t] = self.temp_atm[t] * self.thermeq

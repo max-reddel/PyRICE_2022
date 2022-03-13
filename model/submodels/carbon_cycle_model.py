@@ -16,6 +16,8 @@ class CarbonCycleModel:
         @param limits: ModelLimits
         """
 
+        self.limits = limits
+
         # RICE2010 INPUTS
         # Initial concentration in atmosphere 2000 [GtC]
         self.mat0 = 787
@@ -57,27 +59,26 @@ class CarbonCycleModel:
         self.mat[0] = self.mat0
         self.mat[1] = self.mat1
 
-        if self.mat[0] < limits.mat_lo:
-            self.mat[0] = limits.mat_lo
+        if self.mat[0] < self.limits.mat_lo:
+            self.mat[0] = self.limits.mat_lo
 
         self.mu[0] = self.mu0
-        if self.mu[0] < limits.mu_lo:
-            self.mu[0] = limits.mu_lo
+        if self.mu[0] < self.limits.mu_lo:
+            self.mu[0] = self.limits.mu_lo
 
         self.ml[0] = self.ml0
-        if self.ml[0] < limits.ml_lo:
-            self.ml[0] = limits.ml_lo
+        if self.ml[0] < self.limits.ml_lo:
+            self.ml[0] = self.limits.ml_lo
 
         # Radiative forcing
         self.forcoth[0] = self.fex0
         self.forc[0] = self.fco22x * (np.log(((self.mat[0] + self.mat[1]) / 2) / 596.40) / np.log(2.0)) \
                        + self.forcoth[0]
 
-    def run(self, t, E, limits):
+    def run(self, t, E):
         """
         @param t: int: time step
         @param E: numpy array (12, 31): emissions
-        @param limits: ModelLimits
         @return:
             self.fco22x: float: forcings of equilibrium CO2 doubling
             self.forc: numpy array (31,): forcing
@@ -91,23 +92,23 @@ class CarbonCycleModel:
         self.mu[t] = 12 / 100 * self.mat[t - 1] + 94.796 / 100 * self.mu[t - 1] + 0.075 / 100 * self.ml[t - 1]
 
         # set lower constraint for shallow ocean concentration
-        if self.mu[t] < limits.mu_lo:
-            self.mu[t] = limits.mu_lo
+        if self.mu[t] < self.limits.mu_lo:
+            self.mu[t] = self.limits.mu_lo
 
         # Carbon concentration increase in lower oceans [GtC from 1750]
         self.ml[t] = 99.925 / 100 * self.ml[t - 1] + 0.5 / 100 * self.mu[t - 1]
 
         # set lower constraint for shallow ocean concentration
-        if self.ml[t] < limits.ml_lo:
-            self.ml[t] = limits.ml_lo
+        if self.ml[t] < self.limits.ml_lo:
+            self.ml[t] = self.limits.ml_lo
 
         # calculate concentration in atmosphere for t + 1 (because of averaging in forcing formula
         if t < 30:
             self.mat[t + 1] = 88 / 100 * self.mat[t] + 4.704 / 100 * self.mu[t] + E_worldwilde_per_year[t] * 10
 
             # set lower constraint for atmospheric concentration
-            if self.mat[t + 1] < limits.mat_lo:
-                self.mat[t + 1] = limits.mat_lo
+            if self.mat[t + 1] < self.limits.mat_lo:
+                self.mat[t + 1] = self.limits.mat_lo
 
         # Radiative forcing
         # Exogenous forcings from other GHG

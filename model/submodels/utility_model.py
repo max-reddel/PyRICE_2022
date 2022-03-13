@@ -12,16 +12,25 @@ class UtilityModel:
     This sub-model describes the utility part of the PyRICE model.
     """
 
-    def __init__(self, steps, data_sets, regions_list, limits):
+    def __init__(self, steps, data_sets, regions_list, limits, welfare_function, damage_function):
         """
         @param steps: int (31)
         @param data_sets: DataSets
         @param regions_list: list with 12 regions
         @param limits: ModelLimits
+        @param welfare_function: WelfareFunction
+        @param damage_function: DamageFunction
         """
 
+        self.welfare_function = welfare_function
+        self.damage_function = damage_function
+
+        self.data_sets = data_sets
+        self.regions_list = regions_list
         self.n_regions = len(regions_list)
         self.regions_list = regions_list
+
+        # limits
         self.dpc_lo = limits.dpc_lo
         self.sdr_dam_lo = limits.sdr_dam_lo
         self.inst_disutil_lo = limits.inst_disutil_lo
@@ -108,10 +117,9 @@ class UtilityModel:
         self.per_disutility_ww = np.zeros((self.n_regions, steps))
         self.global_per_disutility_ww = np.zeros(steps)
 
-    def set_up_utility(self, regions_list, ini_suf_threshold, climate_impact_relative_to_capita, CPC_post_damage, CPC,
+    def set_up_utility(self, ini_suf_threshold, climate_impact_relative_to_capita, CPC_post_damage, CPC,
                        region_pop, damages, Y):
         """
-        @param regions_list: list with 12 regions
         @param ini_suf_threshold: float
         @param climate_impact_relative_to_capita: dictionary
         @param CPC_post_damage: dictionary
@@ -120,8 +128,6 @@ class UtilityModel:
         @param damages: numpy array (12, 31)
         @param Y: numpy array (12, 31)
         """
-
-        self.regions_list = regions_list
 
         # Initial rate of social time preference per year
         self.discount_factors_utility[:, 0] = 1
@@ -188,7 +194,7 @@ class UtilityModel:
                     self.utility_distance_threshold[region, 0] = self.inst_util_tres_ww[region, 0] - \
                                                                  utility_per_income_share[quintile, region]
 
-                    list_timestep.append(regions_list[region])
+                    list_timestep.append(self.regions_list[region])
 
         self.regions_under_threshold[0] = list_timestep
         self.max_utility_distance_threshold[0] = self.utility_distance_threshold[:, 0].max()
@@ -219,22 +225,20 @@ class UtilityModel:
         # Setting up for disutilities
         self.previous_dpc = np.zeros(region_pop.shape)
 
-    def run(self, t, year, welfare_function, irstp, irstp_damages, tstep, growth_factor_prio, growth_factor_suf,
-            sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting, regions_list,
+    def run(self, t, year, irstp_consumption, irstp_damage, tstep, growth_factor_prio, growth_factor_suf,
+            sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting,
             CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage, tau):
         """
         @param t: int
         @param year: int
-        @param welfare_function: WelfareFunction
-        @param irstp: float
-        @param irstp_damages: float
+        @param irstp_consumption: float
+        @param irstp_damage: float
         @param tstep: int (10)
         @param growth_factor_prio: int
         @param growth_factor_suf: int
         @param sufficientarian_discounting: int
         @param egalitarian_discounting: int
         @param prioritarian_discounting: int
-        @param regions_list: list with 12 regions
         @param CPC: numpy array (12, 31)
         @param region_pop: numpy array (12, 31)
         @param damages: numpy array (12, 31)
@@ -245,31 +249,31 @@ class UtilityModel:
         @return:
             CPC: numpy array (12, 31)
             CPC_post_damage: dictionary
-
         """
 
-        self.welfare_function = welfare_function
-        self.compute_welfare_disutility(damages, region_pop, tau, tstep, t, irstp_damages)
+        self.region_pop = region_pop
+
+        self.compute_welfare_disutility(damages, tau, tstep, t, irstp_damage)
 
         if self.welfare_function == WelfareFunction.UTILITARIAN:
 
-            self.run_utilitarian(t, year, irstp, tstep, CPC, region_pop, damages, Y, CPC_lo,
+            self.run_utilitarian(t, year, irstp_consumption, tstep, CPC, damages, Y, CPC_lo,
                                  climate_impact_relative_to_capita, CPC_post_damage)
 
         elif self.welfare_function == WelfareFunction.PRIORITARIAN:
 
-            self.run_prioritarian(t, year, irstp, tstep, growth_factor_prio, prioritarian_discounting, CPC, region_pop,
+            self.run_prioritarian(t, year, irstp_consumption, tstep, growth_factor_prio, prioritarian_discounting, CPC,
                                   damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage)
 
         elif self.welfare_function == WelfareFunction.SUFFICIENTARIAN:
 
-            self.run_sufficientarian(t, year, irstp, tstep, growth_factor_suf, sufficientarian_discounting,
-                                     CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita,
+            self.run_sufficientarian(t, year, irstp_consumption, tstep, growth_factor_suf, sufficientarian_discounting,
+                                     CPC, damages, Y, CPC_lo, climate_impact_relative_to_capita,
                                      CPC_post_damage)
 
         elif self.welfare_function == WelfareFunction.EGALITARIAN:
 
-            self.run_egalitarian(t, year, irstp, tstep, egalitarian_discounting, CPC, region_pop, damages, Y, CPC_lo,
+            self.run_egalitarian(t, year, irstp_consumption, tstep, egalitarian_discounting, CPC, damages, Y, CPC_lo,
                                  climate_impact_relative_to_capita, CPC_post_damage)
 
         else:
@@ -277,15 +281,14 @@ class UtilityModel:
 
         return CPC, CPC_post_damage
 
-    def run_utilitarian(self, t, year, irstp, tstep, CPC, region_pop, damages, Y, CPC_lo,
+    def run_utilitarian(self, t, year, irstp_consumption, tstep, CPC, damages, Y, CPC_lo,
                         climate_impact_relative_to_capita, CPC_post_damage):
         """
         @param t: int
         @param year: int
-        @param irstp: float
+        @param irstp_consumption: float
         @param tstep: int
         @param CPC: numpy array (12, 31)
-        @param region_pop: numpy array (12, 31)
         @param damages:numpy array (12, 31)
         @param Y: numpy array (12, 31)
         @param CPC_lo: float
@@ -293,26 +296,26 @@ class UtilityModel:
         @param CPC_post_damage: dictionary
         """
 
-        self.set_up_weights_related(t, irstp, tstep, CPC, region_pop)
+        self.set_up_weights_related(t, irstp_consumption, tstep, CPC)
 
         # period utility with welfare weights
-        self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t] * self.discount_factors_utility[:, t]
+        self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
         self.regional_cum_util[t] = self.reg_cum_util[:, t].sum()
 
-        self.calculate_alternative_principles_objectives(t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop,
-                                                         self.welfare_function, climate_impact_relative_to_capita, Y)
+        self.calculate_alternative_principles_objectives(
+            t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
+        )
 
-    def run_prioritarian(self, t, year, irstp, tstep, growth_factor_prio, prioritarian_discounting, CPC, region_pop,
+    def run_prioritarian(self, t, year, irstp_consumption, tstep, growth_factor_prio, prioritarian_discounting, CPC,
                          damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage):
         """
         @param t: int
         @param year: int
-        @param irstp: float
+        @param irstp_consumption: float
         @param tstep: int
         @param growth_factor_prio: int
         @param prioritarian_discounting: int
         @param CPC: numpy array (12, 31)
-        @param region_pop: numpy array (12, 31)
         @param damages: numpy array (12, 31)
         @param Y: numpy array (12, 31)
         @param CPC_lo: float
@@ -320,7 +323,7 @@ class UtilityModel:
         @param CPC_post_damage: dictionary
         """
 
-        self.set_up_weights_related(t, irstp, tstep, CPC, region_pop)
+        self.set_up_weights_related(t, irstp_consumption, tstep, CPC)
 
         # specify growth factor for conditional discounting
         self.growth_factor = growth_factor_prio ** 10
@@ -330,7 +333,7 @@ class UtilityModel:
 
         # no discounting used
         if self.prioritarian_discounting == 0:
-            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t]
+            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t]
 
         # only execute discounting when the lowest income groups experience consumption level growth
         if self.prioritarian_discounting == 1:
@@ -345,27 +348,27 @@ class UtilityModel:
 
             for region in range(0, self.n_regions):
                 if self.inst_util_worst_off[region, t] >= self.inst_util_worst_off_condition[region, t]:
-                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t] * \
+                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * self.region_pop[region, t] * \
                                                   self.discount_factors_utility[region, t]
 
                 # no discounting when lowest income groups do not experience enough growth
                 else:
-                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t]
+                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * self.region_pop[region, t]
 
-        self.calculate_alternative_principles_objectives(t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop,
-                                                         self.welfare_function, climate_impact_relative_to_capita, Y)
+        self.calculate_alternative_principles_objectives(
+            t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
+        )
 
-    def run_sufficientarian(self, t, year, irstp, tstep, growth_factor_suf, sufficientarian_discounting, CPC,
-                            region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage):
+    def run_sufficientarian(self, t, year, irstp_consumption, tstep, growth_factor_suf, sufficientarian_discounting,
+                            CPC, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage):
         """
         @param t: int
         @param year: int
-        @param irstp: float
+        @param irstp_consumption: float
         @param tstep: int
         @param growth_factor_suf: int
         @param sufficientarian_discounting: int
         @param CPC: numpy array (12, 31)
-        @param region_pop: numpy array (12, 31)
         @param damages: numpy array (12, 31)
         @param Y: numpy array (12, 31)
         @param CPC_lo: float
@@ -373,7 +376,7 @@ class UtilityModel:
         @param CPC_post_damage: dictionary
         """
 
-        self.set_up_weights_related(t, irstp, tstep, CPC, region_pop)
+        self.set_up_weights_related(t, irstp_consumption, tstep, CPC)
 
         # sufficientarian controls
         self.sufficientarian_discounting = sufficientarian_discounting
@@ -389,37 +392,37 @@ class UtilityModel:
         if sufficientarian_discounting == 0:
             for region in range(0, self.n_regions):
                 if CPC[region, t] < CPC[region, t - 1]:
-                    self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t]
+                    self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t]
                     break
                 else:
-                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t] * \
+                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * self.region_pop[region, t] * \
                                                   self.discount_factors_utility[region, t]
 
         # only discount when next generation experiences certain growth in every region
         if sufficientarian_discounting == 1:
             for region in range(0, self.n_regions):
                 if CPC[region, t] < CPC[region, t - 1] * self.temporal_growth_factor:
-                    self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t]
+                    self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t]
                     break
                 else:
-                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t] * \
+                    self.per_util_ww[region, t] = self.inst_util_ww[region, t] * self.region_pop[region, t] * \
                                                   self.discount_factors_utility[region, t]
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
-        self.calculate_alternative_principles_objectives(t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop,
-                                                         self.welfare_function, climate_impact_relative_to_capita, Y)
+        self.calculate_alternative_principles_objectives(
+            t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
+        )
 
-    def run_egalitarian(self, t, year, irstp, tstep, egalitarian_discounting, CPC, region_pop, damages, Y, CPC_lo,
+    def run_egalitarian(self, t, year, irstp_consumption, tstep, egalitarian_discounting, CPC, damages, Y, CPC_lo,
                         climate_impact_relative_to_capita, CPC_post_damage):
         """
         @param t: int
         @param year: int
-        @param irstp: float
+        @param irstp_consumption: float
         @param tstep: int
         @param egalitarian_discounting: int
         @param CPC: numpy array (12, 31)
-        @param region_pop: numpy array (12, 31)
         @param damages: numpy array (12, 31)
         @param Y: numpy array (12, 31)
         @param CPC_lo: float
@@ -427,21 +430,22 @@ class UtilityModel:
         @param CPC_post_damage: dictionary
         """
 
-        self.set_up_weights_related(t, irstp, tstep, CPC, region_pop)
+        self.set_up_weights_related(t, irstp_consumption, tstep, CPC)
 
         # controls for egalitarian principles
         self.egalitarian_discounting = egalitarian_discounting
 
         # apply no discounting
         if self.egalitarian_discounting == 1:
-            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t]
+            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t]
         else:
-            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t] * self.discount_factors_utility[:, t]
+            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
-        self.calculate_alternative_principles_objectives(t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop,
-                                                         self.welfare_function, climate_impact_relative_to_capita, Y)
+        self.calculate_alternative_principles_objectives(
+            t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
+        )
 
     def get_outcomes(self, temp_atm, E_worldwilde_per_year, region_pop, CPC_pre_damage, CPC_post_damage, CPC,
                      start_year, end_year, tstep, precision=10):
@@ -602,17 +606,16 @@ class UtilityModel:
 
     # Helper methods for calculating utilities for social welfare functions
 
-    def set_up_weights_related(self, t, irstp, tstep, CPC, region_pop):
+    def set_up_weights_related(self, t, irstp_consumption, tstep, CPC):
         """
         @param t: int
-        @param irstp: float
+        @param irstp_consumption: float
         @param tstep: int
         @param CPC: numpy array (12, 31)
-        @param region_pop: numpy array (12, 31)
         """
 
         # social discount factor for utility
-        self.discount_factors_utility[:, t] = 1 / ((1 + irstp) ** (tstep * t))
+        self.discount_factors_utility[:, t] = 1 / ((1 + irstp_consumption) ** (tstep * t))
 
         # period utilities = utilities for eac region at each time
         # instantaneous welfare without welfare weights
@@ -620,7 +623,7 @@ class UtilityModel:
         # Should it be -1 in the end because that's what the CRRA equation says
 
         # welfare for utility for each region and each time
-        self.utility_welfares[:, t] = self.period_utilities[:, t] * region_pop[:, t] * self.discount_factors_utility[:, t]
+        self.utility_welfares[:, t] = self.period_utilities[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
 
         # cumulative period utilty without welfare weights
         self.cum_utility_welfares[:, 0] = self.cum_utility_welfares[:, t - 1] + self.utility_welfares[:, t]
@@ -629,8 +632,7 @@ class UtilityModel:
         self.inst_util_ww[:, t] = self.period_utilities[:, t] * self.Alpha_data[:, t]
 
     def calculate_alternative_principles_objectives(
-            self, t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop, welfare_function,
-            climate_impact_relative_to_capita, Y):
+            self, t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y):
         """
         @param t: int
         @param year: int
@@ -638,8 +640,6 @@ class UtilityModel:
         @param damages: numpy array (12, 31)
         @param CPC_post_damage: dictionary
         @param CPC_lo: float
-        @param region_pop: numpy array (12, 31)
-        @param welfare_function: WelfareFunction
         @param climate_impact_relative_to_capita: dictionary
         @param Y: numpy array (12, 31)
         """
@@ -742,13 +742,13 @@ class UtilityModel:
             for region in range(0, self.n_regions):
                 if utility_per_income_share[quintile, region] < self.inst_util_tres_ww[region, t]:
                     self.population_under_threshold[t] = \
-                        self.population_under_threshold[t] + region_pop[region, t] * 1 / 5
+                        self.population_under_threshold[t] + self.region_pop[region, t] * 1 / 5
                     self.utility_distance_threshold[region, t] = self.inst_util_tres_ww[region, t] - \
                                                                  utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        if welfare_function == WelfareFunction.SUFFICIENTARIAN:
+        if self.welfare_function == WelfareFunction.SUFFICIENTARIAN:
             self.regions_under_threshold[t] = list_timestep
 
         # minimize max distance to threshold
@@ -763,16 +763,15 @@ class UtilityModel:
         self.global_ouput[t] = Y[:, t].sum(axis=0)
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
-    def compute_welfare_disutility(self, damages, region_pop, tau, tstep, t, irstp_damage):
+    def compute_welfare_disutility(self, damages, tau, tstep, t, irstp_damage):
         """
         Takes damages to compute damages per capita, disutility of damages, and welfare of disutility.
-        @param region_pop: numpy array (12, 31)
         @param tau: float: risk aversion for damages (an uncertainty factor)
         @param damages: numpy array (12, 31)
         """
 
         # damages per capita
-        self.dpc[:, t] = damages[:, t] * 1000 / region_pop[:, t]
+        self.dpc[:, t] = damages[:, t] * 1000 / self.region_pop[:, t]
         self.dpc[:, t] = np.where(self.dpc[:, t] < self.dpc_lo, self.dpc[:, t], self.dpc_lo)
 
         # unweighted and undiscounted diutilities
@@ -791,7 +790,7 @@ class UtilityModel:
 
         # rate of change of damage
         if t == 0:
-            previous_dpc = np.zeros((region_pop.shape[0], 1)) + 0.000000001
+            previous_dpc = np.zeros((self.region_pop.shape[0], 1)) + 0.000000001
         else:
             previous_dpc = self.dpc[:, t-1]
         self.dam_g[:, t] = (self.dpc[:, t] - previous_dpc) / previous_dpc
@@ -808,7 +807,8 @@ class UtilityModel:
         )
 
         # welfare = discounted disutility
-        self.per_disutility_ww[:, t] = self.inst_disutility_ww[:, t] * region_pop[:, t] * self.discount_factors_disutility[:, t]
+        self.per_disutility_ww[:, t] = \
+            self.inst_disutility_ww[:, t] * self.region_pop[:, t] * self.discount_factors_disutility[:, t]
 
         # spatially aggregated disutility
         self.global_per_disutility_ww = self.per_disutility_ww.sum(axis=0)
@@ -849,10 +849,12 @@ class Results:
                    'Intratemporal impact GINI', 'Atmospheric temperature', 'Industrial emission', 'Total output',
                    'Regions below threshold']
 
-        self.df_main = pd.DataFrame(list(zip(damages, utility, disutility, lowest, highest, distance, population, utility_gini,
-                                             impact_gini, temp, emission, output, regions_under_threshold)),
-                                    index=years,
-                                    columns=columns)
+        self.df_main = pd.DataFrame(
+            list(zip(damages, utility, disutility, lowest, highest, distance, population,
+                     utility_gini, impact_gini, temp, emission, output, regions_under_threshold)),
+            index=years,
+            columns=columns
+        )
 
         # Highly aggregated variables
         self.aggregated_utility_gini = self.data_dict["Intertemporal utility GINI"]

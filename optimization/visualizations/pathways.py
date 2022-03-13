@@ -99,7 +99,7 @@ def prepare_variables(policies):
         model = PyRICE(damage_function=DamageFunction.WEITZMAN, welfare_function=WelfareFunction.UTILITARIAN)
         sr = policy['sr']
         miu = policy['miu']
-        irstp = policy['irstp']
+        irstp = policy['irstp_consumption']
         model(sr=sr, miu=miu, irstp=irstp)
 
         # Obtain relevant model results
