@@ -103,10 +103,7 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     # Specify outcomes
     model.outcomes, epsilons = get_outcomes_and_epsilons(welfare_function=welfare_function)
 
-    model.constants = [Constant('model_specification', ModelSpec.STANDARD),
-                       Constant('damage_function', DamageFunction.NORDHAUS),
-                       Constant('welfare_function', WelfareFunction.UTILITARIAN),
-                       Constant('precision', 10)]
+    model.constants = [Constant('precision', 10)]
 
     constraints = []
 

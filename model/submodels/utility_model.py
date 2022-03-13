@@ -23,9 +23,9 @@ class UtilityModel:
         self.regions_list = regions_list
 
         # output metrics
-        self.util_sdr = np.zeros((self.n_regions, steps))
-        self.inst_util = np.zeros((self.n_regions, steps))
-        self.period_utility = np.zeros((self.n_regions, steps))
+        self.discount_factors_utility = np.zeros((self.n_regions, steps))
+        self.period_utilities = np.zeros((self.n_regions, steps))
+        self.utility_welfares = np.zeros((self.n_regions, steps))
 
         self.cum_util = np.zeros((self.n_regions, steps))
         self.reg_cum_util = np.zeros((self.n_regions, steps))
@@ -33,7 +33,7 @@ class UtilityModel:
         self.util = np.zeros((self.n_regions, steps))
 
         self.per_util_ww = np.zeros((self.n_regions, steps))
-        self.cum_per_util = np.zeros((self.n_regions, steps))
+        self.cum_utility_welfares = np.zeros((self.n_regions, steps))
         self.inst_util_ww = np.zeros((self.n_regions, steps))
 
         # alternative WelfareFunction output arrays
@@ -110,25 +110,25 @@ class UtilityModel:
         self.regions_list = regions_list
 
         # Initial rate of social time preference per year
-        self.util_sdr[:, 0] = 1
+        self.discount_factors_utility[:, 0] = 1
 
         # Instantaneous utility function equation
-        self.inst_util[:, 0] = ((1 / (1 - self.elasmu)) * (CPC[:, 0]) ** (1 - self.elasmu) + 1)
+        self.period_utilities[:, 0] = ((1 / (1 - self.elasmu)) * (CPC[:, 0]) ** (1 - self.elasmu) + 1)
 
         # CEMU period utility
-        self.period_utility[:, 0] = self.inst_util[:, 0] * region_pop[:, 0] * self.util_sdr[:, 0]
+        self.utility_welfares[:, 0] = self.period_utilities[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:, 0]
 
         # Cummulative period utility without WW
-        self.cum_per_util[:, 0] = self.period_utility[:, 0]
+        self.cum_utility_welfares[:, 0] = self.utility_welfares[:, 0]
 
         # Instantaneous utility function with welfare weights
-        self.inst_util_ww[:, 0] = self.inst_util[:, 0] * self.Alpha_data[:, 0]
+        self.inst_util_ww[:, 0] = self.period_utilities[:, 0] * self.Alpha_data[:, 0]
 
         # Period utility with welfare weights
-        self.per_util_ww[:, 0] = self.inst_util_ww[:, 0] * region_pop[:, 0] * self.util_sdr[:, 0]
+        self.per_util_ww[:, 0] = self.inst_util_ww[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:, 0]
 
         # cummulative utility with ww
-        self.reg_cum_util[:, 0] = self.period_utility[:, 0]
+        self.reg_cum_util[:, 0] = self.utility_welfares[:, 0]
         self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
 
         # initialise objectives for principles
@@ -277,7 +277,7 @@ class UtilityModel:
         self.set_up_weights_related(t, irstp, tstep, CPC, region_pop)
 
         # period utility with welfare weights
-        self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t] * self.util_sdr[:, t]
+        self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t] * self.discount_factors_utility[:, t]
         self.regional_cum_util[t] = self.reg_cum_util[:, t].sum()
 
         self.calculate_alternative_principles_objectives(t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop,
@@ -327,7 +327,7 @@ class UtilityModel:
             for region in range(0, self.n_regions):
                 if self.inst_util_worst_off[region, t] >= self.inst_util_worst_off_condition[region, t]:
                     self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t] * \
-                                                  self.util_sdr[region, t]
+                                                  self.discount_factors_utility[region, t]
 
                 # no discounting when lowest income groups do not experience enough growth
                 else:
@@ -374,7 +374,7 @@ class UtilityModel:
                     break
                 else:
                     self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t] * \
-                                                  self.util_sdr[region, t]
+                                                  self.discount_factors_utility[region, t]
 
         # only discount when next generation experiences certain growth in every region
         if sufficientarian_discounting == 1:
@@ -384,7 +384,7 @@ class UtilityModel:
                     break
                 else:
                     self.per_util_ww[region, t] = self.inst_util_ww[region, t] * region_pop[region, t] * \
-                                                  self.util_sdr[region, t]
+                                                  self.discount_factors_utility[region, t]
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
@@ -417,7 +417,7 @@ class UtilityModel:
         if self.egalitarian_discounting == 1:
             self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t]
         else:
-            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t] * self.util_sdr[:, t]
+            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * region_pop[:, t] * self.discount_factors_utility[:, t]
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
@@ -446,14 +446,17 @@ class UtilityModel:
         self.take_care_of_nans()
 
         objectives_list_timeseries = [
-            self.global_damages, self.global_per_util_ww,
+            self.global_damages,
+            self.global_per_util_ww,
             self.worst_off_income_class,
             self.worst_off_climate_impact,
             self.max_utility_distance_threshold,
             self.population_under_threshold,
             self.CPC_intra_gini,
             self.climate_impact_per_dollar_gini,
-            temp_atm, E_worldwilde_per_year, self.global_ouput
+            temp_atm,
+            E_worldwilde_per_year,
+            self.global_ouput
         ]
 
         objectives_list = [
@@ -587,23 +590,22 @@ class UtilityModel:
         @param region_pop: numpy array (12, 31)
         """
 
-        # irstp: Initial rate of social time preference per year
-
         # social discount factor for utility
-        self.util_sdr[:, t] = 1 / ((1 + irstp) ** (tstep * t))
+        self.discount_factors_utility[:, t] = 1 / ((1 + irstp) ** (tstep * t))
 
+        # period utilities = utilities for eac region at each time
         # instantaneous welfare without welfare weights
-        self.inst_util[:, t] = (1 / (1 - self.elasmu)) * (CPC[:, t]) ** (1 - self.elasmu) + 1
+        self.period_utilities[:, t] = (1 / (1 - self.elasmu)) * (CPC[:, t]) ** (1 - self.elasmu) + 1
         # Should it be -1 in the end because that's what the CRRA equation says
 
-        # period utility
-        self.period_utility[:, t] = self.inst_util[:, t] * region_pop[:, t] * self.util_sdr[:, t]
+        # welfare for utility for each region and each time
+        self.utility_welfares[:, t] = self.period_utilities[:, t] * region_pop[:, t] * self.discount_factors_utility[:, t]
 
         # cumulative period utilty without welfare weights
-        self.cum_per_util[:, 0] = self.cum_per_util[:, t - 1] + self.period_utility[:, t]
+        self.cum_utility_welfares[:, 0] = self.cum_utility_welfares[:, t - 1] + self.utility_welfares[:, t]
 
         # Instantaneous utility function with welfare weights
-        self.inst_util_ww[:, t] = self.inst_util[:, t] * self.Alpha_data[:, t]
+        self.inst_util_ww[:, t] = self.period_utilities[:, t] * self.Alpha_data[:, t]
 
     def calculate_alternative_principles_objectives(
             self, t, year, CPC, damages, CPC_post_damage, CPC_lo, region_pop, welfare_function,
@@ -678,8 +680,8 @@ class UtilityModel:
 
         # calculate gini as measure of current inequality in climate impact (per dollar consumption)
         # (intragenerational)
-        self.climate_impact_per_dollar_consumption[:, t] = np.where(damages[:, t] < 0.001, CPC[:, t],
-                                                                    damages[:, t] / CPC[:, t])
+        self.climate_impact_per_dollar_consumption[:, t] = \
+            np.where(damages[:, t] < 0.001, CPC[:, t], damages[:, t] / CPC[:, t])
 
         input_gini_intra_impact = self.climate_impact_per_dollar_consumption[:, t]
 

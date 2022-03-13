@@ -24,5 +24,4 @@ class ModelLimits:
         self.temp_ocean_lo = -1.0
         self.temp_atm_lo = 0.0
 
-        # self.temp_atm_up = 20 or 12 for 2016 version
         self.temp_atm_up = 40.0
