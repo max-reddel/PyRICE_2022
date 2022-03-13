@@ -196,7 +196,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
                           'Population under threshold', 'Atmospheric Temperature', 'Industrial Emission', 'Total Output'
                           ]
 
-    if welfare_function.__eq__(WelfareFunction.UTILITARIAN):
+    if welfare_function == WelfareFunction.UTILITARIAN:
 
         outcomes_maximize_names = ['Utility']
         outcomes_minimize_names = []
@@ -211,7 +211,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
                                          outcomes_maximize_aggregated, outcomes_minimize_aggregated, years_optimize,
                                          years_info, outcomes_info_aggregated)
 
-    elif welfare_function.__eq__(WelfareFunction.SUFFICIENTARIAN):
+    elif welfare_function == WelfareFunction.SUFFICIENTARIAN:
 
         outcomes_maximize_names = []
         outcomes_minimize_names = ['Distance to threshold', 'Population under threshold']
@@ -226,7 +226,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
                                          outcomes_maximize_aggregated, outcomes_minimize_aggregated, years_optimize,
                                          years_info, outcomes_info_aggregated)
 
-    elif welfare_function.__eq__(WelfareFunction.PRIORITARIAN):
+    elif welfare_function == WelfareFunction.PRIORITARIAN:
 
         # Outcomes that should be optimized
         outcomes_maximize_names = ['Lowest income per capita']
@@ -242,7 +242,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
                                          outcomes_maximize_aggregated, outcomes_minimize_aggregated, years_optimize,
                                          years_info, outcomes_info_aggregated)
 
-    elif welfare_function.__eq__(WelfareFunction.EGALITARIAN):
+    elif welfare_function == WelfareFunction.EGALITARIAN:
 
         # Outcomes that should be optimized
         outcomes_maximize_names = []

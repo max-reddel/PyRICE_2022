@@ -14,11 +14,11 @@ class ModelSpec(Enum):
     Validation_2 = 2
     STANDARD = 3
 
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False
+    # def __eq__(self, o: object) -> bool:
+    #     if self.value is o.value:
+    #         return True
+    #     else:
+    #         return False
 
 
 class WelfareFunction(Enum):
@@ -31,11 +31,11 @@ class WelfareFunction(Enum):
     SUFFICIENTARIAN = 2
     EGALITARIAN = 3
 
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False
+    # def __eq__(self, o: object) -> bool:
+    #     if self.value is o.value:
+    #         return True
+    #     else:
+    #         return False
 
 
 class DamageFunction(Enum):
@@ -47,8 +47,8 @@ class DamageFunction(Enum):
     NEWBOLD = 1
     WEITZMAN = 2
 
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False
+    # def __eq__(self, o: object) -> bool:
+    #     if self.value is o.value:
+    #         return True
+    #     else:
+    #         return False

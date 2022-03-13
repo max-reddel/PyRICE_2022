@@ -288,7 +288,7 @@ class PyRICE(object):
         sr_opt_series = self.data_sets.RICE_input.iloc[30:42, 1:].to_numpy()
 
         # Controls with STANDARD sampling
-        if self.model_spec.__eq__(ModelSpec.STANDARD):
+        if self.model_spec == ModelSpec.STANDARD:
             # create frame for savings rate to be sampled
             self.S = np.zeros((12, self.steps))
             self.miu = np.zeros((12, self.steps))
@@ -301,7 +301,7 @@ class PyRICE(object):
             self.sr = sr
 
         # Get control from RICE2010 - full RICE2010 replicating run
-        elif self.model_spec.__eq__(ModelSpec.Validation_1):
+        elif self.model_spec == ModelSpec.Validation_1:
             # set savings rate and control rate as optimized RICE 2010
             self.S = sr_opt_series
 
@@ -312,7 +312,7 @@ class PyRICE(object):
             self.sr = sr
 
         # STANDARD Deterministic controls
-        elif self.model_spec.__eq__(ModelSpec.Validation_2):
+        elif self.model_spec == ModelSpec.Validation_2:
             # create dataframes for control rate and savings rate
             self.miu = np.zeros((12, self.steps))
             self.S = np.zeros((12, self.steps))
@@ -351,10 +351,10 @@ class PyRICE(object):
             self.elasticity_of_damages = 0
 
         # overwrite IRSTP for non discounting levers
-        if self.welfare_function.__eq__(WelfareFunction.PRIORITARIAN):
+        if self.welfare_function == WelfareFunction.PRIORITARIAN:
             if prioritarian_discounting == 0:
                 self.irstp = 0
-        elif self.welfare_function.__eq__(WelfareFunction.EGALITARIAN):
+        elif self.welfare_function == WelfareFunction.EGALITARIAN:
             if egalitarian_discounting == 0:
                 self.irstp = 0
 

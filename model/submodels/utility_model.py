@@ -232,23 +232,23 @@ class UtilityModel:
 
         self.welfare_function = welfare_function
 
-        if self.welfare_function.__eq__(WelfareFunction.UTILITARIAN):
+        if self.welfare_function == WelfareFunction.UTILITARIAN:
 
             self.run_utilitarian(t, year, irstp, tstep, CPC, region_pop, damages, Y, CPC_lo,
                                  climate_impact_relative_to_capita, CPC_post_damage)
 
-        elif self.welfare_function.__eq__(WelfareFunction.PRIORITARIAN):
+        elif self.welfare_function == WelfareFunction.PRIORITARIAN:
 
             self.run_prioritarian(t, year, irstp, tstep, growth_factor_prio, prioritarian_discounting, CPC, region_pop,
                                   damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage)
 
-        elif self.welfare_function.__eq__(WelfareFunction.SUFFICIENTARIAN):
+        elif self.welfare_function == WelfareFunction.SUFFICIENTARIAN:
 
             self.run_sufficientarian(t, year, irstp, tstep, growth_factor_suf, sufficientarian_discounting,
                                      CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita,
                                      CPC_post_damage)
 
-        elif self.welfare_function.__eq__(WelfareFunction.EGALITARIAN):
+        elif self.welfare_function == WelfareFunction.EGALITARIAN:
 
             self.run_egalitarian(t, year, irstp, tstep, egalitarian_discounting, CPC, region_pop, damages, Y, CPC_lo,
                                  climate_impact_relative_to_capita, CPC_post_damage)
@@ -727,7 +727,7 @@ class UtilityModel:
 
                     list_timestep.append(self.regions_list[region])
 
-        if welfare_function.__eq__(WelfareFunction.SUFFICIENTARIAN):
+        if welfare_function == WelfareFunction.SUFFICIENTARIAN:
             self.regions_under_threshold[t] = list_timestep
 
         # minimize max distance to threshold

@@ -159,19 +159,19 @@ class EconomyModel:
                     self.k_region[:, 0] ** self.gama))
 
         # original RICE parameters dam_frac with SLR
-        if damage_function.__eq__(DamageFunction.NORDHAUS):
+        if damage_function == DamageFunction.NORDHAUS:
             self.dam_frac[:, 0] = (damage_parameters[:, 0] * temp_atm[0]
                                         + damage_parameters[:, 1] * (temp_atm[0] ** damage_parameters[:, 2])) * 0.01
 
         # Damage function Newbold & Daigneault
-        elif damage_function.__eq__(DamageFunction.NEWBOLD):
+        elif damage_function == DamageFunction.NEWBOLD:
             dam_frac_global[0] = (1 - (np.exp(-0.0025 * temp_atm[0] * 2.45)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
             self.dam_frac[:, 0] = dam_frac_global[0] * data_sets.RICE_regional_damage_factor[:, 0]
 
         # Damage function Weitzman
-        elif damage_function.__eq__(DamageFunction.WEITZMAN):
+        elif damage_function == DamageFunction.WEITZMAN:
             dam_frac_global[0] = (1 - 1 / (1 + 0.0028388 ** 2 + 0.0000050703 * (temp_atm[0] * 6.754)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
@@ -433,7 +433,7 @@ class EconomyModel:
                     self.sigma_region[:, t] = self.sigma_region[:, t - 1] * (2.71828 ** (self.Sigma_gr[:, t] * 10))
 
         # calculate emission control rate under STANDARD
-        if model_spec.__eq__(ModelSpec.STANDARD):
+        if model_spec == ModelSpec.STANDARD:
 
             # control rate is maximum after target period, otherwise linearly increase towards that point from t[0]
             if t > 1:
@@ -441,7 +441,7 @@ class EconomyModel:
                     calculated_miu = miu[index, t - 1] + (limmiu - miu[index, 1]) / miu_period[index]
                     miu[index, t] = min(calculated_miu, limmiu)
 
-        if model_spec.__eq__(ModelSpec.Validation_2):
+        if model_spec == ModelSpec.Validation_2:
             if t > 1:
                 for index in range(0, self.n_regions):
                     calculated_miu = miu[index, t - 1] + (limmiu - miu[index, 1]) / miu_period[index]
@@ -497,7 +497,7 @@ class EconomyModel:
         """
 
         # original RICE parameters dam_frac
-        if damage_function.__eq__(DamageFunction.NORDHAUS):
+        if damage_function == DamageFunction.NORDHAUS:
             self.dam_frac[:, t] = (damage_parameters[:, 0] * temp_atm[t] + damage_parameters[:, 1] *
                                    (temp_atm[t] ** damage_parameters[:, 2])) * 0.01
 
@@ -505,7 +505,7 @@ class EconomyModel:
             self.damages[:, t] = self.Y_gross[:, t] * (self.dam_frac[:, t] + (SLRDAMAGES[:, t] / 100))
 
         # Damage function Newbold & Daigneault
-        elif damage_function.__eq__(DamageFunction.NEWBOLD):
+        elif damage_function == DamageFunction.NEWBOLD:
             dam_frac_global[t] = (1 - (np.exp(-0.0025 * temp_atm[t] ** 2.45)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
@@ -515,7 +515,7 @@ class EconomyModel:
             self.damages[:, t] = self.Y_gross[:, t] * self.dam_frac[:, t]
 
         # Damage function Weitzman
-        elif damage_function.__eq__(DamageFunction.WEITZMAN):
+        elif damage_function == DamageFunction.WEITZMAN:
             dam_frac_global[t] = (1 - 1 / (1 + 0.0028388 ** 2 + 0.0000050703 * (temp_atm[t] ** 6.754)))
 
             # translate global damage frac to regional damage frac with factor as used in RICE
@@ -555,19 +555,19 @@ class EconomyModel:
         self.Y[:, t] = np.where(self.Y[:, t] > 0, self.Y[:, t], 0)
 
         # #############  Investments & Savings  #########################
-        if not model_spec.__eq__(ModelSpec.Validation_1):
+        if not model_spec == ModelSpec.Validation_1:
             # Optimal long-run savings rate used for transversality --> SEE THESIS SHAJEE
             optlrsav = ((self.dk + 0.004) / (
                         self.dk + 0.004 * elasmu + irstp) * self.gama)
 
-            if model_spec.__eq__(ModelSpec.Validation_2):
+            if model_spec == ModelSpec.Validation_2:
                 if t > 12:
                     S[:, t] = optlrsav
                 else:
                     if t > 1:
                         S[:, t] = (optlrsav - S[:, 1]) * t / 12 + S[:, 1]
 
-            if model_spec.__eq__(ModelSpec.STANDARD):
+            if model_spec == ModelSpec.STANDARD:
                 if t > 1:
                     S[:, t] = (sr - S[:, 1]) * t / 12 + S[:, 1]
                 if t > 12:
