@@ -23,5 +23,8 @@ class ModelLimits:
         self.temp_ocean_up = 20.0
         self.temp_ocean_lo = -1.0
         self.temp_atm_lo = 0.0
-
         self.temp_atm_up = 40.0
+
+        self.dpc_lo = 0.000001
+        self.sdr_dam_lo = 0.0001
+        self.inst_disutil_lo = 0.00001

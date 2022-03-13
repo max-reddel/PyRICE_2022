@@ -626,7 +626,6 @@ class EconomyModel:
 
         # average consumption per capita per region
         self.CPC[:, t] = (1000 * self.C[:, t]) / self.region_pop[:, t]
-
         self.CPC[:, t] = np.where(self.CPC[:, t] > self.CPC_lo, self.CPC[:, t], self.CPC_lo)
 
         return self.CPC, self.region_pop, self.damages, self.Y, self.CPC_lo, self.CPC_pre_damage

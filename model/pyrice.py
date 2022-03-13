@@ -81,7 +81,9 @@ class PyRICE(object):
                  sr=0.248,
                  miu=2135,
                  irstp=0.015,
+                 irstp_damage=0.00000000001,
                  precision=10,
+                 tau=-0.55,
                  **kwargs):
         """
         @param growth_factor_prio: int: growth factor when prioritarian (0 = no discounting or 1 = conditional_growth)
@@ -105,8 +107,10 @@ class PyRICE(object):
         @param long_run_nordhaus_pop_gr: int: range in DICE [0.1 0.15]   0.75 - 1.25
         @param sr: float: savings rate
         @param miu: int: global emissions target in which emissions are near zero
-        @param irstp: float: initial rate of social time preference
+        @param irstp: float: initial rate of social time preference of consumption
+        @param irstp_damage: float: initial rate of social time preference of damages
         @param precision: int: precision of outcomes, {10, 20, 30}
+        @param tau: float: coefficient of relative risk aversion for climate damage
         @param kwargs:
         @return:
             self.data_dict: dictionary: all outcomes
@@ -120,7 +124,7 @@ class PyRICE(object):
                              "Middle East", "Africa", "Latin America", "OHI", "Other non-OECD Asia"]
 
         # Set up levers
-        self.set_up_levers(sr, irstp, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
+        self.set_up_levers(sr, irstp, irstp_damage, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
                            egalitarian_discounting, prioritarian_discounting, miu_period)
 
         # Equilibrium temperature impact [dC per doubling CO2]/(3.2 RICE OPT)
@@ -137,7 +141,6 @@ class PyRICE(object):
 
         # damage parameters excluding SLR from RICE2010
         self.damage_parameters = self.data_sets.RICE_input.iloc[47:55, 1:13].transpose().to_numpy()
-        # self.damage_parameters = self.damage_parameters.transpose().to_numpy()
 
         # damage parameters INCLUDING SLR FIT (Dennig et al.)
         self.dam_frac_global = np.zeros(self.steps)
@@ -157,7 +160,7 @@ class PyRICE(object):
         self.econ_model = EconomyModel(self.data_sets, self.steps, scenario_cback, self.regions_list)
 
         # Instantiate the utility sub-model
-        self.utility_model = UtilityModel(self.steps, self.data_sets, self.regions_list)
+        self.utility_model = UtilityModel(self.steps, self.data_sets, self.regions_list, self.limits)
 
         # Set up economic parameters
         self.econ_model.init_economic_parameters(self.data_sets, self.damage_function, self.damage_parameters,
@@ -203,10 +206,10 @@ class PyRICE(object):
             CPC_post_damage = self.econ_model.get_cpc_post_damage()
 
             self.CPC, self.CPC_post_damage = self.utility_model.run(
-                t, self.year, self.welfare_function, self.irstp, self.tstep, growth_factor_prio, growth_factor_suf,
+                t, self.year, self.welfare_function, self.irstp, self.irstp_damages, self.tstep, growth_factor_prio, growth_factor_suf,
                 sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting, self.regions_list,
                 self.CPC, self.region_pop, self.damages, self.Y, self.CPC_lo, climate_impact_relative_to_capita,
-                CPC_post_damage)
+                CPC_post_damage, tau)
 
         # Prepare final outcomes of interest
         self.data_dict = self.utility_model.get_outcomes(
@@ -270,12 +273,13 @@ class PyRICE(object):
 
         return samples_t2xco2
 
-    def set_up_levers(self, sr, irstp, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
+    def set_up_levers(self, sr, irstp, irstp_damages, fosslim, scenario_limmiu, scenario_elasticity_of_damages,
                       egalitarian_discounting, prioritarian_discounting, miu_period):
         """
         Setting up the levers.
         @param sr: float: savings rate
-        @param irstp: flaot: initial rate of social time preference
+        @param irstp: flaot: initial rate of social time preference of consumption
+        @param irstp_damages: flaot: initial rate of social time preference of damages
         @param fosslim: int: availability of fossil fuel
         @param scenario_limmiu: int: availability of negative emissions technology (yes, no)
         @param scenario_elasticity_of_damages: int: damage relation for lower income groups
@@ -332,6 +336,7 @@ class PyRICE(object):
 
         # define other uncertainties
         self.irstp = irstp
+        self.irstp_damages = irstp_damages
         self.fosslim = fosslim
 
         # SSP CCS and negative emissions possibilities

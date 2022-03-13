@@ -12,15 +12,19 @@ class UtilityModel:
     This sub-model describes the utility part of the PyRICE model.
     """
 
-    def __init__(self, steps, data_sets, regions_list):
+    def __init__(self, steps, data_sets, regions_list, limits):
         """
         @param steps: int (31)
         @param data_sets: DataSets
         @param regions_list: list with 12 regions
+        @param limits: ModelLimits
         """
 
         self.n_regions = len(regions_list)
         self.regions_list = regions_list
+        self.dpc_lo = limits.dpc_lo
+        self.sdr_dam_lo = limits.sdr_dam_lo
+        self.inst_disutil_lo = limits.inst_disutil_lo
 
         # output metrics
         self.discount_factors_utility = np.zeros((self.n_regions, steps))
@@ -93,6 +97,16 @@ class UtilityModel:
         self.average_regional_impact = np.zeros(steps)
         self.climate_impact_per_dollar_consumption = np.zeros((self.n_regions, steps))
         self.climate_impact_per_dollar_gini = np.zeros(steps)
+
+        # Disutility-related outputs
+        self.dpc = np.zeros((self.n_regions, steps)) + 0.000000001
+        self.period_damages = np.zeros((self.n_regions, steps))
+        self.inst_disutility_ww = np.zeros((self.n_regions, steps))
+        self.dam_g = np.zeros((self.n_regions, steps))
+        self.rho = np.zeros((self.n_regions, steps))
+        self.discount_factors_disutility = np.zeros((self.n_regions, steps))
+        self.per_disutility_ww = np.zeros((self.n_regions, steps))
+        self.global_per_disutility_ww = np.zeros(steps)
 
     def set_up_utility(self, regions_list, ini_suf_threshold, climate_impact_relative_to_capita, CPC_post_damage, CPC,
                        region_pop, damages, Y):
@@ -202,14 +216,18 @@ class UtilityModel:
         self.global_damages[0] = damages[:, 0].sum(axis=0)
         self.global_ouput[0] = Y[:, 0].sum(axis=0)
 
-    def run(self, t, year, welfare_function, irstp, tstep, growth_factor_prio, growth_factor_suf,
+        # Setting up for disutilities
+        self.previous_dpc = np.zeros(region_pop.shape)
+
+    def run(self, t, year, welfare_function, irstp, irstp_damages, tstep, growth_factor_prio, growth_factor_suf,
             sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting, regions_list,
-            CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage):
+            CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage, tau):
         """
         @param t: int
         @param year: int
         @param welfare_function: WelfareFunction
         @param irstp: float
+        @param irstp_damages: float
         @param tstep: int (10)
         @param growth_factor_prio: int
         @param growth_factor_suf: int
@@ -231,6 +249,7 @@ class UtilityModel:
         """
 
         self.welfare_function = welfare_function
+        self.compute_welfare_disutility(damages, region_pop, tau, tstep, t, irstp_damages)
 
         if self.welfare_function == WelfareFunction.UTILITARIAN:
 
@@ -448,6 +467,7 @@ class UtilityModel:
         objectives_list_timeseries = [
             self.global_damages,
             self.global_per_util_ww,
+            self.global_per_disutility_ww,
             self.worst_off_income_class,
             self.worst_off_climate_impact,
             self.max_utility_distance_threshold,
@@ -476,6 +496,7 @@ class UtilityModel:
         objectives_list_timeseries_name = [
             'Damages ',
             'Utility ',
+            'Disutility ',
             'Lowest income per capita ',
             'Highest climate impact per capita ',
             'Distance to threshold ',
@@ -742,6 +763,56 @@ class UtilityModel:
         self.global_ouput[t] = Y[:, t].sum(axis=0)
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
+    def compute_welfare_disutility(self, damages, region_pop, tau, tstep, t, irstp_damage):
+        """
+        Takes damages to compute damages per capita, disutility of damages, and welfare of disutility.
+        @param region_pop: numpy array (12, 31)
+        @param tau: float: risk aversion for damages (an uncertainty factor)
+        @param damages: numpy array (12, 31)
+        """
+
+        # damages per capita
+        self.dpc[:, t] = damages[:, t] * 1000 / region_pop[:, t]
+        self.dpc[:, t] = np.where(self.dpc[:, t] < self.dpc_lo, self.dpc[:, t], self.dpc_lo)
+
+        # unweighted and undiscounted diutilities
+        if tau == 1.00:
+            self.period_damages[:, t] = np.log(self.dpc[:, t])
+        else:
+            self.period_damages[:, t] = self.dpc[:, t] ** (1-tau) / (1-tau)  # Maybe also "-1" in here
+        self.period_damages[:, t] = np.where(
+            self.period_damages[:, t] > self.inst_disutil_lo,
+            self.period_damages[:, t],
+            self.inst_disutil_lo
+        )
+
+        # disutility with welfare weights
+        self.inst_disutility_ww[:, t] = self.period_damages[:, t] * self.Alpha_data[:, t]
+
+        # rate of change of damage
+        if t == 0:
+            previous_dpc = np.zeros((region_pop.shape[0], 1)) + 0.000000001
+        else:
+            previous_dpc = self.dpc[:, t-1]
+        self.dam_g[:, t] = (self.dpc[:, t] - previous_dpc) / previous_dpc
+
+        # endogenous rate social rate of damage
+        self.rho[:, t] = irstp_damage + tau * self.dam_g[:, t]
+
+        # discount factor for disutility
+        self.discount_factors_disutility[:, t] = 1 / (1 + self.rho[:, t] ** (tstep * t))
+        self.discount_factors_disutility[:, t] = np.where(
+            self.discount_factors_disutility[:, t] < self.sdr_dam_lo,
+            self.discount_factors_disutility[:, t],
+            self.sdr_dam_lo
+        )
+
+        # welfare = discounted disutility
+        self.per_disutility_ww[:, t] = self.inst_disutility_ww[:, t] * region_pop[:, t] * self.discount_factors_disutility[:, t]
+
+        # spatially aggregated disutility
+        self.global_per_disutility_ww = self.per_disutility_ww.sum(axis=0)
+
 
 class Results:
     """
@@ -761,6 +832,7 @@ class Results:
         # Create one big dataframe
         damages = self.get_values_for_specific_prefix("Damages")
         utility = self.get_values_for_specific_prefix("Utility")
+        disutility = self.get_values_for_specific_prefix("Disutility")
         lowest = self.get_values_for_specific_prefix("Lowest income per capita")
         highest = self.get_values_for_specific_prefix("Highest climate impact per capita")
         distance = self.get_values_for_specific_prefix("Distance to threshold")
@@ -772,12 +844,12 @@ class Results:
         output = self.get_values_for_specific_prefix("Total Output")
         regions_under_threshold = self.data_dict["Regions below threshold"]
 
-        columns = ['Damges', 'Utility', 'Lowest income per capita', 'Highest climate impact per capita',
+        columns = ['Damages', 'Utility', 'Disutility', 'Lowest income per capita', 'Highest climate impact per capita',
                    'Distance to threshold', 'Population under threshold', 'Intratemporal utility GINI',
                    'Intratemporal impact GINI', 'Atmospheric temperature', 'Industrial emission', 'Total output',
                    'Regions below threshold']
 
-        self.df_main = pd.DataFrame(list(zip(damages, utility, lowest, highest, distance, population, utility_gini,
+        self.df_main = pd.DataFrame(list(zip(damages, utility, disutility, lowest, highest, distance, population, utility_gini,
                                              impact_gini, temp, emission, output, regions_under_threshold)),
                                     index=years,
                                     columns=columns)
