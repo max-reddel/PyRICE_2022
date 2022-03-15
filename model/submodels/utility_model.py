@@ -109,13 +109,14 @@ class UtilityModel:
 
         # Disutility-related outputs
         self.dpc = np.zeros((self.n_regions, steps)) + 0.000000001
-        self.period_damages = np.zeros((self.n_regions, steps))
+        self.period_disutilities = np.zeros((self.n_regions, steps))
         self.inst_disutility_ww = np.zeros((self.n_regions, steps))
         self.dam_g = np.zeros((self.n_regions, steps))
         self.rho = np.zeros((self.n_regions, steps))
         self.discount_factors_disutility = np.zeros((self.n_regions, steps))
         self.per_disutility_ww = np.zeros((self.n_regions, steps))
         self.global_per_disutility_ww = np.zeros(steps)
+        self.reg_cum_disutil = np.zeros((self.n_regions, steps))
 
     def set_up_utility(self, ini_suf_threshold, climate_impact_relative_to_capita, CPC_post_damage, CPC,
                        region_pop, damages, Y):
@@ -150,6 +151,14 @@ class UtilityModel:
         # cummulative utility with ww
         self.reg_cum_util[:, 0] = self.utility_welfares[:, 0]
         self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
+
+        # NEW STUFF
+
+        # # cummulative disutility with ww
+        # self.reg_cum_disutil[:, 0] = self.disutility_welfares[:, 0]
+        # self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
+
+        # NEW STUFF
 
         # initialise objectives for principles
         # objective for the worst-off region in terms of consumption per capita
@@ -447,13 +456,12 @@ class UtilityModel:
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
-    def get_outcomes(self, temp_atm, E_worldwilde_per_year, region_pop, CPC_pre_damage, CPC_post_damage, CPC,
+    def get_outcomes(self, temp_atm, E_worldwilde_per_year, CPC_pre_damage, CPC_post_damage, CPC,
                      start_year, end_year, tstep, precision=10):
         """
         Prepare outcome variables in a dictionary and return it.
         @param temp_atm: numpy array (31,)
         @param E_worldwilde_per_year: numpy array (31,)
-        @param region_pop: numpy array (12, 31)
         @param CPC_pre_damage: dictionary
         @param CPC_post_damage: dictionary
         @param CPC: numpy array (12, 31)
@@ -487,6 +495,7 @@ class UtilityModel:
             self.intertemporal_utility_gini,
             self.intertemporal_impact_gini,
             self.utility,
+            self.disutility,
             self.regions_under_threshold
         ]
 
@@ -494,6 +503,7 @@ class UtilityModel:
             'Intertemporal utility GINI',
             'Intertemporal impact GINI',
             'Total Aggregated Utility',
+            'Total Aggregated Disutility',
             'Regions below threshold'
         ]
 
@@ -512,7 +522,7 @@ class UtilityModel:
             'Total Output '
         ]
 
-        supplementary_list_timeseries = [CPC, region_pop]
+        supplementary_list_timeseries = [CPC, self.region_pop]
         supplementary_list_quintile = [CPC_pre_damage, CPC_post_damage]
 
         supplementary_list_timeseries_name = ['CPC ', 'Population ']
@@ -772,21 +782,21 @@ class UtilityModel:
 
         # damages per capita
         self.dpc[:, t] = damages[:, t] * 1000 / self.region_pop[:, t]
-        self.dpc[:, t] = np.where(self.dpc[:, t] < self.dpc_lo, self.dpc[:, t], self.dpc_lo)
+        self.dpc[:, t] = np.where(self.dpc[:, t] > self.dpc_lo, self.dpc[:, t], self.dpc_lo)
 
         # unweighted and undiscounted diutilities
         if tau == 1.00:
-            self.period_damages[:, t] = np.log(self.dpc[:, t])
+            self.period_disutilities[:, t] = np.log(self.dpc[:, t])
         else:
-            self.period_damages[:, t] = self.dpc[:, t] ** (1-tau) / (1-tau)  # Maybe also "-1" in here
-        self.period_damages[:, t] = np.where(
-            self.period_damages[:, t] > self.inst_disutil_lo,
-            self.period_damages[:, t],
+            self.period_disutilities[:, t] = self.dpc[:, t] ** (1 - tau) / (1 - tau)
+        self.period_disutilities[:, t] = np.where(
+            self.period_disutilities[:, t] > self.inst_disutil_lo,
+            self.period_disutilities[:, t],
             self.inst_disutil_lo
         )
 
         # disutility with welfare weights
-        self.inst_disutility_ww[:, t] = self.period_damages[:, t] * self.Alpha_data[:, t]
+        self.inst_disutility_ww[:, t] = self.period_disutilities[:, t] * self.Alpha_data[:, t]
 
         # rate of change of damage
         if t == 0:
@@ -801,7 +811,7 @@ class UtilityModel:
         # discount factor for disutility
         self.discount_factors_disutility[:, t] = 1 / (1 + self.rho[:, t] ** (tstep * t))
         self.discount_factors_disutility[:, t] = np.where(
-            self.discount_factors_disutility[:, t] < self.sdr_dam_lo,
+            self.discount_factors_disutility[:, t] > self.sdr_dam_lo,
             self.discount_factors_disutility[:, t],
             self.sdr_dam_lo
         )
@@ -811,7 +821,20 @@ class UtilityModel:
             self.inst_disutility_ww[:, t] * self.region_pop[:, t] * self.discount_factors_disutility[:, t]
 
         # spatially aggregated disutility
-        self.global_per_disutility_ww = self.per_disutility_ww.sum(axis=0)
+        self.global_per_disutility_ww = self.per_disutility_ww.sum(axis=0) / 1000
+
+        # Totally aggregated disutility
+
+        # cummulative disutility with ww
+        self.reg_cum_disutil[:, t] = self.reg_cum_disutil[:, t - 1] + self.per_disutility_ww[:, t]
+
+        # scale utility with weights derived from the excel
+        if t == 30:
+            self.reg_disutil = self.multiplutacive_scaling_weights[:, 0] * self.reg_cum_disutil[:, t] + \
+                            self.additative_scaling_weights[:, 0] - self.additative_scaling_weights[:, 2]
+
+            # calculate worldwide disutility
+            self.disutility = self.reg_disutil.sum()
 
 
 class Results:
@@ -830,9 +853,9 @@ class Results:
         years = tperiod
 
         # Create one big dataframe
-        damages = self.get_values_for_specific_prefix("Damages")
-        utility = self.get_values_for_specific_prefix("Utility")
-        disutility = self.get_values_for_specific_prefix("Disutility")
+        damages = self.get_values_for_specific_prefix("Damages 2")
+        utility = self.get_values_for_specific_prefix("Utility 2")
+        disutility = self.get_values_for_specific_prefix("Disutility 2")
         lowest = self.get_values_for_specific_prefix("Lowest income per capita")
         highest = self.get_values_for_specific_prefix("Highest climate impact per capita")
         distance = self.get_values_for_specific_prefix("Distance to threshold")
@@ -860,6 +883,7 @@ class Results:
         self.aggregated_utility_gini = self.data_dict["Intertemporal utility GINI"]
         self.aggregated_impact_gini = self.data_dict["Intertemporal impact GINI"]
         self.aggregated_utility = self.data_dict["Total Aggregated Utility"]
+        self.aggregated_disutility = self.data_dict["Total Aggregated Disutility"]
 
         # CPC dataframe
         cpc = self.get_values_for_specific_prefix("CPC 2")

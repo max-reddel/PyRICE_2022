@@ -59,8 +59,8 @@ class Check:
         self.dicts = []
 
         counter = 0
-        max_runs = len(self.srs) * len(self.mius) * len(self.irstps) * len(self.spec) * len(self.wf) * \
-                   len(self.f_damage)
+        max_runs = \
+            len(self.srs) * len(self.mius) * len(self.irstps) * len(self.spec) * len(self.wf) * len(self.f_damage)
 
         print_step = int(max_runs / 10)
 
@@ -76,7 +76,7 @@ class Check:
                                     print(f'Run #{counter}/{max_runs}')
 
                                 m = PyRICE(model_specification=spec, damage_function=damage, welfare_function=welfare)
-                                results = m(sr=sr, miu=miu, irstp=irstp)
+                                results = m(sr=sr, miu=miu, irstp_consumption=irstp)
 
                                 self.dicts.append(results)
 

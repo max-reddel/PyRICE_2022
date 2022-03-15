@@ -81,7 +81,7 @@ class PyRICE(object):
                  sr=0.248,
                  miu=2135,
                  irstp_consumption=0.015,
-                 irstp_damage=0.00000000001,
+                 irstp_damage=0.000000001,
                  tau=-0.55,
                  precision=10,
                  **kwargs):
@@ -215,7 +215,7 @@ class PyRICE(object):
 
         # Prepare final outcomes of interest
         self.data_dict = self.utility_model.get_outcomes(
-            self.temp_atm, self.E_worldwilde_per_year, self.region_pop, self.CPC_pre_damage, self.CPC_post_damage,
+            self.temp_atm, self.E_worldwilde_per_year, self.CPC_pre_damage, self.CPC_post_damage,
             self.CPC, self.start_year, self.end_year, self.tstep, precision=precision)
 
         # Save alternative format of data

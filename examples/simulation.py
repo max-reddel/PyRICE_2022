@@ -28,7 +28,7 @@ sr = 0.248
 miu = 2135
 irstp = 0.015
 
-results = model(sr=sr, miu=miu, irstp=irstp)
+results = model(sr=sr, miu=miu, irstp_consumption=irstp)
 
 # View results
 
