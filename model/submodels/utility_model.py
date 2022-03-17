@@ -1,5 +1,5 @@
 """
-This module contains the utility model class and the results class.
+This module contains the utility model class and the results_formatted class.
 """
 
 import numpy as np
@@ -12,7 +12,7 @@ class UtilityModel:
     This sub-model describes the utility part of the PyRICE model.
     """
 
-    def __init__(self, steps, data_sets, regions_list, limits, welfare_function, damage_function):
+    def __init__(self, steps, data_sets, regions_list, limits, welfare_function, damage_function, emdd):
         """
         @param steps: int (31)
         @param data_sets: DataSets
@@ -20,6 +20,7 @@ class UtilityModel:
         @param limits: ModelLimits
         @param welfare_function: WelfareFunction
         @param damage_function: DamageFunction
+        @param emdd: elasticity of marginal disutility of damages
         """
 
         self.welfare_function = welfare_function
@@ -50,12 +51,13 @@ class UtilityModel:
         self.inst_util_ww = np.zeros((self.n_regions, steps))
 
         # alternative WelfareFunction output arrays
-        self.sufficientarian_threshold = np.zeros(steps)
-        self.inst_util_tres = np.zeros(steps)
-        self.inst_util_tres_ww = np.zeros((self.n_regions, steps))
+        self.sufficientarian_consumption_threshold = np.zeros(steps)
+        self.inst_util_thres = np.zeros(steps)
+        self.inst_util_thres_ww = np.zeros((self.n_regions, steps))
 
-        # Elasticity of marginal utility of consumption (1.45)
-        self.elasmu = 1.50
+        # Elasticity of marginal utility of consumption and damages
+        self.emcu = 1.50
+        self.emdd = emdd
 
         # Get scaling data_dict for welfare weights and aggregated utility
         self.Alpha_data = data_sets.RICE_DATA.iloc[357:369, 1:60].to_numpy()
@@ -85,24 +87,33 @@ class UtilityModel:
         self.worst_off_climate_impact_index = np.zeros(steps)
         # self.climate_impact_relative_to_capita = {}
 
-        # Sufficientarian outputs (consumption)
+        # Sufficientarian outputs
         self.average_world_CPC = np.zeros(steps)
         self.average_growth_CPC = np.zeros(steps)
-        self.sufficientarian_threshold = np.zeros(steps)
-        self.inst_util_tres = np.zeros(steps)
-        self.inst_util_tres_ww = np.zeros((self.n_regions, steps))
+
+        # Sufficientarian outputs (consumption)
+        self.sufficientarian_consumption_threshold = np.zeros(steps)
+        self.inst_util_thres = np.zeros(steps)
+        self.inst_util_thres_ww = np.zeros((self.n_regions, steps))
         self.quintile_inst_util = {}
         self.quintile_inst_util_ww = {}
-        self.population_under_threshold = np.zeros(steps)
+        self.population_under_consumption_threshold = np.zeros(steps)
         self.utility_distance_threshold = np.zeros((self.n_regions, steps))
         self.max_utility_distance_threshold = np.zeros(steps)
-        self.regions_under_threshold = []
-
-        self.largest_distance_under_threshold = np.zeros(steps)
+        self.regions_under_consumption_threshold = []
+        self.largest_distance_under_consumption_threshold = np.zeros(steps)
         self.growth_frontier = np.zeros(steps)
 
-        # TODO: Sufficientarian outputs (damages)
-        #
+        # Sufficientarian outputs (damages)
+        self.sufficientarian_damage_threshold = np.zeros(steps)
+        self.inst_disutil_thres = np.zeros(steps)
+        self.inst_disutil_thres_ww = np.zeros((self.n_regions, steps))
+        self.quintile_inst_disutil = {}
+        self.quintile_inst_disutil_ww = {}
+        self.population_under_damage_threshold = np.zeros(steps)
+        self.disutility_distance_threshold = np.zeros((self.n_regions, steps))
+        self.max_disutility_distance_threshold = np.zeros(steps)
+        self.regions_under_damage_threshold = []
 
         # Egalitarian outputs
         self.CPC_intra_gini = np.zeros(steps)
@@ -122,10 +133,12 @@ class UtilityModel:
         self.global_per_disutility_ww = np.zeros(steps)
         self.reg_cum_disutil = np.zeros((self.n_regions, steps))
 
-    def set_up_utility(self, ini_suf_threshold, climate_impact_relative_to_capita, CPC_post_damage, CPC,
-                       region_pop, damages, Y):
+    def set_up_utility(self, ini_suf_threshold, ini_suf_threshold_dam, climate_impact_relative_to_capita,
+                       CPC_post_damage, CPC, region_pop, damages, Y):
         """
+        Sets up most variables with their initial values.
         @param ini_suf_threshold: float
+        @param ini_suf_threshold_dam: float
         @param climate_impact_relative_to_capita: dictionary
         @param CPC_post_damage: dictionary
         @param CPC: numpy array (12, 31)
@@ -138,7 +151,7 @@ class UtilityModel:
         self.discount_factors_utility[:, 0] = 1
 
         # Instantaneous utility function equation
-        self.period_utilities[:, 0] = ((1 / (1 - self.elasmu)) * (CPC[:, 0]) ** (1 - self.elasmu) + 1)
+        self.period_utilities[:, 0] = ((1 / (1 - self.emcu)) * (CPC[:, 0]) ** (1 - self.emcu) + 1)
 
         # CEMU period utility
         self.utility_welfares[:, 0] = self.period_utilities[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:, 0]
@@ -174,17 +187,18 @@ class UtilityModel:
         self.average_growth_CPC[0] = 0.250  # average growth over 10 years World Bank Data
 
         # calculate instantaneous welfare equivalent of minimum capita per head
-        self.sufficientarian_threshold[0] = ini_suf_threshold  # specified in consumption per capita thousand/year
+        self.sufficientarian_consumption_threshold[0] = ini_suf_threshold  # specified in consumption per capita thousand/year
+        self.sufficientarian_damage_threshold[0] = ini_suf_threshold_dam
 
-        self.inst_util_tres[0] = (
-                (1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[0]) ** (1 - self.elasmu) + 1)
+        self.inst_util_thres[0] = (
+                (1 / (1 - self.emcu)) * (self.sufficientarian_consumption_threshold[0]) ** (1 - self.emcu) + 1)
 
         # calculate instantaneous welfare equivalent of minimum capita per head with PPP
-        self.inst_util_tres_ww[:, 0] = self.inst_util_tres[0] * self.Alpha_data[:, 0]
+        self.inst_util_thres_ww[:, 0] = self.inst_util_thres[0] * self.Alpha_data[:, 0]
 
         # calculate utility equivalent for every income quintile and scale with welfare weights for comparison
         self.quintile_inst_util[2005] = (
-                (1 / (1 - self.elasmu)) * (CPC_post_damage[2005]) ** (1 - self.elasmu) + 1)
+                (1 / (1 - self.emcu)) * (CPC_post_damage[2005]) ** (1 - self.emcu) + 1)
         self.quintile_inst_util_ww[2005] = self.quintile_inst_util[2005] * self.Alpha_data[:, 0]
 
         utility_per_income_share = self.quintile_inst_util_ww[2005]
@@ -193,17 +207,48 @@ class UtilityModel:
 
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
-                if utility_per_income_share[quintile, region] < self.inst_util_tres_ww[region, 0]:
-                    self.population_under_threshold[0] = \
-                        self.population_under_threshold[0] + region_pop[region, 0] * 1 / 5
+                if utility_per_income_share[quintile, region] < self.inst_util_thres_ww[region, 0]:
+                    self.population_under_consumption_threshold[0] = \
+                        self.population_under_consumption_threshold[0] + region_pop[region, 0] * 1 / 5
                     self.utility_distance_threshold[region, 0] = \
-                        self.inst_util_tres_ww[region, 0] - utility_per_income_share[quintile, region]
+                        self.inst_util_thres_ww[region, 0] - utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_threshold.append(list_timestep)
+        self.regions_under_consumption_threshold.append(list_timestep)
 
         self.max_utility_distance_threshold[0] = self.utility_distance_threshold[:, 0].max()
+
+        # Set up sufficentarian objectives for damages (first entry)
+
+        self.inst_disutil_thres[0] = (
+                (1 / (1 - self.emdd)) * (self.sufficientarian_damage_threshold[0]) ** (1 - self.emdd) + 1)
+
+        # calculate instantaneous welfare equivalent of minimum capita per head with PPP
+        self.inst_disutil_thres_ww[:, 0] = self.inst_disutil_thres[0] * self.Alpha_data[:, 0]
+
+        # calculate utility equivalent for every income quintile and scale with welfare weights for comparison
+        self.quintile_inst_disutil[2005] = (
+                (1 / (1 - self.emdd)) * (CPC_post_damage[2005]) ** (1 - self.emdd) + 1)
+        self.quintile_inst_disutil_ww[2005] = self.quintile_inst_disutil[2005] * self.Alpha_data[:, 0]
+
+        disutility_per_income_share = self.quintile_inst_disutil_ww[2005]
+
+        list_timestep = []
+
+        for quintile in range(0, 5):
+            for region in range(0, self.n_regions):
+                if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, 0]:
+                    self.population_under_damage_threshold[0] = \
+                        self.population_under_damage_threshold[0] + region_pop[region, 0] * 1 / 5
+                    self.disutility_distance_threshold[region, 0] = \
+                        self.inst_disutil_thres_ww[region, 0] - disutility_per_income_share[quintile, region]
+
+                    list_timestep.append(self.regions_list[region])
+
+        self.regions_under_damage_threshold.append(list_timestep)
+
+        self.max_disutility_distance_threshold[0] = self.disutility_distance_threshold[:, 0].max()
 
         # calculate gini as measure of current inequality in consumption (intragenerational)
         input_gini = CPC[:, 0]
@@ -233,7 +278,7 @@ class UtilityModel:
 
     def run(self, t, year, irstp_consumption, irstp_damage, tstep, growth_factor_prio, growth_factor_suf,
             sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting,
-            CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage, tau):
+            CPC, region_pop, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage, emdd):
         """
         @param t: int
         @param year: int
@@ -258,7 +303,7 @@ class UtilityModel:
         """
 
         self.region_pop = region_pop
-        self.compute_welfare_disutility(damages, tau, tstep, t, irstp_damage)
+        self.compute_welfare_disutility(damages, emdd, tstep, t, irstp_damage)
 
         if self.welfare_function == WelfareFunction.UTILITARIAN:
             self.run_utilitarian(t, year, irstp_consumption, tstep, CPC, damages, Y, CPC_lo,
@@ -338,11 +383,11 @@ class UtilityModel:
         # only execute discounting when the lowest income groups experience consumption level growth
         if self.prioritarian_discounting == 1:
             # utility worst-off
-            self.inst_util_worst_off[:, t] = ((1 / (1 - self.elasmu)) * (CPC_post_damage[year][0]) **
-                                              (1 - self.elasmu) + 1)
+            self.inst_util_worst_off[:, t] = ((1 / (1 - self.emcu)) * (CPC_post_damage[year][0]) **
+                                              (1 - self.emcu) + 1)
 
-            self.inst_util_worst_off_condition[:, t] = ((1 / (1 - self.elasmu)) * (
-                    CPC_post_damage[year - 10][0] * self.growth_factor) ** (1 - self.elasmu) + 1)
+            self.inst_util_worst_off_condition[:, t] = ((1 / (1 - self.emcu)) * (
+                    CPC_post_damage[year - 10][0] * self.growth_factor) ** (1 - self.emcu) + 1)
 
             # apply discounting when all regions experience enough growth
 
@@ -439,7 +484,8 @@ class UtilityModel:
         if self.egalitarian_discounting == 1:
             self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t]
         else:
-            self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
+            self.per_util_ww[:, t] = \
+                self.inst_util_ww[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
@@ -474,7 +520,9 @@ class UtilityModel:
             self.worst_off_income_class,
             self.worst_off_climate_impact,
             self.max_utility_distance_threshold,
-            self.population_under_threshold,
+            self.population_under_consumption_threshold,
+            self.max_disutility_distance_threshold,
+            self.population_under_damage_threshold,
             self.CPC_intra_gini,
             self.climate_impact_per_dollar_gini,
             temp_atm,
@@ -487,7 +535,7 @@ class UtilityModel:
             self.intertemporal_impact_gini,
             self.utility,
             self.disutility,
-            self.regions_under_threshold
+            self.regions_under_consumption_threshold
         ]
 
         objectives_list_name = [
@@ -506,6 +554,8 @@ class UtilityModel:
             'Highest climate impact per capita ',
             'Distance to threshold ',
             'Population under threshold ',
+            'Distance to damage threshold ',
+            'Population under damage threshold ',
             'Intratemporal utility GINI ',
             'Intratemporal impact GINI ',
             'Atmospheric Temperature ',
@@ -601,9 +651,9 @@ class UtilityModel:
     def get_elasmu(self):
         """
         @return:
-            self.elasmu: float
+            self.emcu: float
         """
-        return self.elasmu
+        return self.emcu
 
     # Helper methods for calculating utilities for social welfare functions
 
@@ -620,7 +670,7 @@ class UtilityModel:
 
         # period utilities = utilities for eac region at each time
         # instantaneous welfare without welfare weights
-        self.period_utilities[:, t] = (1 / (1 - self.elasmu)) * (CPC[:, t]) ** (1 - self.elasmu) + 1
+        self.period_utilities[:, t] = (1 / (1 - self.emcu)) * (CPC[:, t]) ** (1 - self.emcu) + 1
         # Should it be -1 in the end because that's what the CRRA equation says
 
         # welfare for utility for each region and each time
@@ -633,7 +683,8 @@ class UtilityModel:
         self.inst_util_ww[:, t] = self.period_utilities[:, t] * self.Alpha_data[:, t]
 
     def calculate_alternative_principles_objectives(
-            self, t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y):
+            self, t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
+    ):
         """
         @param t: int
         @param year: int
@@ -722,38 +773,39 @@ class UtilityModel:
             (self.average_world_CPC[t] - self.average_world_CPC[t - 1]) / (self.average_world_CPC[t - 1])
 
         # sufficientarian threshold adjusted by the growth of the average world economy
-        self.sufficientarian_threshold[t] = \
-            self.sufficientarian_threshold[t - 1] * (1 + self.average_growth_CPC[t])
+        self.sufficientarian_consumption_threshold[t] = \
+            self.sufficientarian_consumption_threshold[t - 1] * (1 + self.average_growth_CPC[t])
 
         # calculate instantaneous welfare equivalent of minimum capita per head
-        self.inst_util_tres[t] = \
-            (1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[t]) ** (1 - self.elasmu) + 1
+        self.inst_util_thres[t] = \
+            (1 / (1 - self.emcu)) * (self.sufficientarian_consumption_threshold[t]) ** (1 - self.emcu) + 1
 
         # calculate instantaneous welfare equivalent of threshold
-        self.inst_util_tres_ww[:, t] = self.inst_util_tres[t] * self.Alpha_data[:, t]
+        self.inst_util_thres_ww[:, t] = self.inst_util_thres[t] * self.Alpha_data[:, t]
 
         # calculate utility equivalent for every income quintile and scale with welfare weights for comparison
-        self.quintile_inst_util[year] = ((1 / (1 - self.elasmu)) * (CPC_post_damage[year]) ** (1 - self.elasmu) + 1)
+        self.quintile_inst_util[year] = ((1 / (1 - self.emcu)) * (CPC_post_damage[year]) ** (1 - self.emcu) + 1)
         self.quintile_inst_util_ww[year] = self.quintile_inst_util[year] * self.Alpha_data[:, t]
 
         utility_per_income_share = self.quintile_inst_util_ww[year]
-
         list_timestep = []
 
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
-                if utility_per_income_share[quintile, region] < self.inst_util_tres_ww[region, t]:
-                    self.population_under_threshold[t] = \
-                        self.population_under_threshold[t] + self.region_pop[region, t] * 1 / 5
+                if utility_per_income_share[quintile, region] < self.inst_util_thres_ww[region, t]:
+                    self.population_under_consumption_threshold[t] = \
+                        self.population_under_consumption_threshold[t] + self.region_pop[region, t] * 1 / 5
                     self.utility_distance_threshold[region, t] = \
-                        self.inst_util_tres_ww[region, t] - utility_per_income_share[quintile, region]
+                        self.inst_util_thres_ww[region, t] - utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_threshold.append(list_timestep)
+        self.regions_under_consumption_threshold.append(list_timestep)
 
         # minimize max distance to threshold
         self.max_utility_distance_threshold[t] = self.utility_distance_threshold[:, t].max()
+
+        self.compute_sufficentarian_damage_objectives(t, year, CPC_post_damage)
 
         # prioritarian objectives
         self.worst_off_income_class[t] = CPC_post_damage[year][0].min()
@@ -764,10 +816,10 @@ class UtilityModel:
         self.global_ouput[t] = Y[:, t].sum(axis=0)
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
-    def compute_welfare_disutility(self, damages, tau, tstep, t, irstp_damage):
+    def compute_welfare_disutility(self, damages, emdd, tstep, t, irstp_damage):
         """
         Takes damages to compute damages per capita, disutility of damages, and welfare of disutility.
-        @param tau: float: risk aversion for damages (an uncertainty factor)
+        @param emdd: float: risk aversion for damages (an uncertainty factor)
         @param damages: numpy array (12, 31)
         """
 
@@ -776,10 +828,10 @@ class UtilityModel:
         self.dpc[:, t] = np.where(self.dpc[:, t] > self.dpc_lo, self.dpc[:, t], self.dpc_lo)
 
         # unweighted and undiscounted diutilities
-        if tau == 1.00:
+        if emdd == 1.00:
             self.period_disutilities[:, t] = np.log(self.dpc[:, t])
         else:
-            self.period_disutilities[:, t] = self.dpc[:, t] ** (1 - tau) / (1 - tau)
+            self.period_disutilities[:, t] = self.dpc[:, t] ** (1 - emdd) / (1 - emdd)
         self.period_disutilities[:, t] = np.where(
             self.period_disutilities[:, t] > self.inst_disutil_lo,
             self.period_disutilities[:, t],
@@ -797,7 +849,7 @@ class UtilityModel:
         self.dam_g[:, t] = (self.dpc[:, t] - previous_dpc) / previous_dpc
 
         # endogenous rate social rate of damage
-        self.rho[:, t] = irstp_damage + tau * self.dam_g[:, t]
+        self.rho[:, t] = irstp_damage + emdd * self.dam_g[:, t]
 
         # discount factor for disutility
         self.discount_factors_disutility[:, t] = 1 / (1 + self.rho[:, t] ** (tstep * t))
@@ -827,6 +879,44 @@ class UtilityModel:
             # calculate worldwide disutility
             self.disutility = self.reg_disutil.sum()
 
+    def compute_sufficentarian_damage_objectives(self, t, year, CPC_post_damage):
+        """
+        Computes the sufficientarian objectives that are based on damages and disutilities.
+        """
+
+        # sufficientarian threshold adjusted by the growth of the average world economy
+        self.sufficientarian_damage_threshold[t] = \
+            self.sufficientarian_damage_threshold[t - 1] * (1 + self.average_growth_CPC[t])
+
+        # calculate instantaneous disutility welfare equivalent of minimum capita per head
+        self.inst_disutil_thres[t] = \
+            (1 / (1 - self.emdd)) * (self.sufficientarian_damage_threshold[t]) ** (1 - self.emdd) + 1
+
+        # calculate instantaneous welfare equivalent of threshold
+        self.inst_disutil_thres_ww[:, t] = self.inst_disutil_thres[t] * self.Alpha_data[:, t]
+
+        # calculate disutility equivalent for every income quintile and scale with welfare weights for comparison
+        self.quintile_inst_disutil[year] = ((1 / (1 - self.emdd)) * (CPC_post_damage[year]) ** (1 - self.emdd) + 1)
+        self.quintile_inst_disutil_ww[year] = self.quintile_inst_disutil[year] * self.Alpha_data[:, t]
+
+        disutility_per_income_share = self.quintile_inst_disutil_ww[year]
+        list_timestep = []
+
+        for quintile in range(0, 5):
+            for region in range(0, self.n_regions):
+                if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, t]:
+                    self.population_under_damage_threshold[t] = \
+                        self.population_under_damage_threshold[t] + self.region_pop[region, t] * 1 / 5
+                    self.disutility_distance_threshold[region, t] = \
+                        self.inst_disutil_thres_ww[region, t] - disutility_per_income_share[quintile, region]
+
+                    list_timestep.append(self.regions_list[region])
+
+        self.regions_under_damage_threshold.append(list_timestep)
+
+        # minimize max distance to threshold
+        self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
+
 
 class Results:
     """
@@ -849,8 +939,10 @@ class Results:
         disutility = self.get_values_for_specific_prefix("Disutility 2")
         lowest = self.get_values_for_specific_prefix("Lowest income per capita")
         highest = self.get_values_for_specific_prefix("Highest climate impact per capita")
-        distance = self.get_values_for_specific_prefix("Distance to threshold")
-        population = self.get_values_for_specific_prefix("Population under threshold")
+        distance_consumption = self.get_values_for_specific_prefix("Distance to threshold")
+        population_consumption = self.get_values_for_specific_prefix("Population under threshold")
+        distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
+        population_damage = self.get_values_for_specific_prefix("Population under damage threshold")
         utility_gini = self.get_values_for_specific_prefix("Intratemporal utility GINI")
         impact_gini = self.get_values_for_specific_prefix("Intratemporal impact GINI")
         temp = self.get_values_for_specific_prefix("Atmospheric Temperature")
@@ -859,13 +951,15 @@ class Results:
         regions_under_threshold = self.data_dict["Regions below threshold"]
 
         columns = ['Damages', 'Utility', 'Disutility', 'Lowest income per capita', 'Highest climate impact per capita',
-                   'Distance to threshold', 'Population under threshold', 'Intratemporal utility GINI',
+                   'Distance to consumption threshold', 'Population under consumption threshold',
+                   'Distance to damage threshold', 'Population under damage threshold', 'Intratemporal utility GINI',
                    'Intratemporal impact GINI', 'Atmospheric temperature', 'Industrial emission', 'Total output',
                    'Regions below threshold']
 
         self.df_main = pd.DataFrame(
-            list(zip(damages, utility, disutility, lowest, highest, distance, population,
-                     utility_gini, impact_gini, temp, emission, output, regions_under_threshold)),
+            list(zip(damages, utility, disutility, lowest, highest, distance_consumption, population_consumption,
+                     distance_damage, population_damage, utility_gini, impact_gini, temp, emission, output,
+                     regions_under_threshold)),
             index=years,
             columns=columns
         )
@@ -882,9 +976,9 @@ class Results:
         self.df_cpc = pd.DataFrame(cpc, index=years, columns=columns)
 
         # Population dataframe
-        population = self.get_values_for_specific_prefix("Population 2")
+        population_consumption = self.get_values_for_specific_prefix("Population 2")
         columns = regions_list
-        self.df_population = pd.DataFrame(population, index=years, columns=columns)
+        self.df_population = pd.DataFrame(population_consumption, index=years, columns=columns)
 
         # CPC pre damage dataframe
         cpc_pre = self.get_values_for_specific_prefix("CPC pre")
@@ -900,7 +994,7 @@ class Results:
         columns = regions_list
         self.df_cpc_post_damage = pd.DataFrame(list(zip(*cpc_post)), index=years, columns=columns)
 
-    def get_values_for_specific_prefix(self, prefix="Damages"):
+    def get_values_for_specific_prefix(self, prefix="Damages 2"):
         """
         Find the values for a specific key in self.data_dict where the key string starts with the given prefix.
         @param prefix: string

@@ -21,7 +21,7 @@ def load_policies_of_one_problem_formulation(file='NORDHAUS_SUFFICIENTARIAN_1000
     """
 
     directory = os.path.dirname(os.getcwd())
-    folder = '/results/'
+    folder = '/results_formatted/'
 
     df_policies = pd.read_csv(directory + folder + file).iloc[:, 1:4]
 
@@ -102,7 +102,7 @@ def prepare_variables(policies):
         irstp = policy['irstp_consumption']
         model(sr=sr, miu=miu, irstp=irstp)
 
-        # Obtain relevant model results
+        # Obtain relevant model results_formatted
         output_Y = model.econ_model.Y
         output_E = model.econ_model.E
         output_U = model.utility_model.per_util_ww

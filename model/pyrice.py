@@ -64,6 +64,7 @@ class PyRICE(object):
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
                  ini_suf_threshold=0.711,
+                 ini_suf_threshold_dam=1.0,  # TODO: needs to change
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
                  t2xco2_dist=0,
@@ -82,7 +83,7 @@ class PyRICE(object):
                  miu=2135,
                  irstp_consumption=0.015,
                  irstp_damage=0.000000001,
-                 tau=-0.55,
+                 emdd=-0.55,
                  precision=10,
                  **kwargs):
         """
@@ -91,6 +92,7 @@ class PyRICE(object):
         @param sufficientarian_discounting: int: 0 = inheritance discounting or, 1 = sustainable growth discounting
         @param growth_factor_suf: int: growth factor when sufficientarian
         @param ini_suf_threshold: float: initial sufficientarian threshold (based on the poverty line of $1.95 p/d)
+        @param ini_suf_threshold_dam: float: initial sufficientarian threshold for damages/disutility
         @param egalitarian_discounting: int: discounting when egalitarian (0 = no discouting  or 1 = normal discounting)
         @param t2xco2_index: int: equilibrium temperature impact
         @param t2xco2_dist: int: total factor productivity growth rate
@@ -109,7 +111,7 @@ class PyRICE(object):
         @param miu: int: global emissions target in which emissions are near zero
         @param irstp_consumption: float: initial rate of social time preference of consumption
         @param irstp_damage: float: initial rate of social time preference of damages
-        @param tau: float: coefficient of relative risk aversion for climate damage
+        @param emdd: float: coefficient of relative risk aversion for climate damage
         @param precision: int: precision of outcomes, {10, 20, 30}
         @param kwargs:
         @return:
@@ -163,7 +165,7 @@ class PyRICE(object):
 
         # Instantiate the utility sub-model
         self.utility_model = UtilityModel(
-            self.steps, self.data_sets, self.regions_list, self.limits, self.welfare_function, self.damage_function
+            self.steps, self.data_sets, self.regions_list, self.limits, self.welfare_function, self.damage_function, emdd
         )
 
         # Set up economic parameters
@@ -175,8 +177,10 @@ class PyRICE(object):
             = self.econ_model.init_net_economy(self.miu, self.S, self.elasticity_of_damages)
 
         # Set up Utility
-        self.utility_model.set_up_utility(ini_suf_threshold, self.climate_impact_relative_to_capita,
-                                 self.CPC_post_damage, self.CPC, self.region_pop, self.damages, self.Y)
+        self.utility_model.set_up_utility(
+            ini_suf_threshold, ini_suf_threshold_dam,  self.climate_impact_relative_to_capita, self.CPC_post_damage,
+            self.CPC, self.region_pop, self.damages, self.Y
+        )
 
         # Run model
         for t in range(1, self.steps):
@@ -201,7 +205,7 @@ class PyRICE(object):
                 self.econ_model.run_net_economy(
                     t, self.year, self.damage_function,  self.damage_parameters, self.temp_atm,
                     self.climate_model.SLRDAMAGES, self.dam_frac_global, self.miu, self.elasticity_of_damages,  self.S,
-                    self.model_spec, self.irstp_consumption, self.sr, self.utility_model.elasmu)
+                    self.model_spec, self.irstp_consumption, self.sr, self.utility_model.emcu)
 
             # Compute Utility
             climate_impact_relative_to_capita = self.econ_model.get_climate_impact_relative_to_capita()
@@ -211,7 +215,7 @@ class PyRICE(object):
                 t, self.year, self.irstp_consumption, self.irstp_damage, self.tstep, growth_factor_prio, growth_factor_suf,
                 sufficientarian_discounting, egalitarian_discounting, prioritarian_discounting,
                 self.CPC, self.region_pop, self.damages, self.Y, self.CPC_lo, climate_impact_relative_to_capita,
-                CPC_post_damage, tau)
+                CPC_post_damage, emdd)
 
         # Prepare final outcomes of interest
         self.data_dict = self.utility_model.get_outcomes(

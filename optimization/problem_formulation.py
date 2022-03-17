@@ -16,13 +16,13 @@ from ema_workbench import (Model, RealParameter, IntegerParameter, Multiprocessi
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def define_path_name(damage_function, welfare_function, nfe, prefix='results'):
+def define_path_name(damage_function, welfare_function, nfe, prefix='results_formatted'):
     """
-    Define path and file name such that it can be used to save results and/or covergence data.
+    Define path and file name such that it can be used to save results_formatted and/or covergence data.
     @param damage_function: DamageFunction
     @param welfare_function: WelfareFunction
     @param nfe: integer
-    @param prefix: string: {'results', 'convergence'}
+    @param prefix: string: {'results_formatted', 'convergence'}
     @return:
         path: string (path + file name that used for saving)
     """
@@ -47,7 +47,7 @@ def get_directory(damage_function, welfare_function):
     @return:
         path: string
     """
-    folder = 'results'
+    folder = 'results_formatted'
     directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     path = os.path.join(directory, folder, damage_function.name,
                         welfare_function.name)
@@ -72,7 +72,7 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     @param damage_function: DamageFunction
     @param welfare_function: WelfareFunction
     @param nfe: integer
-    @param saving_results: Boolean: whether to save results or not
+    @param saving_results: Boolean: whether to save results_formatted or not
     @param with_convergence: Boolean: whether to save convergence data or not
     """
 
@@ -126,8 +126,8 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
                                                       constraints=constraints)
 
             if saving_results:
-                # Save results
-                path = define_path_name(damage_function, welfare_function, nfe, prefix='results')
+                # Save results_formatted
+                path = define_path_name(damage_function, welfare_function, nfe, prefix='results_formatted')
                 results.to_csv(path)
                 # Save convergence
                 path = define_path_name(damage_function, welfare_function, nfe, prefix='convergence')
@@ -142,7 +142,7 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
                                          constraints=constraints)
 
             if saving_results:
-                path = define_path_name(damage_function, welfare_function, nfe, prefix='results')
+                path = define_path_name(damage_function, welfare_function, nfe, prefix='results_formatted')
                 results.to_csv(path)
 
 

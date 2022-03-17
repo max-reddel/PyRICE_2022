@@ -1,5 +1,5 @@
 """
-This module contains the Check class check results from previous models against current model results.
+This module contains the Check class check results_formatted from previous models against current model results_formatted.
 """
 
 import os
@@ -11,7 +11,7 @@ from model.enumerations import *
 
 class Check:
     """
-    This class is used to check the current model results against the original model results.
+    This class is used to check the current model results_formatted against the original model results_formatted.
     """
 
     def __init__(self, quick=False, save=False):
@@ -53,7 +53,7 @@ class Check:
 
         """
         Create and run several models.
-        Return a list of results dictionaries.
+        Return a list of results_formatted dictionaries.
         """
 
         self.dicts = []
@@ -118,8 +118,8 @@ class Check:
 
     def __call__(self):
         """
-        Checks whether the current model returns the same results as the original model by comparing current results
-        with the saved results from the folder testdata.
+        Checks whether the current model returns the same results_formatted as the original model by comparing current results_formatted
+        with the saved results_formatted from the folder testdata.
         """
 
         modifier = '_quick' if self.quick else '_slow'
@@ -131,7 +131,7 @@ class Check:
 
         is_identical = original_data == new_data
 
-        print(f'\nOriginal and new results are identical: {is_identical}')
+        print(f'\nOriginal and new results_formatted are identical: {is_identical}')
 
         modifier_ = "GOOD JOB! :D" if is_identical else "OH, NOOO! :("
 

@@ -30,13 +30,13 @@ irstp = 0.015
 
 results = model(sr=sr, miu=miu, irstp_consumption=irstp)
 
-# View results
+# View results_formatted
 
-# `results` is a dictionary containing all outcomes (including time series data)
+# `results_formatted` is a dictionary containing all outcomes (including time series data)
 # This format is used to make it easier to run further optimizations.
-# But there is a better way to view results from a simple simulation
+# But there is a better way to view results_formatted from a simple simulation
 
-# Better formated results
+# Better formated results_formatted
 better_results = model.get_better_formatted_results()
 
 # Highly Aggregated variables

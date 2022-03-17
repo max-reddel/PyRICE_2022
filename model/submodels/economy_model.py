@@ -469,7 +469,7 @@ class EconomyModel:
         return self.E, self.Y_gross
 
     def run_net_economy(self, t, year, damage_function, damage_parameters, temp_atm, SLRDAMAGES,
-                        dam_frac_global, miu, elasticity_of_damages, S, model_spec, irstp_consumption, sr, elasmu):
+                        dam_frac_global, miu, elasticity_of_damages, S, model_spec, irstp_consumption, sr, emcu):
         """
         @param t: int
         @param year: int
@@ -484,7 +484,7 @@ class EconomyModel:
         @param model_spec: ModelSpecification
         @param irstp_consumption: float
         @param sr: float
-        @param elasmu: float
+        @param emcu: float: elasticity of marginal utility of consumption
         @return:
             self.CPC: numpy rray (12, 31)
             self.region_pop: numpy array (12, 31)
@@ -556,7 +556,7 @@ class EconomyModel:
         if not model_spec == ModelSpec.Validation_1:
             # Optimal long-run savings rate used for transversality --> SEE THESIS SHAJEE
             optlrsav = ((self.dk + 0.004) / (
-                    self.dk + 0.004 * elasmu + irstp_consumption) * self.gama)
+                    self.dk + 0.004 * emcu + irstp_consumption) * self.gama)
 
             if model_spec == ModelSpec.Validation_2:
                 if t > 12:
