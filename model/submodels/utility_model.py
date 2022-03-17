@@ -85,7 +85,7 @@ class UtilityModel:
         self.worst_off_climate_impact_index = np.zeros(steps)
         # self.climate_impact_relative_to_capita = {}
 
-        # Sufficientarian outputs
+        # Sufficientarian outputs (consumption)
         self.average_world_CPC = np.zeros(steps)
         self.average_growth_CPC = np.zeros(steps)
         self.sufficientarian_threshold = np.zeros(steps)
@@ -96,9 +96,13 @@ class UtilityModel:
         self.population_under_threshold = np.zeros(steps)
         self.utility_distance_threshold = np.zeros((self.n_regions, steps))
         self.max_utility_distance_threshold = np.zeros(steps)
-        self.regions_under_threshold = [None] * steps
+        self.regions_under_threshold = []
+
         self.largest_distance_under_threshold = np.zeros(steps)
         self.growth_frontier = np.zeros(steps)
+
+        # TODO: Sufficientarian outputs (damages)
+        #
 
         # Egalitarian outputs
         self.CPC_intra_gini = np.zeros(steps)
@@ -152,14 +156,6 @@ class UtilityModel:
         self.reg_cum_util[:, 0] = self.utility_welfares[:, 0]
         self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
 
-        # NEW STUFF
-
-        # # cummulative disutility with ww
-        # self.reg_cum_disutil[:, 0] = self.disutility_welfares[:, 0]
-        # self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
-
-        # NEW STUFF
-
         # initialise objectives for principles
         # objective for the worst-off region in terms of consumption per capita
         self.worst_off_income_class[0] = CPC_post_damage[2005][0].min()
@@ -198,14 +194,15 @@ class UtilityModel:
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
                 if utility_per_income_share[quintile, region] < self.inst_util_tres_ww[region, 0]:
-                    self.population_under_threshold[0] = self.population_under_threshold[0] + \
-                                                         region_pop[region, 0] * 1 / 5
-                    self.utility_distance_threshold[region, 0] = self.inst_util_tres_ww[region, 0] - \
-                                                                 utility_per_income_share[quintile, region]
+                    self.population_under_threshold[0] = \
+                        self.population_under_threshold[0] + region_pop[region, 0] * 1 / 5
+                    self.utility_distance_threshold[region, 0] = \
+                        self.inst_util_tres_ww[region, 0] - utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_threshold[0] = list_timestep
+        self.regions_under_threshold.append(list_timestep)
+
         self.max_utility_distance_threshold[0] = self.utility_distance_threshold[:, 0].max()
 
         # calculate gini as measure of current inequality in consumption (intragenerational)
@@ -261,27 +258,21 @@ class UtilityModel:
         """
 
         self.region_pop = region_pop
-
         self.compute_welfare_disutility(damages, tau, tstep, t, irstp_damage)
 
         if self.welfare_function == WelfareFunction.UTILITARIAN:
-
             self.run_utilitarian(t, year, irstp_consumption, tstep, CPC, damages, Y, CPC_lo,
                                  climate_impact_relative_to_capita, CPC_post_damage)
 
         elif self.welfare_function == WelfareFunction.PRIORITARIAN:
-
             self.run_prioritarian(t, year, irstp_consumption, tstep, growth_factor_prio, prioritarian_discounting, CPC,
                                   damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage)
 
         elif self.welfare_function == WelfareFunction.SUFFICIENTARIAN:
-
             self.run_sufficientarian(t, year, irstp_consumption, tstep, growth_factor_suf, sufficientarian_discounting,
-                                     CPC, damages, Y, CPC_lo, climate_impact_relative_to_capita,
-                                     CPC_post_damage)
+                                     CPC, damages, Y, CPC_lo, climate_impact_relative_to_capita, CPC_post_damage)
 
         elif self.welfare_function == WelfareFunction.EGALITARIAN:
-
             self.run_egalitarian(t, year, irstp_consumption, tstep, egalitarian_discounting, CPC, damages, Y, CPC_lo,
                                  climate_impact_relative_to_capita, CPC_post_damage)
 
@@ -700,6 +691,7 @@ class UtilityModel:
 
         # ###### GINI calculations INTRATEMPORAL #########
         # calculate gini as measure of current inequality in welfare (intragenerational)
+
         # CPC is floored on minimum value
         input_gini_intra = CPC[:, t]
 
@@ -720,22 +712,22 @@ class UtilityModel:
         for i, xi in enumerate(input_gini_intra_impact[:-1], 1):
             diffsum += np.sum(np.abs(xi - input_gini_intra_impact[i:]))
 
-        self.climate_impact_per_dollar_gini[t] = diffsum / (
-                (len(input_gini_intra_impact) ** 2) * np.mean(input_gini_intra_impact))
+        self.climate_impact_per_dollar_gini[t] = \
+            diffsum / ((len(input_gini_intra_impact) ** 2) * np.mean(input_gini_intra_impact))
 
         # sufficientarian objectives
         # growth by the world
         self.average_world_CPC[t] = CPC[:, t].sum() / self.n_regions
-        self.average_growth_CPC[t] = (self.average_world_CPC[t] - self.average_world_CPC[t - 1]) / (
-            self.average_world_CPC[t - 1])
+        self.average_growth_CPC[t] = \
+            (self.average_world_CPC[t] - self.average_world_CPC[t - 1]) / (self.average_world_CPC[t - 1])
 
         # sufficientarian threshold adjusted by the growth of the average world economy
-        self.sufficientarian_threshold[t] = self.sufficientarian_threshold[t - 1] * (
-                1 + self.average_growth_CPC[t])
+        self.sufficientarian_threshold[t] = \
+            self.sufficientarian_threshold[t - 1] * (1 + self.average_growth_CPC[t])
 
         # calculate instantaneous welfare equivalent of minimum capita per head
-        self.inst_util_tres[t] = (
-                (1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[t]) ** (1 - self.elasmu) + 1)
+        self.inst_util_tres[t] = \
+            (1 / (1 - self.elasmu)) * (self.sufficientarian_threshold[t]) ** (1 - self.elasmu) + 1
 
         # calculate instantaneous welfare equivalent of threshold
         self.inst_util_tres_ww[:, t] = self.inst_util_tres[t] * self.Alpha_data[:, t]
@@ -753,13 +745,12 @@ class UtilityModel:
                 if utility_per_income_share[quintile, region] < self.inst_util_tres_ww[region, t]:
                     self.population_under_threshold[t] = \
                         self.population_under_threshold[t] + self.region_pop[region, t] * 1 / 5
-                    self.utility_distance_threshold[region, t] = self.inst_util_tres_ww[region, t] - \
-                                                                 utility_per_income_share[quintile, region]
+                    self.utility_distance_threshold[region, t] = \
+                        self.inst_util_tres_ww[region, t] - utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        if self.welfare_function == WelfareFunction.SUFFICIENTARIAN:
-            self.regions_under_threshold[t] = list_timestep
+        self.regions_under_threshold.append(list_timestep)
 
         # minimize max distance to threshold
         self.max_utility_distance_threshold[t] = self.utility_distance_threshold[:, t].max()
