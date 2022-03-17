@@ -149,9 +149,11 @@ class UtilityModel:
 
         # Initial rate of social time preference per year
         self.discount_factors_utility[:, 0] = 1
+        self.discount_factors_disutility[:, 0] = 1
 
         # Instantaneous utility function equation
         self.period_utilities[:, 0] = ((1 / (1 - self.emcu)) * (CPC[:, 0]) ** (1 - self.emcu) + 1)
+        self.period_disutilities[:, 0] = self.dpc[:, 0] ** (1 - self.emdd) / (1 - self.emdd)
 
         # CEMU period utility
         self.utility_welfares[:, 0] = self.period_utilities[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:, 0]
@@ -161,12 +163,16 @@ class UtilityModel:
 
         # Instantaneous utility function with welfare weights
         self.inst_util_ww[:, 0] = self.period_utilities[:, 0] * self.Alpha_data[:, 0]
+        self.inst_disutility_ww[:, 0] = self.period_disutilities[:, 0] * self.Alpha_data[:, 0]
 
         # Period utility with welfare weights
         self.per_util_ww[:, 0] = self.inst_util_ww[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:, 0]
+        self.per_disutility_ww[:, 0] = \
+            self.inst_disutility_ww[:, 0] * region_pop[:, 0] * self.discount_factors_disutility[:, 0]
 
         # cummulative utility with ww
         self.reg_cum_util[:, 0] = self.utility_welfares[:, 0]
+        self.reg_cum_disutil[:, 0] = self.per_disutility_ww[:, 0]
         self.global_per_util_ww[0] = self.per_util_ww[:, 0].sum(axis=0)
 
         # initialise objectives for principles
@@ -869,7 +875,8 @@ class UtilityModel:
         # Totally aggregated disutility
 
         # cummulative disutility with ww
-        self.reg_cum_disutil[:, t] = self.reg_cum_disutil[:, t - 1] + self.per_disutility_ww[:, t]
+        if t >= 1:
+            self.reg_cum_disutil[:, t] = self.reg_cum_disutil[:, t - 1] + self.per_disutility_ww[:, t]
 
         # scale utility with weights derived from the excel
         if t == 30:
