@@ -64,7 +64,7 @@ class PyRICE(object):
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
                  ini_suf_threshold=0.711,
-                 ini_suf_threshold_dam=1.0,  # TODO: needs to change
+                 ini_suf_threshold_dam=0.9,  # TODO: needs to change
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
                  t2xco2_dist=0,
@@ -412,4 +412,4 @@ if __name__ == '__main__':
 
     # Default levers are defined by the original Nordhaus policy
     results = model()
-    print(results)
+    [print(f'{k}: {v}') for k, v in results.items()]

@@ -97,11 +97,11 @@ class UtilityModel:
         self.inst_util_thres_ww = np.zeros((self.n_regions, steps))
         self.quintile_inst_util = {}
         self.quintile_inst_util_ww = {}
-        self.population_under_consumption_threshold = np.zeros(steps)
+        self.population_below_consumption_threshold = np.zeros(steps)
         self.utility_distance_threshold = np.zeros((self.n_regions, steps))
         self.max_utility_distance_threshold = np.zeros(steps)
-        self.regions_under_consumption_threshold = []
-        self.largest_distance_under_consumption_threshold = np.zeros(steps)
+        self.regions_below_consumption_threshold = []
+        self.largest_distance_below_consumption_threshold = np.zeros(steps)
         self.growth_frontier = np.zeros(steps)
 
         # Sufficientarian outputs (damages)
@@ -110,10 +110,10 @@ class UtilityModel:
         self.inst_disutil_thres_ww = np.zeros((self.n_regions, steps))
         self.quintile_inst_disutil = {}
         self.quintile_inst_disutil_ww = {}
-        self.population_under_damage_threshold = np.zeros(steps)
+        self.population_below_damage_threshold = np.zeros(steps)
         self.disutility_distance_threshold = np.zeros((self.n_regions, steps))
         self.max_disutility_distance_threshold = np.zeros(steps)
-        self.regions_under_damage_threshold = []
+        self.regions_below_damage_threshold = []
 
         # Egalitarian outputs
         self.CPC_intra_gini = np.zeros(steps)
@@ -156,7 +156,8 @@ class UtilityModel:
         self.period_disutilities[:, 0] = self.dpc[:, 0] ** (1 - self.emdd) / (1 - self.emdd)
 
         # CEMU period utility
-        self.utility_welfares[:, 0] = self.period_utilities[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:, 0]
+        self.utility_welfares[:, 0] = self.period_utilities[:, 0] * region_pop[:, 0] * self.discount_factors_utility[:,
+                                                                                       0]
 
         # Cummulative period utility without WW
         self.cum_utility_welfares[:, 0] = self.utility_welfares[:, 0]
@@ -193,7 +194,8 @@ class UtilityModel:
         self.average_growth_CPC[0] = 0.250  # average growth over 10 years World Bank Data
 
         # calculate instantaneous welfare equivalent of minimum capita per head
-        self.sufficientarian_consumption_threshold[0] = ini_suf_threshold  # specified in consumption per capita thousand/year
+        self.sufficientarian_consumption_threshold[
+            0] = ini_suf_threshold  # specified in consumption per capita thousand/year
         self.sufficientarian_damage_threshold[0] = ini_suf_threshold_dam
 
         self.inst_util_thres[0] = (
@@ -214,14 +216,14 @@ class UtilityModel:
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
                 if utility_per_income_share[quintile, region] < self.inst_util_thres_ww[region, 0]:
-                    self.population_under_consumption_threshold[0] = \
-                        self.population_under_consumption_threshold[0] + region_pop[region, 0] * 1 / 5
+                    self.population_below_consumption_threshold[0] = \
+                        self.population_below_consumption_threshold[0] + region_pop[region, 0] * 1 / 5
                     self.utility_distance_threshold[region, 0] = \
                         self.inst_util_thres_ww[region, 0] - utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_consumption_threshold.append(list_timestep)
+        self.regions_below_consumption_threshold.append(list_timestep)
 
         self.max_utility_distance_threshold[0] = self.utility_distance_threshold[:, 0].max()
 
@@ -245,14 +247,14 @@ class UtilityModel:
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
                 if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, 0]:
-                    self.population_under_damage_threshold[0] = \
-                        self.population_under_damage_threshold[0] + region_pop[region, 0] * 1 / 5
+                    self.population_below_damage_threshold[0] = \
+                        self.population_below_damage_threshold[0] + region_pop[region, 0] * 1 / 5
                     self.disutility_distance_threshold[region, 0] = \
                         self.inst_disutil_thres_ww[region, 0] - disutility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_damage_threshold.append(list_timestep)
+        self.regions_below_damage_threshold.append(list_timestep)
 
         self.max_disutility_distance_threshold[0] = self.disutility_distance_threshold[:, 0].max()
 
@@ -526,9 +528,9 @@ class UtilityModel:
             self.worst_off_income_class,
             self.worst_off_climate_impact,
             self.max_utility_distance_threshold,
-            self.population_under_consumption_threshold,
+            self.population_below_consumption_threshold,
             self.max_disutility_distance_threshold,
-            self.population_under_damage_threshold,
+            self.population_below_damage_threshold,
             self.CPC_intra_gini,
             self.climate_impact_per_dollar_gini,
             temp_atm,
@@ -541,7 +543,8 @@ class UtilityModel:
             self.intertemporal_impact_gini,
             self.utility,
             self.disutility,
-            self.regions_under_consumption_threshold
+            self.regions_below_consumption_threshold,
+            self.regions_below_damage_threshold
         ]
 
         objectives_list_name = [
@@ -549,7 +552,8 @@ class UtilityModel:
             'Intertemporal impact GINI',
             'Total Aggregated Utility',
             'Total Aggregated Disutility',
-            'Regions below threshold'
+            'Regions below consumption threshold',
+            'Regions below damage threshold'
         ]
 
         objectives_list_timeseries_name = [
@@ -559,9 +563,9 @@ class UtilityModel:
             'Lowest income per capita ',
             'Highest climate impact per capita ',
             'Distance to consumption threshold ',
-            'Population under consumption threshold ',
+            'Population below consumption threshold ',
             'Distance to damage threshold ',
-            'Population under damage threshold ',
+            'Population below damage threshold ',
             'Intratemporal utility GINI ',
             'Intratemporal impact GINI ',
             'Atmospheric Temperature ',
@@ -680,7 +684,8 @@ class UtilityModel:
         # Should it be -1 in the end because that's what the CRRA equation says
 
         # welfare for utility for each region and each time
-        self.utility_welfares[:, t] = self.period_utilities[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
+        self.utility_welfares[:, t] = self.period_utilities[:, t] * self.region_pop[:,
+                                                                    t] * self.discount_factors_utility[:, t]
 
         # cumulative period utilty without welfare weights
         self.cum_utility_welfares[:, 0] = self.cum_utility_welfares[:, t - 1] + self.utility_welfares[:, t]
@@ -799,14 +804,14 @@ class UtilityModel:
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
                 if utility_per_income_share[quintile, region] < self.inst_util_thres_ww[region, t]:
-                    self.population_under_consumption_threshold[t] = \
-                        self.population_under_consumption_threshold[t] + self.region_pop[region, t] * 1 / 5
+                    self.population_below_consumption_threshold[t] = \
+                        self.population_below_consumption_threshold[t] + self.region_pop[region, t] * 1 / 5
                     self.utility_distance_threshold[region, t] = \
                         self.inst_util_thres_ww[region, t] - utility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_consumption_threshold.append(list_timestep)
+        self.regions_below_consumption_threshold.append(list_timestep)
 
         # minimize max distance to threshold
         self.max_utility_distance_threshold[t] = self.utility_distance_threshold[:, t].max()
@@ -851,7 +856,7 @@ class UtilityModel:
         if t == 0:
             previous_dpc = np.zeros((self.region_pop.shape[0], 1)) + 0.000000001
         else:
-            previous_dpc = self.dpc[:, t-1]
+            previous_dpc = self.dpc[:, t - 1]
         self.dam_g[:, t] = (self.dpc[:, t] - previous_dpc) / previous_dpc
 
         # endogenous rate social rate of damage
@@ -881,7 +886,7 @@ class UtilityModel:
         # scale utility with weights derived from the excel
         if t == 30:
             self.reg_disutil = self.multiplutacive_scaling_weights[:, 0] * self.reg_cum_disutil[:, t] + \
-                            self.additative_scaling_weights[:, 0] - self.additative_scaling_weights[:, 2]
+                               self.additative_scaling_weights[:, 0] - self.additative_scaling_weights[:, 2]
 
             # calculate worldwide disutility
             self.disutility = self.reg_disutil.sum()
@@ -912,14 +917,14 @@ class UtilityModel:
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
                 if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, t]:
-                    self.population_under_damage_threshold[t] = \
-                        self.population_under_damage_threshold[t] + self.region_pop[region, t] * 1 / 5
+                    self.population_below_damage_threshold[t] = \
+                        self.population_below_damage_threshold[t] + self.region_pop[region, t] * 1 / 5
                     self.disutility_distance_threshold[region, t] = \
                         self.inst_disutil_thres_ww[region, t] - disutility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_under_damage_threshold.append(list_timestep)
+        self.regions_below_damage_threshold.append(list_timestep)
 
         # minimize max distance to threshold
         self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
@@ -946,27 +951,58 @@ class Results:
         disutility = self.get_values_for_specific_prefix("Disutility 2")
         lowest = self.get_values_for_specific_prefix("Lowest income per capita")
         highest = self.get_values_for_specific_prefix("Highest climate impact per capita")
-        distance_consumption = self.get_values_for_specific_prefix("Distance to threshold")
-        population_consumption = self.get_values_for_specific_prefix("Population under threshold")
+        distance_consumption = self.get_values_for_specific_prefix("Distance to consumption threshold")
+        population_consumption = self.get_values_for_specific_prefix("Population below consumption threshold")
         distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
-        population_damage = self.get_values_for_specific_prefix("Population under damage threshold")
+        population_damage = self.get_values_for_specific_prefix("Population below damage threshold")
         utility_gini = self.get_values_for_specific_prefix("Intratemporal utility GINI")
         impact_gini = self.get_values_for_specific_prefix("Intratemporal impact GINI")
         temp = self.get_values_for_specific_prefix("Atmospheric Temperature")
         emission = self.get_values_for_specific_prefix("Industrial Emission")
         output = self.get_values_for_specific_prefix("Total Output")
-        regions_under_threshold = self.data_dict["Regions below threshold"]
+        regions_below_consumption_threshold = self.data_dict["Regions below consumption threshold"]
+        regions_below_damage_threshold = self.data_dict["Regions below damage threshold"]
 
-        columns = ['Damages', 'Utility', 'Disutility', 'Lowest income per capita', 'Highest climate impact per capita',
-                   'Distance to consumption threshold', 'Population under consumption threshold',
-                   'Distance to damage threshold', 'Population under damage threshold', 'Intratemporal utility GINI',
-                   'Intratemporal impact GINI', 'Atmospheric temperature', 'Industrial emission', 'Total output',
-                   'Regions below threshold']
+        columns = [
+            'Damages',
+            'Utility',
+            'Disutility',
+            'Lowest income per capita',
+            'Highest climate impact per capita',
+            'Distance to consumption threshold',
+            'Population below consumption threshold',
+            'Distance to damage threshold',
+            'Population below damage threshold',
+            'Intratemporal utility GINI',
+            'Intratemporal impact GINI',
+            'Atmospheric temperature',
+            'Industrial emission',
+            'Total output',
+            'Regions below consumption threshold',
+            'Regions below damage threshold'
+        ]
+
+        values = list(zip(
+            damages,
+            utility,
+            disutility,
+            lowest,
+            highest,
+            distance_consumption,
+            population_consumption,
+            distance_damage,
+            population_damage,
+            utility_gini,
+            impact_gini,
+            temp,
+            emission,
+            output,
+            regions_below_consumption_threshold,
+            regions_below_damage_threshold
+        ))
 
         self.df_main = pd.DataFrame(
-            list(zip(damages, utility, disutility, lowest, highest, distance_consumption, population_consumption,
-                     distance_damage, population_damage, utility_gini, impact_gini, temp, emission, output,
-                     regions_under_threshold)),
+            data=values,
             index=years,
             columns=columns
         )
