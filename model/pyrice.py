@@ -384,8 +384,8 @@ class PyRICE(object):
         Prints the attributes of the Results object.
         """
 
-        print(f'aggregated_utility_gini: \t{self.utility_model.data.aggregated_utility_gini}')
-        print(f'aggregated_impact_gini: \t{self.utility_model.data.aggregated_impact_gini}')
+        print(f'aggregated_utility_gini: \t{self.utility_model.data.aggregated_consumption_gini}')
+        print(f'aggregated_impact_gini: \t{self.utility_model.data.aggregated_damage_gini}')
         print(f'aggregated_utility: \t\t{self.utility_model.data.aggregated_utility}')
 
         print('Dataframe on spatially aggregated variables of interest')

@@ -7,18 +7,12 @@ from enum import Enum
 
 class ModelSpec(Enum):
     """
-    Model Specification
+    Model Specifications
     """
 
     Validation_1 = 1
     Validation_2 = 2
     STANDARD = 3
-
-    # def __eq__(self, o: object) -> bool:
-    #     if self.value is o.value:
-    #         return True
-    #     else:
-    #         return False
 
 
 class WelfareFunction(Enum):
@@ -31,12 +25,6 @@ class WelfareFunction(Enum):
     SUFFICIENTARIAN = 2
     EGALITARIAN = 3
 
-    # def __eq__(self, o: object) -> bool:
-    #     if self.value is o.value:
-    #         return True
-    #     else:
-    #         return False
-
 
 class DamageFunction(Enum):
     """
@@ -47,8 +35,18 @@ class DamageFunction(Enum):
     NEWBOLD = 1
     WEITZMAN = 2
 
-    # def __eq__(self, o: object) -> bool:
-    #     if self.value is o.value:
-    #         return True
-    #     else:
-    #         return False
+
+class ProblemFormulation(Enum):
+    """
+    Problem formulations
+    """
+
+    UITILITARIAN_AGGREGATED = 0
+    UTILITARIAN_DISAGGREGATED = 1
+    UTILITARIAN_COSTS = 2
+    EGALITARIAN_AGGREGATED = 3
+    EGALITARIAN_DISAGGREGATED = 4
+    SUFFICIENTARIAN_AGGREGATED = 5
+    SUFFICIENTARIAN_DISAGGREGATED = 6
+    PRIORITARIAN_AGGREGATED = 7
+    PRIORITARIAN_DISAGGREGATED = 8

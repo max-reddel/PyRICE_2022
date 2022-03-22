@@ -217,13 +217,13 @@ class EconomyModel:
         """
 
         # Cost of climate_model change to economy
-        # Abettement cost ratio of output
+        # Abatement cost ratio of output
         self.Abatement_cost_RATIO[:, 0] = self.cost1[:, 0] * (miu[:, 0] ** self.expcost2)
 
-        # Abettement cost total
+        # Abatement cost total
         self.Abatement_cost[:, 0] = self.Y_gross[:, 0] * self.Abatement_cost_RATIO[:, 0]
 
-        # Marginal abetement cost
+        # Marginal abatement cost
         self.Mabatement_cost[:, 0] = self.pbacktime[:, 0] * miu[:, 0] ** (self.expcost2 - 1)
 
         # Resulting carbon_model price
@@ -537,11 +537,11 @@ class EconomyModel:
         # Adjusted cost for backstop
         self.cost1[:, t] = ((self.pbacktime[:, t] * self.sigma_region[:, t]) / self.expcost2)
 
-        # Abettement cost ratio of output
+        # Abtement cost ratio of output
         self.Abatement_cost_RATIO[:, t] = self.cost1[:, t] * (miu[:, t] ** self.expcost2)
         self.Abatement_cost[:, t] = self.Y_gross[:, t] * self.Abatement_cost_RATIO[:, t]
 
-        # Marginal abetement cost
+        # Marginal abatement cost
         self.Mabatement_cost[:, t] = self.pbacktime[:, t] * (miu[:, t] ** (self.expcost2 - 1))
 
         # Resulting carbon_model price

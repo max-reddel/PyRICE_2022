@@ -538,8 +538,8 @@ class UtilityModel:
         ]
 
         objectives_list = [
-            self.intertemporal_utility_gini,
-            self.intertemporal_impact_gini,
+            self.intertemporal_consumption_gini,
+            self.intertemporal_damage_gini,
             self.utility,
             self.disutility,
             self.regions_below_consumption_threshold,
@@ -547,8 +547,8 @@ class UtilityModel:
         ]
 
         objectives_list_name = [
-            'Intertemporal utility GINI',
-            'Intertemporal impact GINI',
+            'Intertemporal consumption GINI',
+            'Intertemporal damage GINI',
             'Total Aggregated Utility',
             'Total Aggregated Disutility',
             'Regions below consumption threshold',
@@ -565,8 +565,8 @@ class UtilityModel:
             'Population below consumption threshold ',
             'Distance to damage threshold ',
             'Population below damage threshold ',
-            'Intratemporal utility GINI ',
-            'Intratemporal impact GINI ',
+            'Intratemporal consumption GINI ',
+            'Intratemporal damage GINI ',
             'Atmospheric Temperature ',
             'Industrial Emission ',
             'Total Output '
@@ -651,11 +651,11 @@ class UtilityModel:
         if np.isnan(self.climate_impact_per_dollar_gini[30]):
             self.climate_impact_per_dollar_gini[30] = 0
 
-        if np.isnan(self.intertemporal_utility_gini):
-            self.intertemporal_utility_gini = 0
+        if np.isnan(self.intertemporal_consumption_gini):
+            self.intertemporal_consumption_gini = 0
 
-        if np.isnan(self.intertemporal_impact_gini):
-            self.intertemporal_impact_gini = 40
+        if np.isnan(self.intertemporal_damage_gini):
+            self.intertemporal_damage_gini = 40
 
     def get_elasmu(self):
         """
@@ -730,7 +730,7 @@ class UtilityModel:
             for i, xi in enumerate(input_gini_inter_cpc[:-1], 1):
                 diffsum += np.sum(np.abs(xi - input_gini_inter_cpc[i:]))
 
-            self.intertemporal_utility_gini = diffsum / (
+            self.intertemporal_consumption_gini = diffsum / (
                     (len(input_gini_inter_cpc) ** 2) * np.mean(input_gini_inter_cpc))
 
         # intertemporal climate impact GINI
@@ -745,7 +745,7 @@ class UtilityModel:
             for i, xi in enumerate(input_gini_inter[:-1], 1):
                 diffsum_inter += np.sum(np.abs(xi - input_gini_inter[i:]))
 
-            self.intertemporal_impact_gini = diffsum_inter / (
+            self.intertemporal_damage_gini = diffsum_inter / (
                     (len(input_gini_inter) ** 2) * np.mean(input_gini_inter))
 
         # ###### GINI calculations INTRATEMPORAL #########
@@ -952,8 +952,8 @@ class Results:
         population_consumption = self.get_values_for_specific_prefix("Population below consumption threshold")
         distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
         population_damage = self.get_values_for_specific_prefix("Population below damage threshold")
-        utility_gini = self.get_values_for_specific_prefix("Intratemporal utility GINI")
-        impact_gini = self.get_values_for_specific_prefix("Intratemporal impact GINI")
+        consumption_gini = self.get_values_for_specific_prefix("Intratemporal consumption GINI")
+        damage_gini = self.get_values_for_specific_prefix("Intratemporal damage GINI")
         temp = self.get_values_for_specific_prefix("Atmospheric Temperature")
         emission = self.get_values_for_specific_prefix("Industrial Emission")
         output = self.get_values_for_specific_prefix("Total Output")
@@ -970,8 +970,8 @@ class Results:
             'Population below consumption threshold',
             'Distance to damage threshold',
             'Population below damage threshold',
-            'Intratemporal utility GINI',
-            'Intratemporal impact GINI',
+            'Intratemporal consumption GINI',
+            'Intratemporal damage GINI',
             'Atmospheric temperature',
             'Industrial emission',
             'Total output',
@@ -989,8 +989,8 @@ class Results:
             population_consumption,
             distance_damage,
             population_damage,
-            utility_gini,
-            impact_gini,
+            consumption_gini,
+            damage_gini,
             temp,
             emission,
             output,
@@ -1005,8 +1005,8 @@ class Results:
         )
 
         # Highly aggregated variables
-        self.aggregated_utility_gini = self.data_dict["Intertemporal utility GINI"]
-        self.aggregated_impact_gini = self.data_dict["Intertemporal impact GINI"]
+        self.aggregated_consumption_gini = self.data_dict["Intertemporal consumption GINI"]
+        self.aggregated_damage_gini = self.data_dict["Intertemporal damage GINI"]
         self.aggregated_utility = self.data_dict["Total Aggregated Utility"]
         self.aggregated_disutility = self.data_dict["Total Aggregated Disutility"]
 

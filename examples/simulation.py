@@ -40,8 +40,8 @@ results = model(sr=sr, miu=miu, irstp_consumption=irstp)
 better_results = model.get_better_formatted_results()
 
 # Highly Aggregated variables
-print(f'aggregated_utility_gini: \t{better_results.aggregated_utility_gini}')
-print(f'aggregated_impact_gini: \t{better_results.aggregated_impact_gini}')
+print(f'aggregated_utility_gini: \t{better_results.aggregated_consumption_gini}')
+print(f'aggregated_impact_gini: \t{better_results.aggregated_damage_gini}')
 print(f'aggregated_utility: \t\t{better_results.aggregated_utility}')
 
 # Dataframe on spatially aggregated variables of interest
