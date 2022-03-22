@@ -117,7 +117,6 @@ class UtilityModel:
 
         # Egalitarian outputs
         self.CPC_intra_gini = np.zeros(steps)
-        self.average_world_CPC = np.zeros(steps)
         self.average_regional_impact = np.zeros(steps)
         self.climate_impact_per_dollar_consumption = np.zeros((self.n_regions, steps))
         self.climate_impact_per_dollar_gini = np.zeros(steps)
@@ -721,8 +720,6 @@ class UtilityModel:
         # ###### GINI calculations INTERTEMPORAL #########
         # CPC is floored on minimum value
         CPC[:, t] = np.where(CPC[:, t] > CPC_lo, CPC[:, t], CPC_lo)
-
-        self.average_world_CPC[0] = (CPC[:, 0].sum(axis=0) / self.n_regions)
 
         self.average_world_CPC[t] = (CPC[:, t].sum(axis=0) / self.n_regions)
 
