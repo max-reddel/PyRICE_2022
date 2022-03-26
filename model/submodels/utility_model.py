@@ -304,6 +304,7 @@ class UtilityModel:
         @param CPC_lo: float
         @param climate_impact_relative_to_capita: dictionary
         @param CPC_post_damage: dictionary
+        @param emdd: elasticity of marginal disutility of damages: float
         @return:
             CPC: numpy array (12, 31)
             CPC_post_damage: dictionary
@@ -501,7 +502,7 @@ class UtilityModel:
         )
 
     def get_outcomes(self, temp_atm, E_worldwilde_per_year, CPC_pre_damage, CPC_post_damage, CPC,
-                     start_year, end_year, tstep, precision=10):
+                     start_year, end_year, tstep, costs, precision=10):
         """
         Prepare outcome variables in a dictionary and return it.
         @param temp_atm: numpy array (31,)
@@ -512,6 +513,7 @@ class UtilityModel:
         @param start_year: int
         @param end_year: int
         @param tstep: int
+        @param costs: numpy array (31, ): abatement costs + damages
         @param precision: int
         @return:
             self.data_dict: dictionary
@@ -534,8 +536,11 @@ class UtilityModel:
             self.climate_impact_per_dollar_gini,
             temp_atm,
             E_worldwilde_per_year,
-            self.global_ouput
+            self.global_ouput,
+            costs
         ]
+
+        self.aggregated_costs = costs.sum()
 
         objectives_list = [
             self.intertemporal_consumption_gini,
@@ -543,7 +548,8 @@ class UtilityModel:
             self.utility,
             self.disutility,
             self.regions_below_consumption_threshold,
-            self.regions_below_damage_threshold
+            self.regions_below_damage_threshold,
+            self.aggregated_costs
         ]
 
         objectives_list_name = [
@@ -552,7 +558,8 @@ class UtilityModel:
             'Total Aggregated Utility',
             'Total Aggregated Disutility',
             'Regions below consumption threshold',
-            'Regions below damage threshold'
+            'Regions below damage threshold',
+            'Total Aggregated Costs'
         ]
 
         objectives_list_timeseries_name = [
@@ -569,7 +576,8 @@ class UtilityModel:
             'Intratemporal damage GINI ',
             'Atmospheric Temperature ',
             'Industrial Emission ',
-            'Total Output '
+            'Total Output ',
+            'Costs '
         ]
 
         supplementary_list_timeseries = [CPC, self.region_pop]
@@ -827,8 +835,11 @@ class UtilityModel:
     def compute_welfare_disutility(self, damages, emdd, tstep, t, irstp_damage):
         """
         Takes damages to compute damages per capita, disutility of damages, and welfare of disutility.
-        @param emdd: float: risk aversion for damages (an uncertainty factor)
         @param damages: numpy array (12, 31)
+        @param irstp_damage: initial rate of social time preference for damages
+        @param emdd: float: risk aversion for damages (an uncertainty factor)
+        @param tstep: int
+        @param t: int: time
         """
 
         # damages per capita
@@ -959,6 +970,7 @@ class Results:
         output = self.get_values_for_specific_prefix("Total Output")
         regions_below_consumption_threshold = self.data_dict["Regions below consumption threshold"]
         regions_below_damage_threshold = self.data_dict["Regions below damage threshold"]
+        costs = self.get_values_for_specific_prefix("Costs 2")
 
         columns = [
             'Damages',
@@ -976,7 +988,8 @@ class Results:
             'Industrial emission',
             'Total output',
             'Regions below consumption threshold',
-            'Regions below damage threshold'
+            'Regions below damage threshold',
+            'Costs'
         ]
 
         values = list(zip(
@@ -995,7 +1008,8 @@ class Results:
             emission,
             output,
             regions_below_consumption_threshold,
-            regions_below_damage_threshold
+            regions_below_damage_threshold,
+            costs
         ))
 
         self.df_main = pd.DataFrame(
@@ -1009,6 +1023,7 @@ class Results:
         self.aggregated_damage_gini = self.data_dict["Intertemporal damage GINI"]
         self.aggregated_utility = self.data_dict["Total Aggregated Utility"]
         self.aggregated_disutility = self.data_dict["Total Aggregated Disutility"]
+        self.aggregated_costs = self.data_dict["Total Aggregated Costs"]
 
         # CPC dataframe
         cpc = self.get_values_for_specific_prefix("CPC 2")

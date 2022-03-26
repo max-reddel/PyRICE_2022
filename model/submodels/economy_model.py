@@ -626,7 +626,19 @@ class EconomyModel:
         self.CPC[:, t] = (1000 * self.C[:, t]) / self.region_pop[:, t]
         self.CPC[:, t] = np.where(self.CPC[:, t] > self.CPC_lo, self.CPC[:, t], self.CPC_lo)
 
+        # overeall costs (damages + abatement
+        if t == 30:
+            self.costs = self.damages + self.Abatement_cost
+            self.costs = self.costs.sum(axis=0)
+
         return self.CPC, self.region_pop, self.damages, self.Y, self.CPC_lo, self.CPC_pre_damage
+
+    def get_costs(self):
+        """
+        Return undiscounted costs (abatement costs + damages)
+        @return: self.costs
+        """
+        return self.costs
 
     def get_climate_impact_relative_to_capita(self):
         """

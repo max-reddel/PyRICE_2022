@@ -82,7 +82,7 @@ class PyRICE(object):
                  sr=0.248,
                  miu=2135,
                  irstp_consumption=0.015,
-                 irstp_damage=0.000000001,
+                 irstp_damage=0.000000001,  # TODO: might have to be adjusted
                  emdd=-0.55,
                  precision=10,
                  **kwargs):
@@ -218,9 +218,10 @@ class PyRICE(object):
                 CPC_post_damage, emdd)
 
         # Prepare final outcomes of interest
+        costs = self.econ_model.get_costs()
         self.data_dict = self.utility_model.get_outcomes(
             self.temp_atm, self.E_worldwilde_per_year, self.CPC_pre_damage, self.CPC_post_damage,
-            self.CPC, self.start_year, self.end_year, self.tstep, precision=precision)
+            self.CPC, self.start_year, self.end_year, self.tstep, costs, precision=precision)
 
         # Save alternative format of data
         self.data = self.utility_model.data
