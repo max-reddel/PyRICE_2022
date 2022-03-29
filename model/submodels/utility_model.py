@@ -132,12 +132,12 @@ class UtilityModel:
         self.global_per_disutility_ww = np.zeros(steps)
         self.reg_cum_disutil = np.zeros((self.n_regions, steps))
 
-    def set_up_utility(self, ini_suf_threshold, ini_suf_threshold_dam, climate_impact_relative_to_capita,
+    def set_up_utility(self, ini_suf_threshold_consumption, ini_suf_threshold_damage, climate_impact_relative_to_capita,
                        CPC_post_damage, CPC, region_pop, damages, Y):
         """
         Sets up most variables with their initial values.
-        @param ini_suf_threshold: float
-        @param ini_suf_threshold_dam: float
+        @param ini_suf_threshold_consumption: float
+        @param ini_suf_threshold_damage: float
         @param climate_impact_relative_to_capita: dictionary
         @param CPC_post_damage: dictionary
         @param CPC: numpy array (12, 31)
@@ -193,9 +193,9 @@ class UtilityModel:
         self.average_growth_CPC[0] = 0.250  # average growth over 10 years World Bank Data
 
         # calculate instantaneous welfare equivalent of minimum capita per head
-        self.sufficientarian_consumption_threshold[
-            0] = ini_suf_threshold  # specified in consumption per capita thousand/year
-        self.sufficientarian_damage_threshold[0] = ini_suf_threshold_dam
+        # specified in consumption per capita thousand/year
+        self.sufficientarian_consumption_threshold[0] = ini_suf_threshold_consumption
+        self.sufficientarian_damage_threshold[0] = ini_suf_threshold_damage
 
         self.inst_util_thres[0] = (
                 (1 / (1 - self.emcu)) * (self.sufficientarian_consumption_threshold[0]) ** (1 - self.emcu) + 1)
@@ -245,7 +245,7 @@ class UtilityModel:
 
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
-                if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, 0]:
+                if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, 0]:  # TODO: changed from smaller to bigger sign
                     self.population_below_damage_threshold[0] = \
                         self.population_below_damage_threshold[0] + region_pop[region, 0] * 1 / 5
                     self.disutility_distance_threshold[region, 0] = \
