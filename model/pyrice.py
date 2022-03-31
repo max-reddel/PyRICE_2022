@@ -63,8 +63,8 @@ class PyRICE(object):
                  prioritarian_discounting=0,
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
-                 ini_suf_threshold_consumption=0.711,
-                 ini_suf_threshold_damage=0.9,  # TODO: needs to be identified
+                 ini_suf_threshold_consumption=1.168,  # Changed from 0.711
+                 ini_suf_threshold_damage=0.5,  # TODO: needs to be identified
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
                  t2xco2_dist=0,

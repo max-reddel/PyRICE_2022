@@ -174,6 +174,8 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
     dict_epsilons = {
         'Total Aggregated Utility': 50,
         'Utility': 5,
+        'Total Aggregated Disutility': 50,
+        'Distility': 5,
         'Lowest income per capita': 0.02,
         'Intratemporal utility GINI': 0.001,
         'Total Output': 1.0,
@@ -182,8 +184,10 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
         'Intratemporal impact GINI': 0.01,
         'Damages': 0.4,
         'Industrial Emission': 0.1,
-        'Population under threshold': 0.01,
-        'Distance to threshold': 0.000001
+        'Population below consumption threshold': 0.01,
+        'Distance to consumption threshold': 0.000001,
+        'Population above damage threshold': 0.01,
+        'Distance to damage threshold': 0.000001
     }
 
     # Relevant years
@@ -194,15 +198,16 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
     outcomes_all_names = ['Damages', 'Utility', 'Intratemporal utility GINI', 'Intratemporal impact GINI',
                           'Lowest income per capita', 'Highest climate impact per capita',
                           'Distance to consumption threshold', 'Population below consumption threshold',
+                          'Distance to damage threshold', 'Population above damage threshold',
                           'Atmospheric Temperature', 'Industrial Emission', 'Total Output'
                           ]
 
     if welfare_function == WelfareFunction.UTILITARIAN:
 
         outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = []
+        outcomes_minimize_names = ['Disutility']
         outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = []
+        outcomes_minimize_aggregated = ['Total Aggregated Disutility']
         outcomes_info_aggregated = []
 
         epsilons = get_epsilons(dict_epsilons, years_optimize, outcomes_maximize_names, outcomes_minimize_names,
@@ -215,9 +220,10 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
     elif welfare_function == WelfareFunction.SUFFICIENTARIAN:
 
         outcomes_maximize_names = []
-        outcomes_minimize_names = ['Distance to damage threshold', 'Population below consumption threshold']
+        outcomes_minimize_names = ['Distance to consumption threshold', 'Population below consumption threshold',
+                                   'Distance to damage threshold', 'Population above damage threshold']
         outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = []
+        outcomes_minimize_aggregated = ['Total Aggregated Disutility']
         outcomes_info_aggregated = []
 
         epsilons = get_epsilons(dict_epsilons, years_optimize, outcomes_maximize_names, outcomes_minimize_names,
@@ -264,7 +270,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
 
 if __name__ == '__main__':
 
-    results = get_outcomes_and_epsilons(welfare_function=WelfareFunction.EGALITARIAN)
+    results = get_outcomes_and_epsilons(welfare_function=WelfareFunction.SUFFICIENTARIAN)
     outcomes_list, eps = results
 
     print('Outcomes:')

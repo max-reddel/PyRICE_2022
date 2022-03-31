@@ -62,8 +62,8 @@ if __name__ == '__main__':
     ]
     model.outcomes = prepare_info_outcomes(outcome_names)
 
-    loading = True
-    file_name = 'test_results_sufficientarian_with_extra_lever'
+    loading = False
+    file_name = 'test_results_higher_consumption_threshold'
 
     if not loading:
         # Run experiments
