@@ -50,11 +50,6 @@ class UtilityModel:
         self.cum_utility_welfares = np.zeros((self.n_regions, steps))
         self.inst_util_ww = np.zeros((self.n_regions, steps))
 
-        # alternative WelfareFunction output arrays
-        self.sufficientarian_consumption_threshold = np.zeros(steps)
-        self.inst_util_thres = np.zeros(steps)
-        self.inst_util_thres_ww = np.zeros((self.n_regions, steps))
-
         # Elasticity of marginal utility of consumption and damages
         self.emcu = 1.50
         self.emdd = emdd
@@ -85,7 +80,6 @@ class UtilityModel:
         self.worst_off_income_class_index = np.zeros(steps)
         self.worst_off_climate_impact = np.zeros(steps)
         self.worst_off_climate_impact_index = np.zeros(steps)
-        # self.climate_impact_relative_to_capita = {}
 
         # Sufficientarian outputs
         self.average_world_CPC = np.zeros(steps)
@@ -110,10 +104,10 @@ class UtilityModel:
         self.inst_disutil_thres_ww = np.zeros((self.n_regions, steps))
         self.quintile_inst_disutil = {}
         self.quintile_inst_disutil_ww = {}
-        self.population_below_damage_threshold = np.zeros(steps)
+        self.population_above_damage_threshold = np.zeros(steps)
         self.disutility_distance_threshold = np.zeros((self.n_regions, steps))
         self.max_disutility_distance_threshold = np.zeros(steps)
-        self.regions_below_damage_threshold = []
+        self.regions_above_damage_threshold = []
 
         # Egalitarian outputs
         self.CPC_intra_gini = np.zeros(steps)
@@ -245,15 +239,15 @@ class UtilityModel:
 
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
-                if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, 0]:  # TODO: changed from smaller to bigger sign
-                    self.population_below_damage_threshold[0] = \
-                        self.population_below_damage_threshold[0] + region_pop[region, 0] * 1 / 5
+                if disutility_per_income_share[quintile, region] > self.inst_disutil_thres_ww[region, 0]:
+                    self.population_above_damage_threshold[0] = \
+                        self.population_above_damage_threshold[0] + region_pop[region, 0] * 1 / 5
                     self.disutility_distance_threshold[region, 0] = \
-                        self.inst_disutil_thres_ww[region, 0] - disutility_per_income_share[quintile, region]
+                        - self.inst_disutil_thres_ww[region, 0] + disutility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_below_damage_threshold.append(list_timestep)
+        self.regions_above_damage_threshold.append(list_timestep)
 
         self.max_disutility_distance_threshold[0] = self.disutility_distance_threshold[:, 0].max()
 
@@ -531,7 +525,7 @@ class UtilityModel:
             self.max_utility_distance_threshold,
             self.population_below_consumption_threshold,
             self.max_disutility_distance_threshold,
-            self.population_below_damage_threshold,
+            self.population_above_damage_threshold,
             self.CPC_intra_gini,
             self.climate_impact_per_dollar_gini,
             temp_atm,
@@ -548,7 +542,7 @@ class UtilityModel:
             self.utility,
             self.disutility,
             self.regions_below_consumption_threshold,
-            self.regions_below_damage_threshold,
+            self.regions_above_damage_threshold,
             self.aggregated_costs
         ]
 
@@ -558,7 +552,7 @@ class UtilityModel:
             'Total Aggregated Utility',
             'Total Aggregated Disutility',
             'Regions below consumption threshold',
-            'Regions below damage threshold',
+            'Regions above damage threshold',
             'Total Aggregated Costs'
         ]
 
@@ -571,7 +565,7 @@ class UtilityModel:
             'Distance to consumption threshold ',
             'Population below consumption threshold ',
             'Distance to damage threshold ',
-            'Population below damage threshold ',
+            'Population above damage threshold ',
             'Intratemporal consumption GINI ',
             'Intratemporal damage GINI ',
             'Atmospheric Temperature ',
@@ -924,15 +918,15 @@ class UtilityModel:
 
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
-                if disutility_per_income_share[quintile, region] < self.inst_disutil_thres_ww[region, t]:
-                    self.population_below_damage_threshold[t] = \
-                        self.population_below_damage_threshold[t] + self.region_pop[region, t] * 1 / 5
+                if disutility_per_income_share[quintile, region] > self.inst_disutil_thres_ww[region, t]:
+                    self.population_above_damage_threshold[t] = \
+                        self.population_above_damage_threshold[t] + self.region_pop[region, t] * 1 / 5
                     self.disutility_distance_threshold[region, t] = \
-                        self.inst_disutil_thres_ww[region, t] - disutility_per_income_share[quintile, region]
+                        - self.inst_disutil_thres_ww[region, t] + disutility_per_income_share[quintile, region]
 
                     list_timestep.append(self.regions_list[region])
 
-        self.regions_below_damage_threshold.append(list_timestep)
+        self.regions_above_damage_threshold.append(list_timestep)
 
         # minimize max distance to threshold
         self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
@@ -962,14 +956,14 @@ class Results:
         distance_consumption = self.get_values_for_specific_prefix("Distance to consumption threshold")
         population_consumption = self.get_values_for_specific_prefix("Population below consumption threshold")
         distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
-        population_damage = self.get_values_for_specific_prefix("Population below damage threshold")
+        population_damage = self.get_values_for_specific_prefix("Population above damage threshold")
         consumption_gini = self.get_values_for_specific_prefix("Intratemporal consumption GINI")
         damage_gini = self.get_values_for_specific_prefix("Intratemporal damage GINI")
         temp = self.get_values_for_specific_prefix("Atmospheric Temperature")
         emission = self.get_values_for_specific_prefix("Industrial Emission")
         output = self.get_values_for_specific_prefix("Total Output")
         regions_below_consumption_threshold = self.data_dict["Regions below consumption threshold"]
-        regions_below_damage_threshold = self.data_dict["Regions below damage threshold"]
+        regions_above_damage_threshold = self.data_dict["Regions above damage threshold"]
         costs = self.get_values_for_specific_prefix("Costs 2")
 
         columns = [
@@ -981,14 +975,14 @@ class Results:
             'Distance to consumption threshold',
             'Population below consumption threshold',
             'Distance to damage threshold',
-            'Population below damage threshold',
+            'Population above damage threshold',
             'Intratemporal consumption GINI',
             'Intratemporal damage GINI',
             'Atmospheric temperature',
             'Industrial emission',
             'Total output',
             'Regions below consumption threshold',
-            'Regions below damage threshold',
+            'Regions above damage threshold',
             'Costs'
         ]
 
@@ -1008,7 +1002,7 @@ class Results:
             emission,
             output,
             regions_below_consumption_threshold,
-            regions_below_damage_threshold,
+            regions_above_damage_threshold,
             costs
         ))
 

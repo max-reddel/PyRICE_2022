@@ -28,7 +28,12 @@ def prepare_info_outcomes(args):
 
 
 def get_columns_by_outcome_prefix(outcomes_df, prefix):
+    """
 
+    @param outcomes_df:
+    @param prefix:
+    @return:
+    """
     df = outcomes_df.filter(regex=prefix, axis=1)
     return df
 
@@ -92,8 +97,8 @@ if __name__ == '__main__':
     outcome_names = [
         'Distance to consumption threshold',
         'Distance to damage threshold',
-        'Population under consumption threshold',
-        'Population under damage threshold',
+        'Population below consumption threshold',
+        'Population above damage threshold',
         'Utility',
         'Disutility'
     ]

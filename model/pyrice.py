@@ -64,7 +64,7 @@ class PyRICE(object):
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
                  ini_suf_threshold_consumption=0.711,
-                 ini_suf_threshold_damage=0.9,  # TODO: needs to change
+                 ini_suf_threshold_damage=0.9,  # TODO: needs to be identified
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
                  t2xco2_dist=0,
@@ -82,7 +82,7 @@ class PyRICE(object):
                  sr=0.248,
                  miu=2135,
                  irstp_consumption=0.015,
-                 irstp_damage=0.000000001,  # TODO: might have to be adjusted
+                 irstp_damage=0.015,  # DICE: 0.000000001
                  emdd=-0.55,
                  precision=10,
                  **kwargs):
@@ -413,4 +413,4 @@ if __name__ == '__main__':
 
     # Default levers are defined by the original Nordhaus policy
     results = model()
-    [print(f'{k}: {v}') for k, v in results.items()]
+    # [print(f'{k}: {v}') for k, v in results.items()]

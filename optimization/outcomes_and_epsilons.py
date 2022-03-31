@@ -192,8 +192,9 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
 
     # All relevant outcome variable names
     outcomes_all_names = ['Damages', 'Utility', 'Intratemporal utility GINI', 'Intratemporal impact GINI',
-                          'Lowest income per capita', 'Highest climate impact per capita', 'Distance to threshold',
-                          'Population under threshold', 'Atmospheric Temperature', 'Industrial Emission', 'Total Output'
+                          'Lowest income per capita', 'Highest climate impact per capita',
+                          'Distance to consumption threshold', 'Population below consumption threshold',
+                          'Atmospheric Temperature', 'Industrial Emission', 'Total Output'
                           ]
 
     if welfare_function == WelfareFunction.UTILITARIAN:
@@ -214,7 +215,7 @@ def get_outcomes_and_epsilons(welfare_function=WelfareFunction.UTILITARIAN):
     elif welfare_function == WelfareFunction.SUFFICIENTARIAN:
 
         outcomes_maximize_names = []
-        outcomes_minimize_names = ['Distance to threshold', 'Population under threshold']
+        outcomes_minimize_names = ['Distance to damage threshold', 'Population below consumption threshold']
         outcomes_maximize_aggregated = ['Total Aggregated Utility']
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
