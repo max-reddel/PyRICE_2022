@@ -349,7 +349,7 @@ class UtilityModel:
         self.per_util_ww[:, t] = self.inst_util_ww[:, t] * self.region_pop[:, t] * self.discount_factors_utility[:, t]
         self.regional_cum_util[t] = self.reg_cum_util[:, t].sum()
 
-        self.calculate_alternative_principles_objectives(
+        self.compute_alternative_principles_objectives(
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
@@ -402,7 +402,7 @@ class UtilityModel:
                 else:
                     self.per_util_ww[region, t] = self.inst_util_ww[region, t] * self.region_pop[region, t]
 
-        self.calculate_alternative_principles_objectives(
+        self.compute_alternative_principles_objectives(
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
@@ -457,7 +457,7 @@ class UtilityModel:
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
-        self.calculate_alternative_principles_objectives(
+        self.compute_alternative_principles_objectives(
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
@@ -491,7 +491,7 @@ class UtilityModel:
 
         self.global_per_util_ww[t] = self.per_util_ww[:, t].sum(axis=0)
 
-        self.calculate_alternative_principles_objectives(
+        self.compute_alternative_principles_objectives(
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
@@ -694,7 +694,7 @@ class UtilityModel:
         # Instantaneous utility function with welfare weights
         self.inst_util_ww[:, t] = self.period_utilities[:, t] * self.Alpha_data[:, t]
 
-    def calculate_alternative_principles_objectives(
+    def compute_alternative_principles_objectives(
             self, t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
     ):
         """
