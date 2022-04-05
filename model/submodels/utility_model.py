@@ -192,9 +192,6 @@ class UtilityModel:
         # specified in consumption per capita thousand/year
         self.sufficientarian_consumption_threshold[0] = ini_suf_threshold_consumption
 
-        # TODO: change here
-        self.sufficientarian_damage_threshold[0] = relative_damage_threshold * ini_suf_threshold_consumption
-
         self.inst_util_thres[0] = (
                 (1 / (1 - self.emcu)) * (self.sufficientarian_consumption_threshold[0]) ** (1 - self.emcu) + 1)
 
@@ -225,55 +222,11 @@ class UtilityModel:
         self.max_utility_distance_threshold[0] = self.utility_distance_threshold[:, 0].max()
 
         # Set up sufficentarian objectives for damages (first entry)
-
-        # Disutility threshold values for each time step
-        # self.inst_disutil_thres[0] = (
-        #         (1 / (1 - self.emdd)) * (self.sufficientarian_damage_threshold[0]) ** (1 - self.emdd) + 1)
-        #
-        # # calculate instantaneous welfare equivalent of minimum capita per head with PPP
-        # self.inst_disutil_thres_ww[:, 0] = self.inst_disutil_thres[0] * self.Alpha_data[:, 0]
-        #
-        # # calculate disutility equivalent for every income quintile and scale with welfare weights for comparison
-        # self.quintile_inst_disutil[2005] = (
-        #         (1 / (1 - self.emdd)) * (CPC_post_damage[2005]) ** (1 - self.emdd) + 1)
-        # self.quintile_inst_disutil_ww[2005] = self.quintile_inst_disutil[2005] * self.Alpha_data[:, 0]
-        #
-        # disutility_per_income_share = self.quintile_inst_disutil_ww[2005]
-        #
-        # list_timestep = []
-        #
-        # for quintile in range(0, 5):
-        #     for region in range(0, self.n_regions):
-        #         if disutility_per_income_share[quintile, region] > self.inst_disutil_thres_ww[region, 0]:
-        #             self.population_above_damage_threshold[0] = \
-        #                 self.population_above_damage_threshold[0] + region_pop[region, 0] * 1 / 5
-        #             self.disutility_distance_threshold[region, 0] = \
-        #                 - self.inst_disutil_thres_ww[region, 0] + disutility_per_income_share[quintile, region]
-        #
-        #             list_timestep.append(self.regions_list[region])
-        #
-        # self.regions_above_damage_threshold.append(list_timestep)
-        #
-        # self.max_disutility_distance_threshold[0] = self.disutility_distance_threshold[:, 0].max()
-
-        """
-        Trying something new here: damage threshold change
-        Important variables:
-            - self.population_above_damage_threshold[t]
-            - self.regions_above_damage_threshold[t]
-            - self.max_disutility_distance_threshold[t]
-            
-        Next:
-            - Create damage/consumption variable with dimensions [t, r]
-            - Condition: relative_damage > threshold
-            - Action: adjust important variables
-        """
         list_timestep = []
-        # relative_damage = damages / CPC
+
         relative_damage = np.divide(damages, CPC, out=np.zeros_like(damages), where=(CPC != 0))
         for region in range(self.n_regions):
             if relative_damage[region, 0] > relative_damage_threshold:
-                # TODO: continue here
                 self.population_above_damage_threshold[0] = self.population_above_damage_threshold[0] + region_pop[region, 0]
                 self.disutility_distance_threshold[region, 0] = np.transpose((damages[region, 0] - CPC[region, 0] * relative_damage_threshold))
                 list_timestep.append(self.regions_list[region])
@@ -689,7 +642,7 @@ class UtilityModel:
         if np.isnan(self.intertemporal_damage_gini):
             self.intertemporal_damage_gini = 40
 
-    def get_elasmu(self):
+    def get_emcu(self):
         """
         @return:
             self.emcu: float
@@ -845,7 +798,7 @@ class UtilityModel:
         # minimize max distance to threshold
         self.max_utility_distance_threshold[t] = self.utility_distance_threshold[:, t].max()
 
-        self.compute_sufficentarian_damage_objectives(t, year, CPC_post_damage, damages, CPC)
+        self.compute_sufficentarian_damage_objectives(t, damages, CPC)
 
         # prioritarian objectives
         self.worst_off_income_class[t] = CPC_post_damage[year][0].min()
@@ -923,49 +876,13 @@ class UtilityModel:
             # calculate worldwide disutility
             self.disutility = self.reg_disutil.sum()
 
-    def compute_sufficentarian_damage_objectives(self, t, year, CPC_post_damage, damages, CPC):
+    def compute_sufficentarian_damage_objectives(self, t, damages, CPC):
         """
         Computes the sufficientarian objectives that are based on damages and disutilities.
         """
 
-        # # sufficientarian threshold adjusted by the growth of the average world economy
-        # self.sufficientarian_damage_threshold[t] = \
-        #     self.sufficientarian_damage_threshold[t - 1] * (1 + self.average_growth_CPC[t])
-        #
-        # # calculate instantaneous disutility welfare equivalent of minimum capita per head
-        # self.inst_disutil_thres[t] = \
-        #     (1 / (1 - self.emdd)) * (self.sufficientarian_damage_threshold[t]) ** (1 - self.emdd) + 1
-        #
-        # # calculate instantaneous welfare equivalent of threshold
-        # self.inst_disutil_thres_ww[:, t] = self.inst_disutil_thres[t] * self.Alpha_data[:, t]
-        #
-        # # calculate disutility equivalent for every income quintile and scale with welfare weights for comparison
-        # self.quintile_inst_disutil[year] = ((1 / (1 - self.emdd)) * (CPC_post_damage[year]) ** (1 - self.emdd) + 1)
-        # self.quintile_inst_disutil_ww[year] = self.quintile_inst_disutil[year] * self.Alpha_data[:, t]
-        #
-        # disutility_per_income_share = self.quintile_inst_disutil_ww[year]
-        # list_timestep = []
-        #
-        # for quintile in range(0, 5):
-        #     for region in range(0, self.n_regions):
-        #         if disutility_per_income_share[quintile, region] > self.inst_disutil_thres_ww[region, t]:
-        #             self.population_above_damage_threshold[t] = \
-        #                 self.population_above_damage_threshold[t] + self.region_pop[region, t] * 1 / 5
-        #             self.disutility_distance_threshold[region, t] = \
-        #                 - self.inst_disutil_thres_ww[region, t] + disutility_per_income_share[quintile, region]
-        #
-        #             list_timestep.append(self.regions_list[region])
-        #
-        # self.regions_above_damage_threshold.append(list_timestep)
-        #
-        # # minimize max distance to threshold
-        # self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
-
-        """
-        Trying new stuff here.
-        """
         list_timestep = []
-        # relative_damage = damages / CPC
+
         relative_damage = np.divide(damages, CPC, out=np.zeros_like(damages), where=(CPC != 0))
         for region in range(self.n_regions):
             if relative_damage[region, t] > self.relative_damage_threshold:

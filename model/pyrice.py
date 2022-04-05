@@ -64,7 +64,7 @@ class PyRICE(object):
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
                  ini_suf_threshold_consumption=1.168,  # Changed from 0.711, now it is: 3.20*365/1000
-                 relative_damage_threshold=0.2,
+                 relative_damage_threshold=0.05,
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
                  t2xco2_dist=0,
@@ -83,7 +83,7 @@ class PyRICE(object):
                  miu=2135,
                  irstp_consumption=0.015,
                  irstp_damage=0.015,  # DICE: 0.000000001
-                 emdd=-0.55,
+                 emdd=0.8,
                  precision=10,
                  **kwargs):
         """

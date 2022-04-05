@@ -40,7 +40,7 @@ if __name__ == '__main__':
         IntegerParameter('scenario_cback', 0, 1),
         IntegerParameter('scenario_elasticity_of_damages', 0, 2),
         IntegerParameter('scenario_limmiu', 0, 1),
-        RealParameter('relative_damage_threshold', 0.1, 5.0)  # This one is new
+        RealParameter('emdd', 0.001, 0.6)
     ]
 
     # Set levers, one for each time step
@@ -63,12 +63,13 @@ if __name__ == '__main__':
     model.outcomes = prepare_info_outcomes(outcome_names)
 
     loading = False
-    file_name = 'test_results_higher_consumption_threshold'
+    file_name = 'results_new_damage_threshold_implementation'
+    n = 20
 
     if not loading:
         # Run experiments
         with MultiprocessingEvaluator(model) as evaluator:
-            results = evaluator.perform_experiments(scenarios=20, policies=20)
+            results = evaluator.perform_experiments(scenarios=n, policies=n)
             save_results(results=results, file_name=target_directory + file_name)
     else:
         # Loading results
@@ -76,5 +77,4 @@ if __name__ == '__main__':
 
     experiments, outcomes = results
     outcomes = pd.DataFrame(outcomes)
-    print(f'outcomes.shape: {outcomes.shape}')
     plot_pathways(outcomes, outcome_names)
