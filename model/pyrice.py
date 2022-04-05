@@ -63,8 +63,8 @@ class PyRICE(object):
                  prioritarian_discounting=0,
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
-                 ini_suf_threshold_consumption=1.168,  # Changed from 0.711
-                 ini_suf_threshold_damage=0.5,  # TODO: needs to be identified
+                 ini_suf_threshold_consumption=1.168,  # Changed from 0.711, now it is: 3.20*365/1000
+                 relative_damage_threshold=0.2,
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
                  t2xco2_dist=0,
@@ -92,7 +92,7 @@ class PyRICE(object):
         @param sufficientarian_discounting: int: 0 = inheritance discounting or, 1 = sustainable growth discounting
         @param growth_factor_suf: int: growth factor when sufficientarian
         @param ini_suf_threshold_consumption: float: initial sufficientarian threshold (based on poverty line $1.95 p/d)
-        @param ini_suf_threshold_damage: float: initial sufficientarian threshold for damages/disutility
+        @param relative_damage_threshold: float: percentage of how high damage can be compared to consumption
         @param egalitarian_discounting: int: discounting when egalitarian (0 = no discouting  or 1 = normal discounting)
         @param t2xco2_index: int: equilibrium temperature impact
         @param t2xco2_dist: int: total factor productivity growth rate
@@ -178,7 +178,7 @@ class PyRICE(object):
 
         # Set up Utility
         self.utility_model.set_up_utility(
-            ini_suf_threshold_consumption, ini_suf_threshold_damage,  self.climate_impact_relative_to_capita,
+            ini_suf_threshold_consumption, relative_damage_threshold,  self.climate_impact_relative_to_capita,
             self.CPC_post_damage, self.CPC, self.region_pop, self.damages, self.Y
         )
 

@@ -40,7 +40,7 @@ if __name__ == '__main__':
         IntegerParameter('scenario_cback', 0, 1),
         IntegerParameter('scenario_elasticity_of_damages', 0, 2),
         IntegerParameter('scenario_limmiu', 0, 1),
-        RealParameter('ini_suf_threshold_damage', 0.1, 5.0)  # This one is new
+        RealParameter('relative_damage_threshold', 0.1, 5.0)  # This one is new
     ]
 
     # Set levers, one for each time step
