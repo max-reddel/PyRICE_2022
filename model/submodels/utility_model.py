@@ -78,7 +78,7 @@ class UtilityModel:
         self.inst_util_worst_off_condition = np.zeros((self.n_regions, steps))
         self.worst_off_income_class = np.zeros(steps)
         self.worst_off_income_class_index = np.zeros(steps)
-        self.worst_off_climate_impact = np.zeros(steps)
+        self.worst_off_damage = np.zeros(steps)
         self.worst_off_climate_impact_index = np.zeros(steps)
 
         # Sufficientarian outputs
@@ -126,8 +126,10 @@ class UtilityModel:
         self.global_per_disutility_ww = np.zeros(steps)
         self.reg_cum_disutil = np.zeros((self.n_regions, steps))
 
-    def set_up_utility(self, ini_suf_threshold_consumption, relative_damage_threshold, climate_impact_relative_to_capita,
-                       CPC_post_damage, CPC, region_pop, damages, Y):
+    def set_up_utility(
+            self, ini_suf_threshold_consumption, relative_damage_threshold, climate_impact_relative_to_capita,
+            CPC_post_damage, CPC, region_pop, damages, Y
+    ):
         """
         Sets up most variables with their initial values.
         @param ini_suf_threshold_consumption: float
@@ -179,7 +181,7 @@ class UtilityModel:
         self.worst_off_income_class_index[0] = np.argmin(array_worst_off_income)
 
         # objective for the worst-off region in terms of climate impact
-        self.worst_off_climate_impact[0] = climate_impact_relative_to_capita[2005][0].min()
+        self.worst_off_damage[0] = climate_impact_relative_to_capita[2005][0].min()
 
         array_worst_off_share = climate_impact_relative_to_capita[2005][0]
         self.worst_off_climate_impact_index[0] = np.argmin(array_worst_off_share)
@@ -504,7 +506,7 @@ class UtilityModel:
             self.global_per_util_ww,
             self.global_per_disutility_ww,
             self.worst_off_income_class,
-            self.worst_off_climate_impact,
+            self.worst_off_damage,
             self.max_utility_distance_threshold,
             self.population_below_consumption_threshold,
             self.max_disutility_distance_threshold,
@@ -517,7 +519,18 @@ class UtilityModel:
             costs
         ]
 
+        # Extra aggregated variables
         self.aggregated_costs = costs.sum()
+
+        # Sufficientarian
+        self.intertemporal_max_distance_to_consumption_threshold = self.max_utility_distance_threshold.sum()
+        self.intertemporal_max_distance_to_damage_threshold = self.max_disutility_distance_threshold.sum()
+        self.intertemporal_population_below_consumption_threshold = self.population_below_consumption_threshold.sum()
+        self.intertemporal_population_above_damage_threshold = self.population_above_damage_threshold.sum()
+
+        # Prioritarian
+        self.intertemporal_worst_off_income_class = self.worst_off_income_class.sum()
+        self.intertemporal_worst_off_damage = self.worst_off_damage.sum()
 
         objectives_list = [
             self.intertemporal_consumption_gini,
@@ -526,7 +539,13 @@ class UtilityModel:
             self.disutility,
             self.regions_below_consumption_threshold,
             self.regions_above_damage_threshold,
-            self.aggregated_costs
+            self.aggregated_costs,
+            self.intertemporal_max_distance_to_consumption_threshold,
+            self.intertemporal_max_distance_to_damage_threshold,
+            self.intertemporal_population_below_consumption_threshold,
+            self.intertemporal_population_above_damage_threshold,
+            self.intertemporal_worst_off_income_class,
+            self.intertemporal_worst_off_damage,
         ]
 
         objectives_list_name = [
@@ -536,26 +555,35 @@ class UtilityModel:
             'Total Aggregated Disutility',
             'Regions below consumption threshold',
             'Regions above damage threshold',
-            'Total Aggregated Costs'
+            'Total Aggregated Costs',
+            'Intertemporal consumption distance',
+            'Intertemporal damage distance',
+            'Intertemporal consumption population',
+            'Intertemporal damage population',
+            'Intertemporal lowest income p/c',
+            'Intertemporal highest damage p/c'
         ]
 
         objectives_list_timeseries_name = [
-            'Damages ',
-            'Utility ',
-            'Disutility ',
-            'Lowest income per capita ',
-            'Highest climate impact per capita ',
-            'Distance to consumption threshold ',
-            'Population below consumption threshold ',
-            'Distance to damage threshold ',
-            'Population above damage threshold ',
-            'Intratemporal consumption GINI ',
-            'Intratemporal damage GINI ',
-            'Atmospheric Temperature ',
-            'Industrial Emission ',
-            'Total Output ',
-            'Costs '
+            'Damages',
+            'Utility',
+            'Disutility',
+            'Lowest income per capita',
+            'Highest damage per capita',
+            'Distance to consumption threshold',
+            'Population below consumption threshold',
+            'Distance to damage threshold',
+            'Population above damage threshold',
+            'Intratemporal consumption GINI',
+            'Intratemporal damage GINI',
+            'Atmospheric Temperature',
+            'Industrial Emission',
+            'Total Output',
+            'Costs'
         ]
+
+        # Adding space after each timeseries objective
+        objectives_list_timeseries_name = [x + ' ' for x in objectives_list_timeseries_name]
 
         supplementary_list_timeseries = [CPC, self.region_pop]
         supplementary_list_quintile = [CPC_pre_damage, CPC_post_damage]
@@ -802,7 +830,7 @@ class UtilityModel:
 
         # prioritarian objectives
         self.worst_off_income_class[t] = CPC_post_damage[year][0].min()
-        self.worst_off_climate_impact[t] = climate_impact_relative_to_capita[year][0].max()
+        self.worst_off_damage[t] = climate_impact_relative_to_capita[year][0].max()
 
         # Utilitarian objectives
         self.global_damages[t] = damages[:, t].sum(axis=0)

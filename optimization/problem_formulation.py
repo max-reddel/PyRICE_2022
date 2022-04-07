@@ -64,6 +64,7 @@ def get_directory(damage_function, welfare_function):
 
 def run_optimization(damage_function=DamageFunction.NORDHAUS,
                      welfare_function=WelfareFunction.UTILITARIAN,
+                     aggregation=True,
                      nfe=5000,
                      saving_results=False,
                      with_convergence=False):
@@ -71,6 +72,7 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     This function runs an optimization with the PyRICE model.
     @param damage_function: DamageFunction
     @param welfare_function: WelfareFunction
+    @param aggregation: Boolean
     @param nfe: integer
     @param saving_results: Boolean: whether to save results_formatted or not
     @param with_convergence: Boolean: whether to save convergence data or not
@@ -86,22 +88,28 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     model = Model('RICE', function=model)
 
     # Specify uncertainties
-    model.uncertainties = [IntegerParameter('t2xco2_index', 0, 999),
-                           IntegerParameter('t2xco2_dist', 0, 2),
-                           RealParameter('fosslim', 4000, 13649),
-                           IntegerParameter('scenario_pop_gdp', 0, 5),
-                           IntegerParameter('scenario_sigma', 0, 2),
-                           IntegerParameter('scenario_cback', 0, 1),
-                           IntegerParameter('scenario_elasticity_of_damages', 0, 2),
-                           IntegerParameter('scenario_limmiu', 0, 1)]
+    model.uncertainties = [
+        IntegerParameter('t2xco2_index', 0, 999),
+        IntegerParameter('t2xco2_dist', 0, 2),
+        RealParameter('fosslim', 4000, 13649),
+        IntegerParameter('scenario_pop_gdp', 0, 5),
+        IntegerParameter('scenario_sigma', 0, 2),
+        IntegerParameter('scenario_cback', 0, 1),
+        IntegerParameter('scenario_elasticity_of_damages', 0, 2),
+        IntegerParameter('scenario_limmiu', 0, 1),
+        RealParameter('emdd', 0.001, 0.6)
+    ]
 
     # Set levers, one for each time step
-    model.levers = [RealParameter('sr', 0.1, 0.5),
-                    RealParameter('miu', 2065, 2300),
-                    RealParameter('irstp_consumption', 0.001, 0.015)]
+    model.levers = [
+        RealParameter('sr', 0.1, 0.5),
+        RealParameter('miu', 2065, 2300),
+        RealParameter('irstp_consumption', 0.001, 0.015),
+        RealParameter('irstp_damage', 0.001, 0.015)
+    ]
 
     # Specify outcomes
-    model.outcomes, epsilons = get_outcomes_and_epsilons(welfare_function=welfare_function)
+    model.outcomes, epsilons = get_outcomes_and_epsilons(welfare_function=welfare_function, aggregation=aggregation)
 
     model.constants = [Constant('precision', 10)]
 
@@ -111,19 +119,21 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     if with_convergence:
 
         directory = get_directory(damage_function, welfare_function)
-
-        convergence_metrics = [EpsilonProgress(),
-                               ArchiveLogger(directory,
-                                             [l.name for l in model.levers],
-                                             [o.name for o in model.outcomes
-                                              if o.kind != o.INFO])]
+        convergence_metrics = [
+            EpsilonProgress(),
+            ArchiveLogger(
+                directory, [l.name for l in model.levers], [o.name for o in model.outcomes if o.kind != o.INFO]
+            )
+        ]
 
         with MultiprocessingEvaluator(model, n_processes=50) as evaluator:
-            results, convergence = evaluator.optimize(nfe=nfe,
-                                                      searchover='levers',
-                                                      epsilons=epsilons,
-                                                      convergence=convergence_metrics,
-                                                      constraints=constraints)
+            results, convergence = evaluator.optimize(
+                nfe=nfe,
+                searchover='levers',
+                epsilons=epsilons,
+                convergence=convergence_metrics,
+                constraints=constraints
+            )
 
             if saving_results:
                 # Save results_formatted
@@ -136,10 +146,12 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     else:
 
         with MultiprocessingEvaluator(model, n_processes=50) as evaluator:
-            results = evaluator.optimize(nfe=nfe,
-                                         searchover='levers',
-                                         epsilons=epsilons,
-                                         constraints=constraints)
+            results = evaluator.optimize(
+                nfe=nfe,
+                searchover='levers',
+                epsilons=epsilons,
+                constraints=constraints
+            )
 
             if saving_results:
                 path = define_path_name(damage_function, welfare_function, nfe, prefix='results_formatted')
@@ -148,9 +160,11 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
 
 if __name__ == '__main__':
 
-    n = 100000
-    run_optimization(welfare_function=WelfareFunction.UTILITARIAN,
-                     damage_function=DamageFunction.NORDHAUS,
-                     nfe=n,
-                     saving_results=True,
-                     with_convergence=True)
+    run_optimization(
+        welfare_function=WelfareFunction.UTILITARIAN,
+        damage_function=DamageFunction.NORDHAUS,
+        aggregation=True,
+        nfe=100000,
+        saving_results=True,
+        with_convergence=True
+    )

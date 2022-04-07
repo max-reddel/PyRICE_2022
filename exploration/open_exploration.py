@@ -62,9 +62,9 @@ if __name__ == '__main__':
     ]
     model.outcomes = prepare_info_outcomes(outcome_names)
 
-    loading = False
-    file_name = 'results_new_damage_threshold_implementation'
-    n = 20
+    loading = True
+    n = 100
+    file_name = f'results_new_damage_threshold_implementation_{n*n}'
 
     if not loading:
         # Run experiments

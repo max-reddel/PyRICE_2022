@@ -413,4 +413,4 @@ if __name__ == '__main__':
 
     # Default levers are defined by the original Nordhaus policy
     results = model()
-    # [print(f'{k}: {v}') for k, v in results.items()]
+    [print(f'{k}: {v}') for k, v in results.items()]
