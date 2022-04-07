@@ -6,13 +6,11 @@ from model.pyrice import PyRICE
 from model.enumerations import *
 from exploration import *
 import os
-import warnings
 
 from ema_workbench import (Model, RealParameter, IntegerParameter, MultiprocessingEvaluator, ema_logging)
 from ema_workbench.util.utilities import save_results
 
 ema_logging.log_to_stderr(ema_logging.INFO)
-warnings.filterwarnings('ignore')  # suppress warnings
 
 if __name__ == '__main__':
 

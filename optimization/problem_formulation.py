@@ -62,21 +62,22 @@ def get_directory(damage_function, welfare_function):
     return path
 
 
-def run_optimization(damage_function=DamageFunction.NORDHAUS,
-                     welfare_function=WelfareFunction.UTILITARIAN,
-                     aggregation=True,
-                     nfe=5000,
-                     saving_results=False,
-                     with_convergence=False):
+def run_optimization(
+        damage_function=DamageFunction.NORDHAUS,
+        problem_formulation=ProblemFormulation.UITILITARIAN_AGGREGATED,
+        nfe=5000,
+        saving_results=False,
+        with_convergence=False):
     """
     This function runs an optimization with the PyRICE model.
     @param damage_function: DamageFunction
-    @param welfare_function: WelfareFunction
-    @param aggregation: Boolean
+    @param problem_formulation: ProblemFormulation
     @param nfe: integer
     @param saving_results: Boolean: whether to save results_formatted or not
     @param with_convergence: Boolean: whether to save convergence data or not
     """
+
+    welfare_function, aggregation = problem_formulation.value
 
     # Instantiate the model
     model_specification = ModelSpec.STANDARD
@@ -109,7 +110,9 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
     ]
 
     # Specify outcomes
-    model.outcomes, epsilons = get_outcomes_and_epsilons(welfare_function=welfare_function, aggregation=aggregation)
+    model.outcomes, epsilons = get_outcomes_and_epsilons(
+        problem_formulation=ProblemFormulation.UITILITARIAN_AGGREGATED
+    )
 
     model.constants = [Constant('precision', 10)]
 
@@ -159,11 +162,9 @@ def run_optimization(damage_function=DamageFunction.NORDHAUS,
 
 
 if __name__ == '__main__':
-
     run_optimization(
-        welfare_function=WelfareFunction.UTILITARIAN,
         damage_function=DamageFunction.NORDHAUS,
-        aggregation=True,
+        problem_formulation=ProblemFormulation.UITILITARIAN_AGGREGATED,
         nfe=100000,
         saving_results=True,
         with_convergence=True
