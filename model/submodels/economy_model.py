@@ -84,7 +84,7 @@ class EconomyModel:
         self.sigma_growth_data = data_sets.RICE_DATA.iloc[70:82, 1:6].to_numpy()
         self.Emissions_parameter = data_sets.RICE_PARAMETER.iloc[65:70, 5:17].to_numpy().transpose()
 
-        # set up dataframe for saving CO2 to output ratio
+        # set up dataframe for saving_results CO2 to output ratio
         self.Sigma_gr = np.zeros((self.n_regions, steps))
         self.Sigma_gr_RICE = np.zeros((self.n_regions, steps))
 

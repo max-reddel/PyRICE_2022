@@ -171,32 +171,32 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
     """
 
     dict_epsilons = {
-        'Total Aggregated Utility': 50,
-        'Utility': 5,
-        'Total Aggregated Disutility': 50,
-        'Disutility': 5,
-        'Lowest income per capita': 0.02,
-        'Intratemporal consumption GINI': 0.001,
-        'Total Output': 1.0,
-        'Atmospheric Temperature': 0.1,
-        'Highest damage per capita': 0.01,
-        'Intratemporal damage GINI': 0.01,
-        'Damages': 0.4,
-        'Industrial Emission': 0.1,
-        'Population below consumption threshold': 0.01,
-        'Distance to consumption threshold': 0.000001,
-        'Population above damage threshold': 0.01,
-        'Distance to damage threshold': 0.000001,
-        'Intertemporal consumption distance': 0.00001,
-        'Intertemporal consumption population': 0.1,
-        'Intertemporal damage distance': 0.00001,
-        'Intertemporal damage population': 0.1,
-        'Intertemporal lowest income p/c': 0.2,
-        'Intertemporal highest damage p/c': 0.1,
-        'Intertemporal consumption GINI': 0.001,
-        'Intertemporal damage GINI': 0.01,
-        'Costs': 0.1,
-        'Total Aggregated Costs': 2
+        'Total Aggregated Utility': 100,  # 1575
+        'Utility': 10,  # 135
+        'Total Aggregated Disutility': 100,  # 9942
+        'Disutility': 1.0,  # 1.1
+        'Lowest income per capita': 0.02,  # 0.026
+        'Intratemporal consumption GINI': 0.001,  # 0.001
+        'Total Output': 1.0,  # 25
+        'Atmospheric Temperature': 0.1,  # 0.55
+        'Highest damage per capita': 0.01,  # 0.096
+        'Intratemporal damage GINI': 0.01,  # 0.032
+        'Damages': 0.1,  # 0.1
+        'Industrial Emission': 0.1,  # 1.0
+        'Population below consumption threshold': 20.0,  # 75
+        'Distance to consumption threshold': 0.001,  # 0.008
+        'Population above damage threshold': 50.0,  # 691
+        'Distance to damage threshold': 0.1,  # 0.4
+        'Intertemporal consumption distance': 1.0,  # 140
+        'Intertemporal consumption population': 100.0,  # 4200
+        'Intertemporal damage distance': 1.0,  # 137
+        'Intertemporal damage population': 100.0,  # 19500
+        'Intertemporal lowest income p/c': 5.0,  # 52.31
+        'Intertemporal highest damage p/c': 0.2,  # 2.328
+        'Intertemporal consumption GINI': 0.01,  # 0.01
+        'Intertemporal damage GINI': 0.01,  # 0.024
+        'Costs': 0.1,  # 0.18
+        'Total Aggregated Costs': 20  # 943
     }
 
     # Relevant years
@@ -254,7 +254,11 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
             'Total Aggregated Disutility',
             'Intertemporal consumption GINI',
             'Intertemporal damage GINI',
-            'Intertemporal highest damage p/c'
+            'Intertemporal highest damage p/c',
+            'Intertemporal consumption distance',
+            'Intertemporal consumption population',
+            'Intertemporal damage distance',
+            'Intertemporal damage population'
         ]
         outcomes_info_aggregated = []
 

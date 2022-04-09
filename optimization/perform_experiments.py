@@ -51,14 +51,14 @@ def perform_own_experiments(
         damage_function=DamageFunction.NORDHAUS,
         n_scenarios=100,
         n_policies=100,
-        saving=False
+        saving_results=False
 ):
     """
     Perform a bunch of experiments and return the results.
     @param damage_function: DamageFunction
     @param n_scenarios: int: number of scenarios
     @param n_policies: int: number policies
-    @param saving: Boolean: whether to save the results or not
+    @param saving_results: Boolean: whether to save the results or not
     @return:
         results: dataframe, dictionary: experiments, outcomes
     """
@@ -73,12 +73,12 @@ def perform_own_experiments(
 
     model.uncertainties, model.levers, model.constants = get_xlc()
 
-    model.outcomes, epsilons = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES)
+    model.outcomes, _ = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES)
 
     with MultiprocessingEvaluator(model) as evaluator:
         results = evaluator.perform_experiments(scenarios=n_scenarios, policies=n_policies)
 
-        if saving:
+        if saving_results:
             file_name = f'results_experiments_for_epsilons_{n_scenarios * n_policies}'
             parent_directory = os.path.dirname(os.getcwd())
             target_directory = parent_directory + '/optimization/results/experiments/'
@@ -89,9 +89,9 @@ def perform_own_experiments(
 
 if __name__ == '__main__':
 
-    n = 10
+    n = 100
     perform_own_experiments(
         n_scenarios=n,
         n_policies=n,
-        saving=False
+        saving_results=True
     )

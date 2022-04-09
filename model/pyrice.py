@@ -63,7 +63,7 @@ class PyRICE(object):
                  prioritarian_discounting=0,
                  sufficientarian_discounting=1,
                  growth_factor_suf=1,
-                 ini_suf_threshold_consumption=1.168,  # Changed from 0.711, now it is: 3.20*365/1000
+                 ini_suf_threshold_consumption=1.168,
                  relative_damage_threshold=0.05,
                  egalitarian_discounting=0,
                  t2xco2_index=-1,
@@ -82,7 +82,7 @@ class PyRICE(object):
                  sr=0.248,
                  miu=2135,
                  irstp_consumption=0.015,
-                 irstp_damage=0.015,  # DICE: 0.000000001
+                 irstp_damage=0.015,
                  emdd=0.8,
                  precision=10,
                  **kwargs):
@@ -91,7 +91,7 @@ class PyRICE(object):
         @param prioritarian_discounting: int: how much the worst-off consumpt. needs to grow each tick to allow discou.
         @param sufficientarian_discounting: int: 0 = inheritance discounting or, 1 = sustainable growth discounting
         @param growth_factor_suf: int: growth factor when sufficientarian
-        @param ini_suf_threshold_consumption: float: initial sufficientarian threshold (based on poverty line $1.95 p/d)
+        @param ini_suf_threshold_consumption: float: initial sufficientarian threshold (based on poverty line $3.20 p/d)
         @param relative_damage_threshold: float: percentage of how high damage can be compared to consumption
         @param egalitarian_discounting: int: discounting when egalitarian (0 = no discouting  or 1 = normal discounting)
         @param t2xco2_index: int: equilibrium temperature impact
@@ -122,8 +122,20 @@ class PyRICE(object):
 
         # Import data_dict sets
         self.data_sets = DataSets()
-        self.regions_list = ["US", "OECD-Europe", "Japan", "Russia", "Non-Russia Eurasia", "China", "India",
-                             "Middle East", "Africa", "Latin America", "OHI", "Other non-OECD Asia"]
+        self.regions_list = [
+            "US",
+            "OECD-Europe",
+            "Japan",
+            "Russia",
+            "Non-Russia Eurasia",
+            "China",
+            "India",
+            "Middle East",
+            "Africa",
+            "Latin America",
+            "OHI",
+            "Other non-OECD Asia"
+        ]
 
         # Set up levers
         self.set_up_levers(

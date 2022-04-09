@@ -24,7 +24,7 @@ def define_path_name(damage_function, welfare_function, nfe, prefix='results_for
     @param nfe: integer
     @param prefix: string: {'results_formatted', 'convergence'}
     @return:
-        path: string (path + file name that used for saving)
+        path: string (path + file name that used for saving_results)
     """
 
     file_name = damage_function.name + '_' + \
