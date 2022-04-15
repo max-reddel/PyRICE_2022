@@ -501,6 +501,8 @@ class UtilityModel:
         # egalitarian objectives troubles with NaN
         self.take_care_of_nans()
 
+        temperature_overhoots = self.compute_2_degree_timesteps(temp_atm)
+
         objectives_list_timeseries = [
             self.global_damages,
             self.global_per_util_ww,
@@ -514,9 +516,10 @@ class UtilityModel:
             self.CPC_intra_gini,
             self.climate_impact_per_dollar_gini,
             temp_atm,
+            temperature_overhoots,
             E_worldwilde_per_year,
             self.global_ouput,
-            costs
+            costs,
         ]
 
         # Extra aggregated variables
@@ -546,6 +549,7 @@ class UtilityModel:
             self.intertemporal_population_above_damage_threshold,
             self.intertemporal_worst_off_income_class,
             self.intertemporal_worst_off_damage,
+            temperature_overhoots[-1],
         ]
 
         objectives_list_name = [
@@ -561,7 +565,8 @@ class UtilityModel:
             'Intertemporal consumption population',
             'Intertemporal damage population',
             'Intertemporal lowest income p/c',
-            'Intertemporal highest damage p/c'
+            'Intertemporal highest damage p/c',
+            'Total temperature overshoots'
         ]
 
         objectives_list_timeseries_name = [
@@ -577,6 +582,7 @@ class UtilityModel:
             'Intratemporal consumption GINI',
             'Intratemporal damage GINI',
             'Atmospheric Temperature',
+            'Temperature overshoot',
             'Industrial Emission',
             'Total Output',
             'Costs'
@@ -921,6 +927,20 @@ class UtilityModel:
         self.regions_above_damage_threshold.append(list_timestep)
         self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
 
+    @staticmethod
+    def compute_2_degree_timesteps(temp_atm):
+        """
+        Compute for each time step how many previous time steps have had an atmospheric temperature increase of more
+        than 2 degrees Celsius.
+        @param temp_atm: numpy array (31, ): atmospheric temperature increase
+        @return
+            above_2_degree_timesteps: numpy array (31, )
+        """
+
+        non_cummulative_version = temp_atm > 2.0
+        above_2_degree_timesteps = np.cumsum(non_cummulative_version)
+        return above_2_degree_timesteps
+
 
 class Results:
     """
@@ -942,7 +962,7 @@ class Results:
         utility = self.get_values_for_specific_prefix("Utility 2")
         disutility = self.get_values_for_specific_prefix("Disutility 2")
         lowest = self.get_values_for_specific_prefix("Lowest income per capita")
-        highest = self.get_values_for_specific_prefix("Highest climate impact per capita")
+        highest = self.get_values_for_specific_prefix("Highest damage per capita")
         distance_consumption = self.get_values_for_specific_prefix("Distance to consumption threshold")
         population_consumption = self.get_values_for_specific_prefix("Population below consumption threshold")
         distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
@@ -955,6 +975,9 @@ class Results:
         regions_below_consumption_threshold = self.data_dict["Regions below consumption threshold"]
         regions_above_damage_threshold = self.data_dict["Regions above damage threshold"]
         costs = self.get_values_for_specific_prefix("Costs 2")
+        above_2_degree_timesteps = self.get_values_for_specific_prefix("Temperature overshoot")
+
+        print(above_2_degree_timesteps)
 
         columns = [
             'Damages',
@@ -969,6 +992,7 @@ class Results:
             'Intratemporal consumption GINI',
             'Intratemporal damage GINI',
             'Atmospheric temperature',
+            'Temperature overshoot',
             'Industrial emission',
             'Total output',
             'Regions below consumption threshold',
@@ -989,6 +1013,7 @@ class Results:
             consumption_gini,
             damage_gini,
             temp,
+            above_2_degree_timesteps,
             emission,
             output,
             regions_below_consumption_threshold,
