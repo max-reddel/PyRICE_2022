@@ -4,13 +4,13 @@ levers, and constants.
 """
 
 # Imports
-
 from model.pyrice import PyRICE
 from optimization.outcomes_and_epsilons import *
 import os
 
 # EMA
-from ema_workbench import (Model, RealParameter, IntegerParameter, MultiprocessingEvaluator, ema_logging, Constant)
+from ema_workbench import \
+    (Model, RealParameter, IntegerParameter, MultiprocessingEvaluator, ema_logging, Constant, Policy)
 from ema_workbench.util.utilities import save_results
 ema_logging.log_to_stderr(ema_logging.INFO)
 
@@ -47,39 +47,63 @@ def get_xlc():
     return uncertainties, levers, constants
 
 
+def get_reference_policies():
+    """
+    Return appropriate reference policies for open exploration.
+    @return:
+        policies: list with Policy objects
+    """
+    policies = []
+
+    nordhaus_policy = Policy(
+        'Nordhaus',
+        **{'sr': 0.248, 'miu': 2135, 'irstp_consumption': 0.015, 'irstp_damage': 0.015}
+    )
+    policies.append(nordhaus_policy)
+
+    return policies
+
+
 def perform_own_experiments(
         damage_function=DamageFunction.NORDHAUS,
-        n_scenarios=100,
-        n_policies=100,
-        saving_results=False
+        n_scenarios=10000,
+        n_policies=None,
+        saving_results=False,
+        file_name=None
 ):
     """
     Perform a bunch of experiments and return the results.
     @param damage_function: DamageFunction
     @param n_scenarios: int: number of scenarios
-    @param n_policies: int: number policies
+    @param n_policies: int: number of policies
     @param saving_results: Boolean: whether to save the results or not
+    @param file_name: String: name of file to save
     @return:
         results: dataframe, dictionary: experiments, outcomes
     """
 
-    welfare_function = WelfareFunction.UTILITARIAN
-    # Instantiate the model
     model = PyRICE(model_specification=ModelSpec.STANDARD,
                    damage_function=damage_function,
-                   welfare_function=welfare_function)
+                   welfare_function=WelfareFunction.UTILITARIAN)
 
     model = Model('RICE', function=model)
 
     model.uncertainties, model.levers, model.constants = get_xlc()
 
+    if n_policies is None:
+        # Use specific reference policies instead of a number of policies
+        n_policies = get_reference_policies()
+
     model.outcomes, _ = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES)
 
     with MultiprocessingEvaluator(model) as evaluator:
+
         results = evaluator.perform_experiments(scenarios=n_scenarios, policies=n_policies)
 
         if saving_results:
-            file_name = f'results_experiments_for_epsilons_{n_scenarios * n_policies}'
+
+            if file_name is None:
+                file_name = f'results_open_exploration_{n_scenarios}'
             parent_directory = os.path.dirname(os.getcwd())
             target_directory = parent_directory + '/optimization/results/experiments/'
             save_results(results=results, file_name=target_directory + file_name)
@@ -89,9 +113,14 @@ def perform_own_experiments(
 
 if __name__ == '__main__':
 
-    n = 100
-    perform_own_experiments(
+    n = 370000
+    results = perform_own_experiments(
         n_scenarios=n,
-        n_policies=n,
-        saving_results=True
+        saving_results=True,
+        file_name=f'results_open_exploration_{n}'
     )
+
+    # experiments, outcomes = results
+    #
+    # for o in outcomes.items():
+    #     print(o)

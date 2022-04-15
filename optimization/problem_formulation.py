@@ -6,13 +6,13 @@ This module contains functions that support the run of an optimization.
 
 from model.pyrice import PyRICE
 from model.enumerations import *
+from optimization.perform_experiments import get_xlc
 from optimization.outcomes_and_epsilons import get_outcomes_and_epsilons
 import os
 
 # EMA
 from ema_workbench.em_framework.optimization import (EpsilonProgress, ArchiveLogger)
-from ema_workbench import (Model, RealParameter, IntegerParameter, MultiprocessingEvaluator, ema_logging, Constant)
-
+from ema_workbench import (Model, MultiprocessingEvaluator, ema_logging)
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
@@ -88,35 +88,8 @@ def run_optimization(
 
     model = Model('RICE', function=model)
 
-    # Specify uncertainties
-    model.uncertainties = [
-        IntegerParameter('t2xco2_index', 0, 999),
-        IntegerParameter('t2xco2_dist', 0, 2),
-        RealParameter('fosslim', 4000, 13649),
-        IntegerParameter('scenario_pop_gdp', 0, 5),
-        IntegerParameter('scenario_sigma', 0, 2),
-        IntegerParameter('scenario_cback', 0, 1),
-        IntegerParameter('scenario_elasticity_of_damages', 0, 2),
-        IntegerParameter('scenario_limmiu', 0, 1),
-        RealParameter('emdd', 0.001, 0.6)
-    ]
-
-    # Set levers, one for each time step
-    model.levers = [
-        RealParameter('sr', 0.1, 0.5),
-        RealParameter('miu', 2065, 2300),
-        RealParameter('irstp_consumption', 0.001, 0.015),
-        RealParameter('irstp_damage', 0.001, 0.015)
-    ]
-
-    # Specify outcomes
-    model.outcomes, epsilons = get_outcomes_and_epsilons(
-        problem_formulation=ProblemFormulation.UITILITARIAN_AGGREGATED
-    )
-
-    model.constants = [Constant('precision', 10)]
-
-    constraints = []
+    model.uncertainties, model.levers, model.constants = get_xlc()
+    model.outcomes, epsilons = get_outcomes_and_epsilons(problem_formulation=problem_formulation)
 
     # Run optimization
     if with_convergence:
@@ -134,8 +107,7 @@ def run_optimization(
                 nfe=nfe,
                 searchover='levers',
                 epsilons=epsilons,
-                convergence=convergence_metrics,
-                constraints=constraints
+                convergence=convergence_metrics
             )
 
             if saving_results:
@@ -152,8 +124,7 @@ def run_optimization(
             results = evaluator.optimize(
                 nfe=nfe,
                 searchover='levers',
-                epsilons=epsilons,
-                constraints=constraints
+                epsilons=epsilons
             )
 
             if saving_results:

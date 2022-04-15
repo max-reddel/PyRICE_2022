@@ -58,6 +58,9 @@ def plot_pathways(outcomes_df, args):
     elif len(args) <= 9:
         nrows = 3
         ncols = 3
+    elif len(args) <= 12:
+        nrows = 3
+        ncols = 4
     elif len(args) <= 16:
         nrows = 4
         ncols = 4
@@ -65,7 +68,7 @@ def plot_pathways(outcomes_df, args):
         nrows = 5
         ncols = 5
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(22, 18), tight_layout=True)
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(28, 24), tight_layout=True)
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
 
     years = list(range(2005, 2310, 10))

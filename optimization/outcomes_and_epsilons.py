@@ -196,19 +196,21 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         'Intertemporal consumption GINI': 0.01,  # 0.01
         'Intertemporal damage GINI': 0.01,  # 0.024
         'Costs': 0.1,  # 0.18
-        'Total Aggregated Costs': 20  # 943
+        'Total Aggregated Costs': 20,  # 943,
+        'Temperature overshoot': 1,
+        'Total temperature overshoot': 1
     }
 
     # Relevant years
     if years is None:
-        years_optimize = [2035, 2055, 2075]
+        years_optimize = [2105]
     else:
         years_optimize = years
-    years_info = [2105, 2205, 2305]
+    # years_info = [2055, 2155, 2205, 2255, 2305]
+    years_info = []
 
     # All relevant timeseries outcome variable names
     outcomes_all_names = [
-        'Damages',
         'Utility',
         'Disutility',
         'Intratemporal consumption GINI',
@@ -219,20 +221,20 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         'Population below consumption threshold',
         'Distance to damage threshold',
         'Population above damage threshold',
-        'Atmospheric Temperature',
-        'Industrial Emission',
-        'Total Output',
-        'Costs'
+        'Temperature overshoot',
+        'Costs',
+        # 'Damages',
+        # 'Atmospheric Temperature',
+        # 'Industrial Emission',
+        # 'Total Output',
     ]
 
     if problem_formulation == ProblemFormulation.ALL_OBJECTIVES:
         outcomes_maximize_names = [
-            'Total Output',
             'Utility',
             'Lowest income per capita',
         ]
         outcomes_minimize_names = [
-            'Costs',
             'Disutility',
             'Intratemporal consumption GINI',
             'Intratemporal damage GINI',
@@ -241,108 +243,109 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
             'Population below consumption threshold',
             'Distance to damage threshold',
             'Population above damage threshold',
-            'Atmospheric Temperature',
-            'Industrial Emission',
-            'Costs'
+            'Costs',
+            'Temperature overshoot'
+            # 'Atmospheric Temperature',
+            # 'Industrial Emission',
         ]
         outcomes_maximize_aggregated = [
-            'Total Aggregated Utility',
-            'Intertemporal lowest income p/c'
+            # 'Total Aggregated Utility',
+            # 'Intertemporal lowest income p/c'
         ]
         outcomes_minimize_aggregated = [
-            'Total Aggregated Costs',
-            'Total Aggregated Disutility',
-            'Intertemporal consumption GINI',
-            'Intertemporal damage GINI',
-            'Intertemporal highest damage p/c',
-            'Intertemporal consumption distance',
-            'Intertemporal consumption population',
-            'Intertemporal damage distance',
-            'Intertemporal damage population'
+            # 'Total Aggregated Costs',
+            # 'Total Aggregated Disutility',
+            # 'Intertemporal consumption GINI',
+            # 'Intertemporal damage GINI',
+            # 'Intertemporal highest damage p/c',
+            # 'Intertemporal consumption distance',
+            # 'Intertemporal consumption population',
+            # 'Intertemporal damage distance',
+            # 'Intertemporal damage population',
+            # 'Total temperature overshoots'
         ]
         outcomes_info_aggregated = []
 
+        # Need all time steps for running experiments
+        years_optimize = list(range(2005, 2310, 10))
+
     elif problem_formulation == ProblemFormulation.UTILITARIAN_COSTS:
         outcomes_maximize_names = []
-        outcomes_minimize_names = ['Costs']
+        outcomes_minimize_names = ['Costs', 'Temperature overshoot']
         outcomes_maximize_aggregated = []
-        outcomes_minimize_aggregated = ['Total Aggregated Costs']
+        outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.UITILITARIAN_AGGREGATED:
         outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = []
-        outcomes_maximize_aggregated = ['Total Aggregated Utility']
+        outcomes_minimize_names = ['Temperature overshoot']
+        outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
-        outcomes_info_aggregated = ['Total Aggregated Disutility']
+        outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.UTILITARIAN_DISAGGREGATED:
         outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = ['Disutility']
-        outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = ['Total Aggregated Disutility']
+        outcomes_minimize_names = ['Disutility', 'Temperature overshoot']
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.SUFFICIENTARIAN_AGGREGATED:
-        outcomes_maximize_names = []
-        outcomes_minimize_names = ['Distance to consumption threshold', 'Population below consumption threshold']
-        outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = [
-            'Intertemporal consumption distance',
-            'Intertemporal consumption population'
-        ]
-        outcomes_info_aggregated = ['Total Aggregated Disutility']
-
-    elif problem_formulation == ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED:
-        outcomes_maximize_names = []
+        outcomes_maximize_names = ['Utility']
         outcomes_minimize_names = [
             'Distance to consumption threshold',
             'Population below consumption threshold',
+            'Temperature overshoot'
+        ]
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
+        outcomes_info_aggregated = []
+
+    elif problem_formulation == ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED:
+        outcomes_maximize_names = ['Utility']
+        outcomes_minimize_names = [
+            'Disutility',
+            'Distance to consumption threshold',
+            'Population below consumption threshold',
             'Distance to damage threshold',
-            'Population above damage threshold'
+            'Population above damage threshold',
+            'Temperature overshoot'
         ]
-        outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = [
-            'Total Aggregated Disutility',
-            'Intertemporal consumption distance',
-            'Intertemporal consumption population',
-            'Intertemporal damage distance',
-            'Intertemporal damage population'
-        ]
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.PRIORITARIAN_AGGREGATED:
-        outcomes_maximize_names = ['Lowest income per capita']
-        outcomes_minimize_names = []
-        outcomes_maximize_aggregated = ['Intertemporal lowest income p/c']
+        outcomes_maximize_names = ['Utility', 'Lowest income per capita']
+        outcomes_minimize_names = ['Temperature overshoot']
+        outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
-        outcomes_info_aggregated = ['Total Aggregated Utility', 'Total Aggregated Disutility']
+        outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.PRIORITARIAN_DISAGGREGATED:
-        outcomes_maximize_names = ['Lowest income per capita']
-        outcomes_minimize_names = ['Highest damage per capita']
-        outcomes_maximize_aggregated = ['Intertemporal lowest income p/c']
-        outcomes_minimize_aggregated = ['Intertemporal highest damage p/c']
-        outcomes_info_aggregated = ['Total Aggregated Utility', 'Total Aggregated Disutility']
+        outcomes_maximize_names = ['Utility', 'Lowest income per capita']
+        outcomes_minimize_names = ['Disutility', 'Highest damage per capita', 'Temperature overshoot']
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
+        outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.EGALITARIAN_AGGREGATED:
-        outcomes_maximize_names = []
-        outcomes_minimize_names = ['Intratemporal consumption GINI']
-
-        outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = ['Intertemporal consumption GINI']
-        outcomes_info_aggregated = ['Total Aggregated Disutility']
+        outcomes_maximize_names = ['Utility']
+        outcomes_minimize_names = ['Intratemporal consumption GINI', 'Temperature overshoot']
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
+        outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.EGALITARIAN_DISAGGREGATED:
-        outcomes_maximize_names = []
-        outcomes_minimize_names = ['Intratemporal consumption GINI', 'Intratemporal damage GINI']
-
-        outcomes_maximize_aggregated = ['Total Aggregated Utility']
-        outcomes_minimize_aggregated = [
-            'Total Aggregated Disutility',
-            'Intertemporal consumption GINI',
-            'Intertemporal damage GINI'
+        outcomes_maximize_names = ['Utility']
+        outcomes_minimize_names = [
+            'Disutility',
+            'Intratemporal consumption GINI',
+            'Intratemporal damage GINI',
+            'Temperature overshoot'
         ]
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     else:
@@ -367,25 +370,29 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
 
 if __name__ == '__main__':
 
-    pfs = list(ProblemFormulation)
+    with_all_PFs = True
 
-    for p in pfs:
-        results = get_outcomes_and_epsilons(problem_formulation=p)
+    if with_all_PFs:
+        pfs = list(ProblemFormulation)
+
+        for p in pfs:
+            results = get_outcomes_and_epsilons(problem_formulation=p)
+            outcomes_list, eps = results
+
+            print(f'PF: {p}')
+            for out in outcomes_list:
+                if out.kind != ScalarOutcome.INFO:
+                    print(f'Outcome name: {out.name},\t optimization direction: {out.kind}')
+            print()
+
+    else:
+        results = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED)
         outcomes_list, eps = results
 
-        print(f'PF: {p}')
+        print('Outcomes:')
         for out in outcomes_list:
-            if out.kind != ScalarOutcome.INFO:
-                print(f'Outcome name: {out.name},\t optimization direction: {out.kind}')
-        print()
+            print(f'Outcome name: {out.name},\t optimization direction: {out.kind}')
 
-    # results = get_outcomes_and_epsilons(welfare_function=WelfareFunction.EGALITARIAN, aggregation=True)
-    # outcomes_list, eps = results
-    #
-    # print('Outcomes:')
-    # for out in outcomes_list:
-    #     print(f'Outcome name: {out.name},\t optimization direction: {out.kind}')
-    #
-    # print('\nEpsilons:')
-    # for e in eps:
-    #     print(f'Epsilon: {e}')
+        print('\nEpsilons:')
+        for e in eps:
+            print(f'Epsilon: {e}')

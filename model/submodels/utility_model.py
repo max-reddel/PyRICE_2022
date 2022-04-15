@@ -501,7 +501,7 @@ class UtilityModel:
         # egalitarian objectives troubles with NaN
         self.take_care_of_nans()
 
-        temperature_overhoots = self.compute_2_degree_timesteps(temp_atm)
+        temperature_overhoots = self.compute_overshoots(temp_atm)
 
         objectives_list_timeseries = [
             self.global_damages,
@@ -566,7 +566,7 @@ class UtilityModel:
             'Intertemporal damage population',
             'Intertemporal lowest income p/c',
             'Intertemporal highest damage p/c',
-            'Total temperature overshoots'
+            'Total temperature overshoot'
         ]
 
         objectives_list_timeseries_name = [
@@ -928,7 +928,7 @@ class UtilityModel:
         self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
 
     @staticmethod
-    def compute_2_degree_timesteps(temp_atm):
+    def compute_overshoots(temp_atm):
         """
         Compute for each time step how many previous time steps have had an atmospheric temperature increase of more
         than 2 degrees Celsius.
@@ -938,6 +938,7 @@ class UtilityModel:
         """
 
         non_cummulative_version = temp_atm > 2.0
+        non_cummulative_version = non_cummulative_version.astype(float)
         above_2_degree_timesteps = np.cumsum(non_cummulative_version)
         return above_2_degree_timesteps
 
@@ -976,8 +977,6 @@ class Results:
         regions_above_damage_threshold = self.data_dict["Regions above damage threshold"]
         costs = self.get_values_for_specific_prefix("Costs 2")
         above_2_degree_timesteps = self.get_values_for_specific_prefix("Temperature overshoot")
-
-        print(above_2_degree_timesteps)
 
         columns = [
             'Damages',
@@ -1033,6 +1032,7 @@ class Results:
         self.aggregated_utility = self.data_dict["Total Aggregated Utility"]
         self.aggregated_disutility = self.data_dict["Total Aggregated Disutility"]
         self.aggregated_costs = self.data_dict["Total Aggregated Costs"]
+        self.aggregated_overshoots = self.data_dict['Total temperature overshoot']
 
         # CPC dataframe
         cpc = self.get_values_for_specific_prefix("CPC 2")
