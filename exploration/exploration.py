@@ -38,11 +38,13 @@ def get_columns_by_outcome_prefix(outcomes_df, prefix):
     return df
 
 
-def plot_pathways(outcomes_df, args):
+def plot_pathways(outcomes_df, args, saving=False, file_name=None):
     """
     Currently not super stable. Might break easily because of length of args.
     @param outcomes_df:
     @param args:
+    @param saving: Booelean
+    @param file_name: String: file name for saving
     @return:
     """
 
@@ -73,6 +75,17 @@ def plot_pathways(outcomes_df, args):
 
     years = list(range(2005, 2310, 10))
 
+    size_df = outcomes_df.shape[0]
+    if size_df >= 10000:
+        linewidth = 0.5
+        alpha = 0.1
+    elif size_df >= 100:
+        linewidth = 1.0
+        alpha = 0.5
+    else:
+        linewidth = 1.0
+        alpha = 1.0
+
     # Figures
     for i, ax in enumerate(axes.flat):
         if i >= len(args):
@@ -80,13 +93,22 @@ def plot_pathways(outcomes_df, args):
         name = args[i]
         df = get_columns_by_outcome_prefix(outcomes_df, prefix=name)
         for idx, row in df.iterrows():
-            ax.plot(years, row.iloc[:], linewidth=1.5)
+            ax.plot(years, row.iloc[:], linewidth=linewidth, alpha=alpha, color='b')
 
         ax.set_title(name)
         ax.set_xlabel('Time in years')
         ax.set_ylabel(name)
 
     plt.show()
+
+    if saving:
+        directory = os.getcwd()
+        root_directory = os.path.dirname(directory)
+        visualization_folder = root_directory + '/optimization/outputimages/'
+        if file_name is None:
+            file_name = "pathways_experiments"
+        file_name += ".png"
+        fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
 
 
 if __name__ == '__main__':
