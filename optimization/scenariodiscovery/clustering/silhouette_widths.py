@@ -40,7 +40,6 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
     for name in objective_names:
         df = outcomes_df.filter(regex=name, axis=1)
         column_names = list(df.columns)
-
         outcomes_reshaped[name] = np.stack([df[x] for x in column_names], axis=-1)
 
     return outcomes_reshaped
@@ -107,12 +106,12 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
 
     target_directory = os.getcwd() + '/data/'
     # Save silhouette widths
-    file_name = 'silhouette_widths.csv'
+    file_name = f'silhouette_widths_{len(experiments)}.csv'
     # noinspection PyTypeChecker
     widths_df.to_csv(target_directory + file_name, index=cluster_numbers)
 
     # Save clusters
-    file_name = 'clusters.csv'
+    file_name = f'clusters_{len(experiments)}.csv'
     # noinspection PyTypeChecker
     cluster_df.to_csv(target_directory + file_name, index=cluster_numbers)
 

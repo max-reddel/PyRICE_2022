@@ -75,7 +75,7 @@ def perform_own_experiments(
             if file_name is None:
                 file_name = f'results_open_exploration_{n_scenarios}'
 
-            target_directory = os.getcwd() + '/exploration/results/'
+            target_directory = os.getcwd() + '/results/'
 
             save_results(results=results, file_name=target_directory + file_name)
 
