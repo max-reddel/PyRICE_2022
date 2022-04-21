@@ -61,19 +61,7 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
     outcomes_df = pd.DataFrame(outcomes)
 
     if objective_names is None:
-        objective_names = [
-            'Utility',
-            'Disutility',
-            'Intratemporal consumption GINI',
-            'Intratemporal damage GINI',
-            'Lowest income per capita',
-            'Highest damage per capita',
-            'Distance to consumption threshold',
-            'Population below consumption threshold',
-            'Distance to damage threshold',
-            'Population above damage threshold',
-            'Temperature overshoot'
-        ]
+        objective_names = get_all_outcome_names()
 
     # Dictionary for saving the widths per objective
     widths_dict = {}
@@ -86,7 +74,9 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
     # Clustering
     cluster_numbers = list(range(2, max_cluster+1))
 
-    for objective in objective_names:
+    for idx, objective in enumerate(objective_names):
+
+        print(f'\nComputing objective #{idx+1}/{len(objective_names)}')
 
         # Compute distances
         data = outcomes_reshaped[objective]
@@ -95,6 +85,8 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
         # Compute silhouette widths
         widths = []
         for k in cluster_numbers:
+
+            print(f'\tcluster #{k}/{max_cluster}')
 
             clusterers = AgglomerativeClustering(n_clusters=k, affinity='precomputed', linkage="complete")
             cluster_labels = clusterers.fit_predict(distances)
@@ -203,7 +195,7 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
 
         visualization_folder = os.path.dirname(os.path.dirname(os.getcwd())) + '/outputimages/'
         if file_name is None:
-            file_name = "scenario_discovery_time_series_clsutering_silhouette_widths"
+            file_name = "scenario_discovery_time_series_clustering_silhouette_widths"
         file_name += ".png"
         fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
 
@@ -242,6 +234,8 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
 
 if __name__ == '__main__':
 
+    print('Starting...\n')
+
     n_scenarios = 30000
 
     # Loading results
@@ -249,14 +243,19 @@ if __name__ == '__main__':
     file_name = f'results_open_exploration_{n_scenarios}'
     results = load_results(file_name=target_directory + file_name)
 
+    print('\n############ Computing silhouette widths... ############')
     # Computing silhouette widths
     widths = compute_silhouette_widths(results)
 
+    print('\n############ Plotting silhouette widths... ############')
     # Plotting silhouette widths
     plot_silhouette_widths(widths, saving=True)
 
+    print('\n############ Plotting open exploration data... ############')
     # Plotting open exploration results
     _, outcomes = results
     outcomes_df = pd.DataFrame(outcomes)
     outcome_names = get_all_outcome_names()
     plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
+
+    print('\n############ Done! ############')

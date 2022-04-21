@@ -64,7 +64,11 @@ def perform_own_experiments(
 
     with MultiprocessingEvaluator(model) as evaluator:
 
-        results = evaluator.perform_experiments(scenarios=n_scenarios, policies=n_policies)
+        results = evaluator.perform_experiments(
+            scenarios=n_scenarios,
+            policies=n_policies,
+            reporting_frequency=100
+        )
 
         if saving_results:
 
@@ -82,7 +86,7 @@ if __name__ == '__main__':
 
     printing = False
 
-    n = 30000
+    n = 100
     results = perform_own_experiments(
         n_scenarios=n,
         saving_results=True,

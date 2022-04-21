@@ -209,11 +209,11 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         'Total Aggregated Disutility': 100,  # 9942
         'Disutility': 1.0,  # 1.1
         'Lowest income per capita': 0.02,  # 0.026
-        'Intratemporal consumption GINI': 0.001,  # 0.001
+        'Intratemporal consumption Gini': 0.001,  # 0.001
         'Total Output': 1.0,  # 25
         'Atmospheric Temperature': 0.1,  # 0.55
         'Highest damage per capita': 0.01,  # 0.096
-        'Intratemporal damage GINI': 0.01,  # 0.032
+        'Intratemporal damage Gini': 0.01,  # 0.032
         'Damages': 0.1,  # 0.1
         'Industrial Emission': 0.1,  # 1.0
         'Population below consumption threshold': 20.0,  # 75
@@ -226,8 +226,8 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         'Intertemporal damage population': 100.0,  # 19500
         'Intertemporal lowest income p/c': 5.0,  # 52.31
         'Intertemporal highest damage p/c': 0.2,  # 2.328
-        'Intertemporal consumption GINI': 0.01,  # 0.01
-        'Intertemporal damage GINI': 0.01,  # 0.024
+        'Intertemporal consumption Gini': 0.01,  # 0.01
+        'Intertemporal damage Gini': 0.01,  # 0.024
         'Costs': 0.1,  # 0.18
         'Total Aggregated Costs': 20,  # 943,
         'Temperature overshoot': 1,
@@ -251,8 +251,8 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         ]
         outcomes_minimize_names = [
             'Disutility',
-            'Intratemporal consumption GINI',
-            'Intratemporal damage GINI',
+            'Intratemporal consumption Gini',
+            'Intratemporal damage Gini',
             'Highest damage per capita',
             'Distance to consumption threshold',
             'Population below consumption threshold',
@@ -330,7 +330,7 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
 
     elif problem_formulation == ProblemFormulation.EGALITARIAN_AGGREGATED:
         outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = ['Intratemporal consumption GINI', 'Temperature overshoot']
+        outcomes_minimize_names = ['Intratemporal consumption Gini', 'Temperature overshoot']
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
@@ -339,8 +339,8 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         outcomes_maximize_names = ['Utility']
         outcomes_minimize_names = [
             'Disutility',
-            'Intratemporal consumption GINI',
-            'Intratemporal damage GINI',
+            'Intratemporal consumption Gini',
+            'Intratemporal damage Gini',
             'Temperature overshoot'
         ]
         outcomes_maximize_aggregated = []
@@ -377,8 +377,8 @@ def get_all_outcome_names():
     outcomes_all_names = [
         'Utility',
         'Disutility',
-        'Intratemporal consumption GINI',
-        'Intratemporal damage GINI',
+        'Intratemporal consumption Gini',
+        'Intratemporal damage Gini',
         'Lowest income per capita',
         'Highest damage per capita',
         'Distance to consumption threshold',
