@@ -553,8 +553,8 @@ class UtilityModel:
         ]
 
         objectives_list_name = [
-            'Intertemporal consumption GINI',
-            'Intertemporal damage GINI',
+            'Intertemporal consumption Gini',
+            'Intertemporal damage Gini',
             'Total Aggregated Utility',
             'Total Aggregated Disutility',
             'Regions below consumption threshold',
@@ -579,8 +579,8 @@ class UtilityModel:
             'Population below consumption threshold',
             'Distance to damage threshold',
             'Population above damage threshold',
-            'Intratemporal consumption GINI',
-            'Intratemporal damage GINI',
+            'Intratemporal consumption Gini',
+            'Intratemporal damage Gini',
             'Atmospheric Temperature',
             'Temperature overshoot',
             'Industrial Emission',
@@ -736,7 +736,7 @@ class UtilityModel:
         # calculate worldwide utility
         self.utility = self.reg_util.sum()
 
-        # ###### GINI calculations INTERTEMPORAL #########
+        # ###### Gini calculations INTERTEMPORAL #########
         # CPC is floored on minimum value
         CPC[:, t] = np.where(CPC[:, t] > CPC_lo, CPC[:, t], CPC_lo)
 
@@ -752,7 +752,7 @@ class UtilityModel:
             self.intertemporal_consumption_gini = diffsum / (
                     (len(input_gini_inter_cpc) ** 2) * np.mean(input_gini_inter_cpc))
 
-        # intertemporal climate impact GINI
+        # intertemporal climate impact Gini
         self.average_regional_impact[t] = (damages[:, t].sum(axis=0) / self.n_regions)
 
         # Impact is floored on minimum value
@@ -767,8 +767,8 @@ class UtilityModel:
             self.intertemporal_damage_gini = diffsum_inter / (
                     (len(input_gini_inter) ** 2) * np.mean(input_gini_inter))
 
-        # ###### GINI calculations INTRATEMPORAL #########
-        # calculate gini as measure of current inequality in welfare (intragenerational)
+        # ###### Gini calculations INTRATEMPORAL #########
+        # calculate Cini as measure of current inequality in welfare (intragenerational)
 
         # CPC is floored on minimum value
         input_gini_intra = CPC[:, t]
@@ -779,7 +779,7 @@ class UtilityModel:
 
         self.CPC_intra_gini[t] = diffsum / ((len(input_gini_intra) ** 2) * np.mean(input_gini_intra))
 
-        # calculate gini as measure of current inequality in climate impact (per dollar consumption)
+        # calculate Gini as measure of current inequality in climate impact (per dollar consumption)
         # (intragenerational)
         self.climate_impact_per_dollar_consumption[:, t] = \
             np.where(damages[:, t] < 0.001, CPC[:, t], damages[:, t] / CPC[:, t])
@@ -968,8 +968,8 @@ class Results:
         population_consumption = self.get_values_for_specific_prefix("Population below consumption threshold")
         distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
         population_damage = self.get_values_for_specific_prefix("Population above damage threshold")
-        consumption_gini = self.get_values_for_specific_prefix("Intratemporal consumption GINI")
-        damage_gini = self.get_values_for_specific_prefix("Intratemporal damage GINI")
+        consumption_gini = self.get_values_for_specific_prefix("Intratemporal consumption Gini")
+        damage_gini = self.get_values_for_specific_prefix("Intratemporal damage Gini")
         temp = self.get_values_for_specific_prefix("Atmospheric Temperature")
         emission = self.get_values_for_specific_prefix("Industrial Emission")
         output = self.get_values_for_specific_prefix("Total Output")
@@ -988,8 +988,8 @@ class Results:
             'Population below consumption threshold',
             'Distance to damage threshold',
             'Population above damage threshold',
-            'Intratemporal consumption GINI',
-            'Intratemporal damage GINI',
+            'Intratemporal consumption Gini',
+            'Intratemporal damage Gini',
             'Atmospheric temperature',
             'Temperature overshoot',
             'Industrial emission',
@@ -1027,8 +1027,8 @@ class Results:
         )
 
         # Highly aggregated variables
-        self.aggregated_consumption_gini = self.data_dict["Intertemporal consumption GINI"]
-        self.aggregated_damage_gini = self.data_dict["Intertemporal damage GINI"]
+        self.aggregated_consumption_gini = self.data_dict["Intertemporal consumption Gini"]
+        self.aggregated_damage_gini = self.data_dict["Intertemporal damage Gini"]
         self.aggregated_utility = self.data_dict["Total Aggregated Utility"]
         self.aggregated_disutility = self.data_dict["Total Aggregated Disutility"]
         self.aggregated_costs = self.data_dict["Total Aggregated Costs"]

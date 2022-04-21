@@ -4,8 +4,6 @@ This module contains the PyRICe class and its associated methods.
 
 from scipy.stats import norm, cauchy, lognorm
 import json
-import sys
-import os
 
 # Import data_dict sets, own enums and model limits
 from model.model_limits import *
@@ -16,9 +14,6 @@ from model.submodels.economy_model import *
 from model.submodels.carbon_cycle_model import *
 from model.submodels.climate_model import *
 from model.submodels.utility_model import *
-
-pyrice_folder = os.path.dirname(os.getcwd()) + "/PyRICE2020-main/model"
-sys.path.append(pyrice_folder)
 
 
 class PyRICE(object):
@@ -252,7 +247,6 @@ class PyRICE(object):
         nsamples = 1000
 
         directory = os.path.dirname(os.path.realpath(__file__))
-        os.chdir(directory)
 
         with open(directory + '/outputdata/ecs_dist_v5.json') as f:
             d = json.load(f)
@@ -428,4 +422,3 @@ if __name__ == '__main__':
     # [print(f'{k}: {v}') for k, v in results.items()]
     # print(results['Temperature overshoot 2105'])
     [print(f'{k}: {v}') for k, v in results.items() if 'Temperature overshoot 2' in k]
-
