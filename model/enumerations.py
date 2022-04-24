@@ -38,7 +38,7 @@ class ProblemFormulation(Enum):
     Problem formulations. The values are tuples with (WelfareFunction, aggregation)
     """
     ALL_OBJECTIVES = WelfareFunction.UTILITARIAN, True
-    UTILITARIAN_COSTS = WelfareFunction.UTILITARIAN, True
+    UTILITARIAN_COSTS = WelfareFunction.UTILITARIAN, False
     UITILITARIAN_AGGREGATED = WelfareFunction.UTILITARIAN, True
     UTILITARIAN_DISAGGREGATED = WelfareFunction.UTILITARIAN, False
     EGALITARIAN_AGGREGATED = WelfareFunction.EGALITARIAN, True
