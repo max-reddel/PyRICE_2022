@@ -204,22 +204,21 @@ def get_outcomes_and_epsilons(problem_formulation, years=None):
     """
 
     dict_epsilons = {
-        'Total Aggregated Utility': 100,  # 1575
-        'Utility': 10,  # 135
-        'Total Aggregated Disutility': 100,  # 9942
-        'Disutility': 1.0,  # 1.1
-        'Lowest income per capita': 0.02,  # 0.026
-        'Intratemporal consumption Gini': 0.001,  # 0.001
-        'Total Output': 1.0,  # 25
-        'Atmospheric Temperature': 0.1,  # 0.55
-        'Highest damage per capita': 0.01,  # 0.096
-        'Intratemporal damage Gini': 0.01,  # 0.032
+        'Utility': 5,  # 7.6
+        'Disutility': 5,  # 6.4
+        'Lowest income per capita': 0.1,  # 0.516
+        'Intratemporal consumption Gini': 0.0005,  # 0.00049
+        'Highest damage per capita': 0.05,  # 0.071
+        'Intratemporal damage Gini': 0.01,  # 0.038
+        'Population below consumption threshold': 50.0,  # 75
+        'Distance to consumption threshold': 0.1,  # 0.172
+        'Population above damage threshold': 600.0,  # 691
+        'Distance to damage threshold': 0.3,  # 0.4
+        'Temperature overshoot': 1,
+
         'Damages': 0.1,  # 0.1
         'Industrial Emission': 0.1,  # 1.0
-        'Population below consumption threshold': 20.0,  # 75
-        'Distance to consumption threshold': 0.001,  # 0.008
-        'Population above damage threshold': 50.0,  # 691
-        'Distance to damage threshold': 0.1,  # 0.4
+        'Atmospheric Temperature': 0.1,  # 0.55
         'Intertemporal consumption distance': 1.0,  # 140
         'Intertemporal consumption population': 100.0,  # 4200
         'Intertemporal damage distance': 1.0,  # 137
@@ -228,10 +227,11 @@ def get_outcomes_and_epsilons(problem_formulation, years=None):
         'Intertemporal highest damage p/c': 0.2,  # 2.328
         'Intertemporal consumption Gini': 0.01,  # 0.01
         'Intertemporal damage Gini': 0.01,  # 0.024
+        'Total Aggregated Utility': 100,  # 1575
+        'Total Aggregated Disutility': 100,  # 9942
         'Costs': 0.1,  # 0.18
-        'Total Aggregated Costs': 20,  # 943,
-        'Temperature overshoot': 1,
-        'Total temperature overshoot': 1
+        'Total Output': 1.0,  # 25
+        'Total Aggregated Costs': 20,  # 943
     }
 
     # Relevant years
