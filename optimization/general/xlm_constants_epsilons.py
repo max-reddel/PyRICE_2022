@@ -68,7 +68,6 @@ def _get_outcomes_to_optimize(outcomes_maximize_names, outcomes_minimize_names, 
     @return:
         outcomes_optimize: list with ScalarOutcome objects
     """
-
     outcomes_optimize = []
 
     for outcome_name in outcomes_maximize_names:
@@ -103,9 +102,10 @@ def _get_outcomes_to_info(outcomes_info_names, outcomes_optimize_names, years_op
     return outcomes_info
 
 
-def _get_relevant_outcomes(outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names,
-                           outcomes_maximize_aggregated, outcomes_minimize_aggregated, years_optimize, years_info,
-                           outcomes_info_aggregated):
+def _get_relevant_outcomes(
+        outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names, outcomes_maximize_aggregated,
+        outcomes_minimize_aggregated, years_optimize, years_info, outcomes_info_aggregated
+):
     """
     This is a helper function. It returns the outcomes given a specification of all the above variables.
     @param outcomes_all_names: list of outcome names (without years)
@@ -193,7 +193,7 @@ def _get_epsilons(
     return epsilons
 
 
-def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES, years=None):
+def get_outcomes_and_epsilons(problem_formulation, years=None):
     """
     Returns a list of outcomes and a list of epsilons for the STANDARD workbench.
     @param problem_formulation: ProblemFormulation
@@ -275,7 +275,7 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
-    elif problem_formulation == ProblemFormulation.UITILITARIAN_AGGREGATED:
+    elif problem_formulation == ProblemFormulation.UTILITARIAN_AGGREGATED:
         outcomes_maximize_names = ['Utility']
         outcomes_minimize_names = ['Temperature overshoot']
         outcomes_maximize_aggregated = []

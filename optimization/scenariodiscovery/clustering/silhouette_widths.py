@@ -48,7 +48,7 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
 def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
     """
     Computes the slihouette widths for some given objectives.
-    @param results: DataFrame, dictionary (results from perform_experiments)
+    @param results: DataFrame, dictionary (data from perform_experiments)
     @param objective_names: list with Strings
     @param max_cluster: maximal number of clusters to consider
     @return
@@ -58,6 +58,10 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
 
     experiments, outcomes = results
     outcomes_df = pd.DataFrame(outcomes)
+
+    # In case, the number of experiments is too small (mostly for testing purposes)
+    if len(experiments) > max_cluster:
+        max_cluster = len(experiments)
 
     if objective_names is None:
         objective_names = get_all_outcome_names()
@@ -209,8 +213,8 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
         x: DataFrame: experiments with extra column (clusters)
     """
 
-    # Loading results
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/results/'
+    # Loading data
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
     results = load_results(file_name=target_directory + results_name)
 
     experiments, outcomes = results
@@ -237,8 +241,8 @@ if __name__ == '__main__':
 
     n_scenarios = 30000
 
-    # Loading results
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/results/'
+    # Loading data
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
     file_name = f'results_open_exploration_{n_scenarios}'
     results = load_results(file_name=target_directory + file_name)
 
@@ -251,7 +255,7 @@ if __name__ == '__main__':
     plot_silhouette_widths(widths, saving=True)
 
     print('\n############ Plotting open exploration data... ############')
-    # Plotting open exploration results
+    # Plotting open exploration data
     _, outcomes = results
     outcomes_df = pd.DataFrame(outcomes)
     outcome_names = get_all_outcome_names()

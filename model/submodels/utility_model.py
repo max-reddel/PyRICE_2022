@@ -1060,7 +1060,7 @@ class Results:
 
     def get_values_for_specific_prefix(self, prefix="Damages 2"):
         """
-        Find the values for a specific key in self.data_dict where the key string starts with the given prefix.
+        Find the values for a specific key in self.data_dict where the key string starts with the given d_type.
         @param prefix: string
         @return:
             values: list with floats

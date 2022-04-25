@@ -1,5 +1,5 @@
 """
-This module contains functions to visualize results, hypervolume, etc.
+This module contains functions to visualize data, hypervolume, etc.
 """
 
 from ema_workbench.util.utilities import load_results
@@ -95,7 +95,7 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
 
 if __name__ == '__main__':
 
-    directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/exploration/results/'
+    directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/exploration/data/'
     results = load_results(file_name=directory + 'results_open_exploration_10')
     experiments, outcomes = results
     outcomes = pd.DataFrame(outcomes)
