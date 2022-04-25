@@ -16,19 +16,19 @@ from ema_workbench import (Model, MultiprocessingEvaluator, ema_logging)
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def define_path_name(problem_formulation, nfe, directory=None, d_type='data', searchover=None):
+def define_path_name(problem_formulation, nfe, directory=None, d_type='results', searchover=None):
     """
     Define path and file name such that it can be used to save results_formatted and/or covergence data.
     @param problem_formulation: ProblemFormulation
     @param nfe: integer
-    @param directory: String: where to save data and covergence data
+    @param directory: String: where to save results and covergence data
     @param d_type: string: {'results_formatted', 'convergence'}
     @param searchover: String
     @return:
         path: string (path + file name that is used for saving_results)
     """
 
-    if d_type == 'data' or d_type == 'epsilon_progress':
+    if d_type == 'results' or d_type == 'epsilon_progress':
         file_name = f'{d_type}.csv'
     elif d_type == 'hypervolume':
         file_name = ''
@@ -125,7 +125,8 @@ def run_optimization(
                 nfe=nfe,
                 searchover=searchover,
                 epsilons=epsilons,
-                convergence=convergence_metrics
+                convergence=convergence_metrics,
+                logging_freq=int(nfe / 100)
             )
 
             if saving_results:
@@ -133,7 +134,7 @@ def run_optimization(
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
-                    d_type='data',
+                    d_type='results',
                     searchover=searchover
                 )
                 results.to_csv(path)
@@ -153,7 +154,8 @@ def run_optimization(
             results = evaluator.optimize(
                 nfe=nfe,
                 searchover=searchover,
-                epsilons=epsilons
+                epsilons=epsilons,
+                logging_freq=int(nfe/100)
             )
 
             if saving_results:

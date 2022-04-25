@@ -47,3 +47,10 @@ class ProblemFormulation(Enum):
     SUFFICIENTARIAN_DISAGGREGATED = WelfareFunction.SUFFICIENTARIAN, False, 7
     PRIORITARIAN_AGGREGATED = WelfareFunction.PRIORITARIAN, True, 8
     PRIORITARIAN_DISAGGREGATED = WelfareFunction.PRIORITARIAN, False, 9
+
+    @staticmethod
+    def get_8_problem_formulations():
+        """
+        Get all problem formulations but ALL_OBJECTIVES and UTILITARIAN_COSTS
+        """
+        return list(ProblemFormulation)[2:]
