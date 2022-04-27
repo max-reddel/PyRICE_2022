@@ -52,12 +52,13 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
     return outcomes_reshaped
 
 
-def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
+def compute_silhouette_widths(results, objective_names=None, max_cluster=10, parallel=False):
     """
     Computes the slihouette widths for some given objectives.
     @param results: DataFrame, dictionary (data from perform_experiments)
     @param objective_names: list with Strings
     @param max_cluster: maximal number of clusters to consider
+    @param parallel: Boolean: whether to run computation in parallel or not
     @return
         widths_df: DataFrame
         distances: 2d numpy array
@@ -90,7 +91,7 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
 
         # Compute distances
         data = outcomes_reshaped[objective]
-        distances = calculate_cid(data)
+        distances = calculate_cid(data, parallel=parallel)
 
         # Compute silhouette widths
         widths = []
@@ -129,12 +130,13 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
     return widths_df
 
 
-def calculate_cid(data):
+def calculate_cid(data, parallel=False):
     """calculate the complex invariant distance between all rows
 
     Remark: ema_workbench.analysis.clusterer.calculate_cid has the same implementation, however, the helper function
     runs into an issue of dividing by zero. That's why I copied the code and made a small adjustment.
 
+    @param parallel: Boolean: with or without parallel processing
     @param data : 2d ndarray
     @return:
         distances
@@ -145,15 +147,33 @@ def calculate_cid(data):
     indices = np.arange(0, data.shape[0])
     cid = np.zeros((data.shape[0], data.shape[0]))
 
-    for i, j in itertools.combinations(indices, 2):
-        xi = data[i, :]
-        xj = data[j, :]
-        ce_i = ce[i]
-        ce_j = ce[j]
+    if parallel:
+        with ProcessPoolExecutor() as executor:
+            futures = []
+            for i, j in itertools.combinations(indices, 2):
+                xi = data[i, :]
+                xj = data[j, :]
+                ce_i = ce[i]
+                ce_j = ce[j]
 
-        distance = _calculate_cid(xi, xj, ce_i, ce_j)
-        cid[i, j] = distance
-        cid[j, i] = distance
+                future = executor.submit(fn=_calculate_cid, xi=xi, xj=xj, ce_i=ce_i, ce_j=ce_j)
+                futures.append((future, i, j))
+
+            for future, i, j in futures:
+                distance = future.result()
+                cid[i, j] = distance
+                cid[j, i] = distance
+
+    else:
+        for i, j in itertools.combinations(indices, 2):
+            xi = data[i, :]
+            xj = data[j, :]
+            ce_i = ce[i]
+            ce_j = ce[j]
+
+            distance = _calculate_cid(xi, xj, ce_i, ce_j)
+            cid[i, j] = distance
+            cid[j, i] = distance
 
     return cid
 
@@ -255,9 +275,9 @@ if __name__ == '__main__':
     file_name = f'results_open_exploration_{n_scenarios}'
     results = load_results(file_name=target_directory + file_name)
 
-    print('\n############ Computing silhouette widths... ############')
     # Computing silhouette widths
-    widths = compute_silhouette_widths(results)
+    print('\n############ Computing silhouette widths... ############')
+    widths = compute_silhouette_widths(results, parallel=False)
 
     # print('\n############ Plotting silhouette widths... ############')
     # # Plotting silhouette widths
