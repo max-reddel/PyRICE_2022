@@ -279,16 +279,16 @@ if __name__ == '__main__':
     print('\n############ Computing silhouette widths... ############')
     widths = compute_silhouette_widths(results, parallel=False)
 
-    # print('\n############ Plotting silhouette widths... ############')
-    # # Plotting silhouette widths
-    # plot_silhouette_widths(widths, saving=True)
-    #
-    # print('\n############ Plotting open exploration data... ############')
-    # # Plotting open exploration data
-    # _, outcomes = results
-    # outcomes_df = pd.DataFrame(outcomes)
-    # outcome_names = get_all_outcome_names()
-    # plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
+    print('\n############ Plotting silhouette widths... ############')
+    # Plotting silhouette widths
+    plot_silhouette_widths(widths, saving=True)
+
+    print('\n############ Plotting open exploration data... ############')
+    # Plotting open exploration data
+    _, outcomes = results
+    outcomes_df = pd.DataFrame(outcomes)
+    outcome_names = get_all_outcome_names()
+    plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
 
     print('\n############ Done! ############')
 
