@@ -13,18 +13,25 @@ merge worst-off scenarios
 We will need these silhouette widths, such that we can find the worst-off scenarios.
 """
 
-from ema_workbench import load_results
+from concurrent.futures import ProcessPoolExecutor
 import itertools
 import os
+
 import pandas as pd
 import numpy as np
+
 import seaborn as sns
 import matplotlib.pyplot as plt
-from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
+
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import silhouette_score
+
+from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
+from ema_workbench import load_results
+
 from optimization.general.visualization import plot_pathways
 from optimization.general.xlm_constants_epsilons import get_all_outcome_names
+from optimization.general.timer import *
 
 
 def get_outcomes_reshaped(outcomes_df, objective_names):
@@ -60,7 +67,7 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
     outcomes_df = pd.DataFrame(outcomes)
 
     # In case, the number of experiments is too small (mostly for testing purposes)
-    if len(experiments) > max_cluster:
+    if len(experiments) < max_cluster:
         max_cluster = len(experiments)
 
     if objective_names is None:
@@ -89,7 +96,7 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
         widths = []
         for k in cluster_numbers:
 
-            print(f'\tcluster #{k}/{max_cluster}')
+            # print(f'\tcluster #{k}/{max_cluster}')
 
             clusterers = AgglomerativeClustering(n_clusters=k, affinity='precomputed', linkage="complete")
             cluster_labels = clusterers.fit_predict(distances)
@@ -159,7 +166,7 @@ def _calculate_cid(xi, xj, ce_i, ce_j):
     @param ce_j:
     @return:
     """
-    return np.linalg.norm(xi - xj) * (max(ce_i, ce_j) / max(0.001, min(ce_i, ce_j)))  # avoiding to divide by zero
+    return np.linalg.norm(xi - xj) * (max(ce_i, ce_j) / max(0.001, min(ce_i, ce_j)))  # avoid to divide by zero
 
 
 def plot_silhouette_widths(widths, saving=False, file_name=None):
@@ -237,9 +244,11 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
 
 if __name__ == '__main__':
 
+    timer = Timer(tracking=True)
+
     print('Starting...\n')
 
-    n_scenarios = 30000
+    n_scenarios = 1000
 
     # Loading data
     target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
@@ -250,15 +259,17 @@ if __name__ == '__main__':
     # Computing silhouette widths
     widths = compute_silhouette_widths(results)
 
-    print('\n############ Plotting silhouette widths... ############')
-    # Plotting silhouette widths
-    plot_silhouette_widths(widths, saving=True)
-
-    print('\n############ Plotting open exploration data... ############')
-    # Plotting open exploration data
-    _, outcomes = results
-    outcomes_df = pd.DataFrame(outcomes)
-    outcome_names = get_all_outcome_names()
-    plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
+    # print('\n############ Plotting silhouette widths... ############')
+    # # Plotting silhouette widths
+    # plot_silhouette_widths(widths, saving=True)
+    #
+    # print('\n############ Plotting open exploration data... ############')
+    # # Plotting open exploration data
+    # _, outcomes = results
+    # outcomes_df = pd.DataFrame(outcomes)
+    # outcome_names = get_all_outcome_names()
+    # plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
 
     print('\n############ Done! ############')
+
+    timer.stop()

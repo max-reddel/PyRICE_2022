@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     printing = False
 
-    n = 100
+    n = 1000
     results = perform_own_experiments(
         n_scenarios=n,
         saving_results=True,
