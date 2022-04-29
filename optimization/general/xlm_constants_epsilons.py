@@ -68,7 +68,6 @@ def _get_outcomes_to_optimize(outcomes_maximize_names, outcomes_minimize_names, 
     @return:
         outcomes_optimize: list with ScalarOutcome objects
     """
-
     outcomes_optimize = []
 
     for outcome_name in outcomes_maximize_names:
@@ -103,9 +102,10 @@ def _get_outcomes_to_info(outcomes_info_names, outcomes_optimize_names, years_op
     return outcomes_info
 
 
-def _get_relevant_outcomes(outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names,
-                           outcomes_maximize_aggregated, outcomes_minimize_aggregated, years_optimize, years_info,
-                           outcomes_info_aggregated):
+def _get_relevant_outcomes(
+        outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names, outcomes_maximize_aggregated,
+        outcomes_minimize_aggregated, years_optimize, years_info, outcomes_info_aggregated
+):
     """
     This is a helper function. It returns the outcomes given a specification of all the above variables.
     @param outcomes_all_names: list of outcome names (without years)
@@ -193,7 +193,7 @@ def _get_epsilons(
     return epsilons
 
 
-def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES, years=None):
+def get_outcomes_and_epsilons(problem_formulation, years=None):
     """
     Returns a list of outcomes and a list of epsilons for the STANDARD workbench.
     @param problem_formulation: ProblemFormulation
@@ -204,22 +204,21 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
     """
 
     dict_epsilons = {
-        'Total Aggregated Utility': 100,  # 1575
-        'Utility': 10,  # 135
-        'Total Aggregated Disutility': 100,  # 9942
-        'Disutility': 1.0,  # 1.1
-        'Lowest income per capita': 0.02,  # 0.026
-        'Intratemporal consumption Gini': 0.001,  # 0.001
-        'Total Output': 1.0,  # 25
-        'Atmospheric Temperature': 0.1,  # 0.55
-        'Highest damage per capita': 0.01,  # 0.096
-        'Intratemporal damage Gini': 0.01,  # 0.032
+        'Utility': 5,  # 7.6
+        'Disutility': 5,  # 6.4
+        'Lowest income per capita': 0.1,  # 0.516
+        'Intratemporal consumption Gini': 0.0005,  # 0.00049
+        'Highest damage per capita': 0.05,  # 0.071
+        'Intratemporal damage Gini': 0.01,  # 0.038
+        'Population below consumption threshold': 50.0,  # 75
+        'Distance to consumption threshold': 0.1,  # 0.172
+        'Population above damage threshold': 600.0,  # 691
+        'Distance to damage threshold': 0.3,  # 0.4
+        'Temperature overshoot': 1,
+
         'Damages': 0.1,  # 0.1
         'Industrial Emission': 0.1,  # 1.0
-        'Population below consumption threshold': 20.0,  # 75
-        'Distance to consumption threshold': 0.001,  # 0.008
-        'Population above damage threshold': 50.0,  # 691
-        'Distance to damage threshold': 0.1,  # 0.4
+        'Atmospheric Temperature': 0.1,  # 0.55
         'Intertemporal consumption distance': 1.0,  # 140
         'Intertemporal consumption population': 100.0,  # 4200
         'Intertemporal damage distance': 1.0,  # 137
@@ -228,10 +227,11 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         'Intertemporal highest damage p/c': 0.2,  # 2.328
         'Intertemporal consumption Gini': 0.01,  # 0.01
         'Intertemporal damage Gini': 0.01,  # 0.024
+        'Total Aggregated Utility': 100,  # 1575
+        'Total Aggregated Disutility': 100,  # 9942
         'Costs': 0.1,  # 0.18
-        'Total Aggregated Costs': 20,  # 943,
-        'Temperature overshoot': 1,
-        'Total temperature overshoot': 1
+        'Total Output': 1.0,  # 25
+        'Total Aggregated Costs': 20,  # 943
     }
 
     # Relevant years
@@ -275,7 +275,7 @@ def get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTI
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
-    elif problem_formulation == ProblemFormulation.UITILITARIAN_AGGREGATED:
+    elif problem_formulation == ProblemFormulation.UTILITARIAN_AGGREGATED:
         outcomes_maximize_names = ['Utility']
         outcomes_minimize_names = ['Temperature overshoot']
         outcomes_maximize_aggregated = []

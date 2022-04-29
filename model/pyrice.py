@@ -419,6 +419,6 @@ if __name__ == '__main__':
 
     # Default levers are defined by the original Nordhaus policy
     results = model()
-    # [print(f'{k}: {v}') for k, v in results.items()]
-    # print(results['Temperature overshoot 2105'])
+    # [print(f'{k}: {v}') for k, v in data.items()]
+    # print(data['Temperature overshoot 2105'])
     [print(f'{k}: {v}') for k, v in results.items() if 'Temperature overshoot 2' in k]

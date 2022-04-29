@@ -13,18 +13,25 @@ merge worst-off scenarios
 We will need these silhouette widths, such that we can find the worst-off scenarios.
 """
 
-from ema_workbench import load_results
+from concurrent.futures import ProcessPoolExecutor
 import itertools
 import os
+
 import pandas as pd
 import numpy as np
+
 import seaborn as sns
 import matplotlib.pyplot as plt
-from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
+
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import silhouette_score
+
+from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
+from ema_workbench import load_results
+
 from optimization.general.visualization import plot_pathways
 from optimization.general.xlm_constants_epsilons import get_all_outcome_names
+from optimization.general.timer import *
 
 
 def get_outcomes_reshaped(outcomes_df, objective_names):
@@ -45,12 +52,13 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
     return outcomes_reshaped
 
 
-def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
+def compute_silhouette_widths(results, objective_names=None, max_cluster=10, parallel=False):
     """
     Computes the slihouette widths for some given objectives.
-    @param results: DataFrame, dictionary (results from perform_experiments)
+    @param results: DataFrame, dictionary (data from perform_experiments)
     @param objective_names: list with Strings
     @param max_cluster: maximal number of clusters to consider
+    @param parallel: Boolean: whether to run computation in parallel or not
     @return
         widths_df: DataFrame
         distances: 2d numpy array
@@ -58,6 +66,10 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
 
     experiments, outcomes = results
     outcomes_df = pd.DataFrame(outcomes)
+
+    # In case, the number of experiments is too small (mostly for testing purposes)
+    if len(experiments) < max_cluster:
+        max_cluster = len(experiments)
 
     if objective_names is None:
         objective_names = get_all_outcome_names()
@@ -79,13 +91,13 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
 
         # Compute distances
         data = outcomes_reshaped[objective]
-        distances = calculate_cid(data)
+        distances = calculate_cid(data, parallel=parallel)
 
         # Compute silhouette widths
         widths = []
         for k in cluster_numbers:
 
-            print(f'\tcluster #{k}/{max_cluster}')
+            # print(f'\tcluster #{k}/{max_cluster}')
 
             clusterers = AgglomerativeClustering(n_clusters=k, affinity='precomputed', linkage="complete")
             cluster_labels = clusterers.fit_predict(distances)
@@ -118,12 +130,13 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10):
     return widths_df
 
 
-def calculate_cid(data):
+def calculate_cid(data, parallel=False):
     """calculate the complex invariant distance between all rows
 
     Remark: ema_workbench.analysis.clusterer.calculate_cid has the same implementation, however, the helper function
     runs into an issue of dividing by zero. That's why I copied the code and made a small adjustment.
 
+    @param parallel: Boolean: with or without parallel processing
     @param data : 2d ndarray
     @return:
         distances
@@ -134,15 +147,33 @@ def calculate_cid(data):
     indices = np.arange(0, data.shape[0])
     cid = np.zeros((data.shape[0], data.shape[0]))
 
-    for i, j in itertools.combinations(indices, 2):
-        xi = data[i, :]
-        xj = data[j, :]
-        ce_i = ce[i]
-        ce_j = ce[j]
+    if parallel:
+        with ProcessPoolExecutor() as executor:
+            futures = []
+            for i, j in itertools.combinations(indices, 2):
+                xi = data[i, :]
+                xj = data[j, :]
+                ce_i = ce[i]
+                ce_j = ce[j]
 
-        distance = _calculate_cid(xi, xj, ce_i, ce_j)
-        cid[i, j] = distance
-        cid[j, i] = distance
+                future = executor.submit(fn=_calculate_cid, xi=xi, xj=xj, ce_i=ce_i, ce_j=ce_j)
+                futures.append((future, i, j))
+
+            for future, i, j in futures:
+                distance = future.result()
+                cid[i, j] = distance
+                cid[j, i] = distance
+
+    else:
+        for i, j in itertools.combinations(indices, 2):
+            xi = data[i, :]
+            xj = data[j, :]
+            ce_i = ce[i]
+            ce_j = ce[j]
+
+            distance = _calculate_cid(xi, xj, ce_i, ce_j)
+            cid[i, j] = distance
+            cid[j, i] = distance
 
     return cid
 
@@ -155,7 +186,7 @@ def _calculate_cid(xi, xj, ce_i, ce_j):
     @param ce_j:
     @return:
     """
-    return np.linalg.norm(xi - xj) * (max(ce_i, ce_j) / max(0.001, min(ce_i, ce_j)))  # avoiding to divide by zero
+    return np.linalg.norm(xi - xj) * (max(ce_i, ce_j) / max(0.001, min(ce_i, ce_j)))  # avoid to divide by zero
 
 
 def plot_silhouette_widths(widths, saving=False, file_name=None):
@@ -209,8 +240,8 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
         x: DataFrame: experiments with extra column (clusters)
     """
 
-    # Loading results
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/results/'
+    # Loading data
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
     results = load_results(file_name=target_directory + results_name)
 
     experiments, outcomes = results
@@ -233,28 +264,32 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
 
 if __name__ == '__main__':
 
+    timer = Timer(tracking=True)
+
     print('Starting...\n')
 
-    n_scenarios = 30000
+    n_scenarios = 1000
 
-    # Loading results
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/results/'
+    # Loading data
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
     file_name = f'results_open_exploration_{n_scenarios}'
     results = load_results(file_name=target_directory + file_name)
 
-    print('\n############ Computing silhouette widths... ############')
     # Computing silhouette widths
-    widths = compute_silhouette_widths(results)
+    print('\n############ Computing silhouette widths... ############')
+    widths = compute_silhouette_widths(results, parallel=False)
 
     print('\n############ Plotting silhouette widths... ############')
     # Plotting silhouette widths
     plot_silhouette_widths(widths, saving=True)
 
-    print('\n############ Plotting open exploration data... ############')
-    # Plotting open exploration results
-    _, outcomes = results
-    outcomes_df = pd.DataFrame(outcomes)
-    outcome_names = get_all_outcome_names()
-    plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
+    # print('\n############ Plotting open exploration data... ############')
+    # # Plotting open exploration data
+    # _, outcomes = results
+    # outcomes_df = pd.DataFrame(outcomes)
+    # outcome_names = get_all_outcome_names()
+    # plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
 
     print('\n############ Done! ############')
+
+    timer.stop()

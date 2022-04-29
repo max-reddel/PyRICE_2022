@@ -38,14 +38,14 @@ def perform_own_experiments(
         file_name=None
 ):
     """
-    Perform a bunch of experiments and return the results.
+    Perform a bunch of experiments and return the data.
     @param damage_function: DamageFunction
     @param n_scenarios: int: number of scenarios
     @param n_policies: int: number of policies
-    @param saving_results: Boolean: whether to save the results or not
+    @param saving_results: Boolean: whether to save the data or not
     @param file_name: String: name of file to save
     @return:
-        results: dataframe, dictionary: experiments, outcomes
+        data: dataframe, dictionary: experiments, outcomes
     """
 
     model = PyRICE(model_specification=ModelSpec.STANDARD,
@@ -75,7 +75,7 @@ def perform_own_experiments(
             if file_name is None:
                 file_name = f'results_open_exploration_{n_scenarios}'
 
-            target_directory = os.getcwd() + '/results/'
+            target_directory = os.getcwd() + '/data/'
 
             save_results(results=results, file_name=target_directory + file_name)
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     printing = False
 
-    n = 100
+    n = 1000
     results = perform_own_experiments(
         n_scenarios=n,
         saving_results=True,
