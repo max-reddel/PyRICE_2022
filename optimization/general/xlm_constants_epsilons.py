@@ -204,17 +204,17 @@ def get_outcomes_and_epsilons(problem_formulation, years=None):
     """
 
     dict_epsilons = {
-        'Utility': 5,  # 7.6
-        'Disutility': 5,  # 6.4
+        'Utility': 0.1,  # 7.6
+        'Disutility': 0.1,  # 6.4
         'Lowest income per capita': 0.1,  # 0.516
-        'Intratemporal consumption Gini': 0.0005,  # 0.00049
-        'Highest damage per capita': 0.05,  # 0.071
-        'Intratemporal damage Gini': 0.01,  # 0.038
-        'Population below consumption threshold': 50.0,  # 75
+        'Intratemporal consumption Gini': 0.0001,  # 0.00049
+        'Highest damage per capita': 0.01,  # 0.071
+        'Intratemporal damage Gini': 0.001,  # 0.038
+        'Population below consumption threshold': 5.0,  # 75
         'Distance to consumption threshold': 0.1,  # 0.172
-        'Population above damage threshold': 600.0,  # 691
-        'Distance to damage threshold': 0.3,  # 0.4
-        'Temperature overshoot': 1,
+        'Population above damage threshold': 5.0,  # 691
+        'Distance to damage threshold': 0.1,  # 0.4
+        'Temperature overshoot': 0.1,
 
         'Damages': 0.1,  # 0.1
         'Industrial Emission': 0.1,  # 1.0

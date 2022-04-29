@@ -2,6 +2,7 @@
 This module contains functions to visualize data, hypervolume, etc.
 """
 
+import plotly.graph_objects as go
 from ema_workbench.util.utilities import load_results
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -93,8 +94,109 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
 
 
-if __name__ == '__main__':
+def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=14):
+    """
+    takes in data, processes it up to the finished interactive parallel axis plot.
+    Parameters:
+    ----------
+        experiments :   dataframe
+                        all experimental data
+        outcomes :      dataframe
+                        all outcome data
+        limits :        dataframe
+                        This should be an outcome dataframe. It can be the same as the 'outcome' parameter.
+                        In this case, the plot will be shown as usual. If another outcomes dataframe is used, it will
+                        take the limits of this other outcomes dataframe instead of the usual outcome limits.
+        axis_width :    float
+                        indicates how much horizontal space there will be between the axes
+        font_size :     int
+                        font size
+    Return:
+    -------
+        fig             Figure
+                        figure object
+    """
 
+    minimize_list = [
+        'Disutility',
+        'Intratemporal consumption Gini',
+        'Intratemporal damage Gini',
+        'Highest damage per capita',
+        'Distance to consumption threshold',
+        'Population below consumption threshold',
+        'Distance to damage threshold',
+        'Population above damage threshold',
+        'Temperature overshoot'
+    ]
+    minimize_list = [x + ' 2105' for x in minimize_list]
+
+    dimensions_list = []
+
+    # Fill list with info for each objective:
+    for obj_name in outcomes.columns.tolist():
+
+        # Find lower & upper bound for each objective
+        lower_bound = min(limits.loc[:, obj_name])
+        upper_bound = max(limits.loc[:, obj_name])
+
+        # Adjust axis orientation. If minimize: lowest value at top of parallel axis plot.
+        if obj_name in minimize_list:
+            range_boundaries = [upper_bound, lower_bound]
+        else:
+            range_boundaries = [lower_bound, upper_bound]
+
+        # Create dict for objectives (i.e., dimensions)
+        objective = dict(
+            range=range_boundaries,
+            label=obj_name,
+            values=outcomes.loc[:, obj_name]
+        )
+
+        # Add dict
+        dimensions_list.append(objective)
+
+    fig = go.Figure(
+        data=go.Parcoords(
+            # Policy lines
+            # line_color = 'blue',
+            # line=dict(color=experiments['policy'], showscale=True),
+
+            # Outcomes
+            dimensions=list(dimensions_list),
+            # Formatting
+            labelangle=-90,
+            labelside='bottom')
+    )
+
+    nr_of_axes = len(outcomes.columns)
+
+    width = axis_width * nr_of_axes
+    height = 800
+
+    # Layout changes
+    fig.update_layout(
+        font=dict(size=font_size),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        overwrite=True,
+        autosize=False,
+        width=width,
+        height=height,
+        margin=dict(
+            l=50,
+            r=50,
+            b=200,
+            t=50,
+            pad=4
+        )
+    )
+
+    fig.show()
+
+    # return fig
+
+
+if __name__ == '__main__':
     directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/exploration/data/'
     results = load_results(file_name=directory + 'results_open_exploration_10')
     experiments, outcomes = results

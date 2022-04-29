@@ -1,52 +1,39 @@
-"""
-Trying out some parallel processing
-"""
+import logging
+import time
+from tqdm import tqdm
+import io
 
 
-from concurrent.futures import ProcessPoolExecutor
-from optimization.general.timer import *
-
-
-def foo(a, b):
+class TqdmToLogger(io.StringIO):
     """
-    Sum two elements.
+        Output stream for TQDM which will output to logger module instead of
+        the StdOut.
     """
-    c = a + b
-    return a, b, c
+    logger = None
+    level = None
+    buf = ''
+
+    def __init__(self, level=None):
+
+        super(TqdmToLogger, self).__init__()
+
+        logging.basicConfig(format='[blaa] %(message)s')
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+
+        self.logger = logger
+        self.level = level or logging.INFO
+
+    def write(self, buf):
+        self.buf = buf.strip('\r\n\t ')
+
+    def flush(self):
+        self.logger.log(self.level, self.buf)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    timer = Timer()
+    tqdm_out = TqdmToLogger()
 
-    solutions = []
-    n = 100000
-    alist = list(range(0, n, 1))
-    blist = list(range(0, n, 1))
-
-    with ProcessPoolExecutor() as executor:
-
-        futures = []
-        for idx, _ in enumerate(alist):
-            solution = executor.submit(foo, alist[idx], blist[idx])
-            futures.append(solution)
-
-        for future in futures:
-            solution = future.result()
-            solutions.append(solution)
-
-    print('parallel')
-    timer.stop()
-
-    # ##############
-
-    timer = Timer()
-
-    solutions = []
-
-    for idx, _ in enumerate(alist):
-        solution = foo(alist[idx], blist[idx])
-        solutions.append(solution)
-
-    print('sequential')
-    timer.stop()
+    for x in tqdm(range(100), file=tqdm_out, mininterval=1, ):
+        time.sleep(.1)

@@ -126,7 +126,7 @@ def run_optimization(
                 searchover=searchover,
                 epsilons=epsilons,
                 convergence=convergence_metrics,
-                logging_freq=int(nfe / 100)
+                # logging_freq=int(nfe / 100)
             )
 
             if saving_results:
@@ -155,7 +155,7 @@ def run_optimization(
                 nfe=nfe,
                 searchover=searchover,
                 epsilons=epsilons,
-                logging_freq=int(nfe/100)
+                # logging_freq=int(nfe/100)
             )
 
             if saving_results:
