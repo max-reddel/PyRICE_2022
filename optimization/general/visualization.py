@@ -94,6 +94,44 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
 
 
+def plot_one_pathway(outcomes_df, outcome_name, saving=False, file_name=None):
+    """
+    Plots pathways given an outcome DataFrame and outcomes-names.
+
+    Remark: Currently not super stable. Might break because of length of args.
+
+    @param outcomes_df: DataFrame
+    @param outcome_name: String
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    years = list(range(2005, 2310, 10))
+
+    df = outcomes_df.filter(regex=outcome_name, axis=1)
+    # sns.jointplot(years, df)
+
+    # ax.plot(years, row.iloc[:], linewidth=0.1, alpha=0.5, color='forestgreen')
+
+    # ax.set_title(outcome_name)
+    # ax.set_xlabel('Time in years')
+    # ax.set_ylabel(outcome_name)
+
+    plt.show()
+
+    # if saving:
+    #
+    #     visualization_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/outputimages/'
+    #     if file_name is None:
+    #         file_name = "open_exploration_pathways"
+    #     file_name += ".png"
+    #     fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
+    return df
+
+
 def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=14):
     """
     takes in data, processes it up to the finished interactive parallel axis plot.

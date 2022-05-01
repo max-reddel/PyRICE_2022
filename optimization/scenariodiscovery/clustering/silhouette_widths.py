@@ -230,7 +230,7 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
         fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
 
 
-def get_experiments_with_clusters(objective, cluster_number, results_name='results_open_exploration_100'):
+def get_experiments_with_clusters(objective, cluster_number, results_name='results_open_exploration_30000'):
     """
     Get the experiments dataframe with the corresponding clusters-column
     @param objective: String
@@ -248,7 +248,7 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
 
     # Load cluster data
     target_directory = os.getcwd() + '/data/'
-    file_name = 'clusters.csv'
+    file_name = 'clusters_30000.csv'
     clusters_df = pd.read_csv(target_directory + file_name)
 
     # Get specific clusters for objective and cluster number
@@ -257,7 +257,9 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
 
     # Save into dataframe
     x = experiments.copy()
-    x['clusters'] = clusters.astype('int')
+    # x['clusters'] = clusters.astype('int')
+    x['clusters'] = clusters.astype('object')
+
 
     return x
 
