@@ -49,6 +49,11 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
         column_names = list(df.columns)
         outcomes_reshaped[name] = np.stack([df[x] for x in column_names], axis=-1)
 
+    # Adding time
+
+    years = np.arange(2005, 2310, 10)
+    outcomes_reshaped['TIME'] = np.array([years for _ in range(30000)])
+
     return outcomes_reshaped
 
 
