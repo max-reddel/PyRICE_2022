@@ -170,8 +170,13 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
 
     dimensions_list = []
 
+    max_length_objective_name = 0
+
     # Fill list with info for each objective:
     for obj_name in outcomes.columns.tolist():
+
+        if len(obj_name) > max_length_objective_name:
+            max_length_objective_name = len(obj_name)
 
         # Find lower & upper bound for each objective
         lower_bound = min(limits.loc[:, obj_name])
@@ -223,7 +228,7 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
         margin=dict(
             l=50,
             r=50,
-            b=200,
+            b=8*max_length_objective_name,
             t=50,
             pad=4
         )
