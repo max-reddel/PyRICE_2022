@@ -16,25 +16,15 @@ if __name__ == '__main__':
 
     for idx, problem_formulation in enumerate(problem_formulations):
 
-        if problem_formulation == ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED:
+        print(f'Running problem formulation {idx+1}/{len(problem_formulations)} ({problem_formulation.name})')
 
-            print(f'Running problem formulation {idx+1}/{len(problem_formulations)} ({problem_formulation.name})')
-
-            run_optimization(
-                problem_formulation=problem_formulation,
-                nfe=10000,
-                searchover='uncertainties',
-                saving_results=True,
-                with_convergence=True
-            )
-
-            run_optimization(
-                problem_formulation=problem_formulation,
-                nfe=10000,
-                searchover='levers',
-                saving_results=True,
-                with_convergence=True
-            )
-            break
+        run_optimization(
+            problem_formulation=problem_formulation,
+            nfe=1000,
+            searchover='uncertainties',
+            saving_results=True,
+            with_convergence=True
+        )
 
     timer.stop()
+
