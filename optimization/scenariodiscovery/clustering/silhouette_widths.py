@@ -28,6 +28,8 @@ from sklearn.metrics import silhouette_score
 
 from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
 from ema_workbench import load_results
+from ema_workbench.analysis import plotting, Density
+from ema_workbench import ScalarOutcome
 
 from optimization.general.xlm_constants_epsilons import get_all_outcome_names
 from optimization.general.timer import *
@@ -265,6 +267,69 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
     x['clusters'] = clusters.astype('object')
 
     return x
+
+
+def plot_clustered_pathways(outcomes, outcome_name, relevant_clusters):
+    """
+    Plot the pathways of a specific objective grouped by their clusters.
+    @param outcomes: DataFrame
+    @param outcome_name: String
+    @param relevant_clusters: list with integers
+    """
+    experiments_list = [
+        get_experiments_with_clusters(objective=outcome_name, cluster_number=c) for c in relevant_clusters
+    ]
+    reshaphed_outcomes = get_outcomes_reshaped(outcomes_df=outcomes, objective_names=[outcome_name])
+
+    for idx, cluster in enumerate(relevant_clusters):
+        fig, axes = plotting.lines(
+            experiments=experiments_list[idx],
+            outcomes=reshaphed_outcomes,
+            outcomes_to_show=outcome_name,
+            group_by='clusters',
+            density=Density.BOXPLOT
+        )
+        fig.set_size_inches(15, 8)
+        fig.suptitle(f'{outcome_name} with {cluster} clusters', y=1.1)
+        plt.show()
+
+
+def merge_clustered_scenarios(mapping, saving=False):
+    """
+    Merge all relevant worst clustered scenarios.
+    @param mapping: dictionary: {outcome_name: (cluster, ScalarOutcome.kind)}
+    @param saving: Boolean: whether to save the resulting scenarios or not
+    @return
+        scenarios: DataFrame: merged scenarios
+    """
+
+    scenarios = pd.DataFrame()
+
+    for idx, (outcome_name, (cluster, kind)) in enumerate(mapping.items()):
+
+        # Load experiments with corresponding clusters
+        experiments = get_experiments_with_clusters(objective=outcome_name, cluster_number=cluster)
+
+        # Choose 'worst' cluster
+
+        if kind == ScalarOutcome.MAXIMIZE:
+            cluster = cluster
+        elif kind == ScalarOutcome.MINIMIZE:
+            cluster = 0
+
+        relevant_x = experiments[experiments['clusters'] == cluster]
+
+        if idx == 0:
+            scenarios = relevant_x
+        else:
+            scenarios.update(relevant_x)
+
+    # Save scenarios
+    if saving:
+        target_directory = os.path.join(os.getcwd(), 'data/time_series_scenarios.csv')
+        scenarios.to_csv(target_directory)
+
+    return scenarios
 
 
 if __name__ == '__main__':

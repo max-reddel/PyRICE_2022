@@ -11,8 +11,8 @@ import math
 
 import pandas as pd
 from scipy.spatial.distance import pdist
-# import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
+from model.enumerations import *
 
 
 def _n_combinations(n, r):
@@ -117,7 +117,7 @@ def _select_scenarios(combos, outcomes, outcome_names):
     return [results]
 
 
-def look_up_scenarios(all_scenarios, indices):
+def _look_up_scenarios(all_scenarios, indices):
     """
     Looks up the indices in all scenarios and returns a dataframe with the final solutions.
     @param all_scenarios: dictionary: contains all loaded scenarios
@@ -130,9 +130,10 @@ def look_up_scenarios(all_scenarios, indices):
     return solutions
 
 
-def compute_reference_scenarios(n_ref_scenarios=4, saving=False):
+def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False):
     """
     This function uses the diversity maximization approach to compute a number of reference scenarios.
+    @param scenarios: DataFrame
     @param n_ref_scenarios: int: number of desired reference scenarios
     @param saving: Boolean: whether to save the resuls or not
     @return:
@@ -140,10 +141,11 @@ def compute_reference_scenarios(n_ref_scenarios=4, saving=False):
     """
 
     # Loading results
-    target_directory = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))), 'example_scenarios.csv'
-    )
-    scenarios = pd.read_csv(target_directory, index_col='Unnamed: 0').iloc[:10, :9]  # Load only uncertainties
+    if scenarios is None:
+        target_directory = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))), 'example_scenarios.csv'
+        )
+        scenarios = pd.read_csv(target_directory, index_col='Unnamed: 0').iloc[:10, :9]  # Load only uncertainties
     scenarios = scenarios.to_dict('series')
 
     # Preparing outcomes
@@ -177,14 +179,57 @@ def compute_reference_scenarios(n_ref_scenarios=4, saving=False):
     solutions = list(solutions[0][0])
 
     if saving:
-        scenarios_df = look_up_scenarios(scenarios, solutions)
+        scenarios_df = _look_up_scenarios(scenarios, solutions)
         directory = os.path.join(os.getcwd(), 'data', 'reference_scenarios.csv')
         scenarios_df.to_csv(directory)
 
     return solutions
 
 
+def merge_all_worst_scenarios(saving=False):
+    """
+    Merge all worst scenarios resulting from time series clustering and from directed scenario search.
+    @param saving: Boolean: whether to save the scenarios or not
+    @return:
+        all_scenarios: DataFrame
+    """
+
+    # Load scenarios from time series clustering (tsc)
+    target_directory = os.path.join(os.path.dirname(os.getcwd()), 'clustering/data',  'time_series_scenarios.csv')
+    scenarios_tsc = pd.read_csv(target_directory)
+
+    # Load scenarios from directed scenario search (dss)
+    target_directory = os.path.join(os.path.dirname(os.getcwd()), 'search/data')
+    n = 20000
+    searchover = 'uncertainties'
+    scenarios_dss = pd.DataFrame()
+
+    for idx, problem_formulation in enumerate(ProblemFormulation.get_8_problem_formulations()):
+
+        folder = f'{problem_formulation}_{searchover}_{n}'
+        target_directory = os.path.join(target_directory, folder, 'results.csv')
+
+        new_scenarios = pd.read_csv(target_directory)
+        if idx == 0:
+            scenarios_dss = new_scenarios
+        else:
+            scenarios_dss.append(new_scenarios)
+
+    # Merging all scenarios
+    all_scenarios = scenarios_tsc.append(scenarios_dss)
+
+    # Save scenarios
+    if saving:
+        target_directory = os.path.join(os.getcwd(), 'data', 'all_worst_scenarios.csv')
+        all_scenarios.to_csv(target_directory)
+
+    return all_scenarios
+
+
 if __name__ == "__main__":
 
-    ref_scenarios = compute_reference_scenarios(n_ref_scenarios=4, saving=True)
+    scenarios = merge_all_worst_scenarios(saving=True)
+    ref_scenarios = compute_reference_scenarios(scenarios=scenarios, n_ref_scenarios=4, saving=True)
     print(f'ref_scenarios: {ref_scenarios}')
+
+
