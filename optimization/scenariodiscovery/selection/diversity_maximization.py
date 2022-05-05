@@ -136,7 +136,7 @@ def compute_reference_scenarios(n_ref_scenarios=4, saving=False):
     @param n_ref_scenarios: int: number of desired reference scenarios
     @param saving: Boolean: whether to save the resuls or not
     @return:
-        solutions: 4-tuple with
+        solutions: list with 4 items
     """
 
     # Loading results
