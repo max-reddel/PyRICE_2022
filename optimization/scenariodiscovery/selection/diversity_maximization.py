@@ -140,8 +140,6 @@ def look_up_scenarios(all_scenarios, indices):
         solutions: DataFrame
     """
     all_scenarios = pd.DataFrame(all_scenarios)
-    # print(all_scenarios)
-    # print(indices)
     solutions = all_scenarios.iloc[indices, :]
 
     return solutions
