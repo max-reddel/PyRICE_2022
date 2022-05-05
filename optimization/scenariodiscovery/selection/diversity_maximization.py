@@ -11,7 +11,8 @@ import math
 
 import pandas as pd
 from scipy.spatial.distance import pdist
-import multiprocessing
+# import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 
 
 def _n_combinations(n, r):
@@ -107,28 +108,13 @@ def _find_max_diverse_scenarios(combinations, outcomes, outcome_names):
 
 def _select_scenarios(combos, outcomes, outcome_names):
     """
-
     @param combos:
     @param outcomes: dictionary
     @param outcome_names: list with Strings
     @return:
     """
-
-    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-        results = pool.starmap(_find_max_diverse_scenarios, [(combos, outcomes, outcome_names)])
-
-    # find the maximum
-    max_diversity = 0.0
-    diverse_scenarios = []
-
-    for result in results:
-        if result[0] > max_diversity:
-            max_diversity = result[0]
-            diverse_scenarios = [result]
-        elif result[0] == max_diversity:
-            diverse_scenarios.append(result)
-
-    return diverse_scenarios
+    results = _find_max_diverse_scenarios(combos, outcomes, outcome_names)
+    return [results]
 
 
 def look_up_scenarios(all_scenarios, indices):
@@ -141,7 +127,6 @@ def look_up_scenarios(all_scenarios, indices):
     """
     all_scenarios = pd.DataFrame(all_scenarios)
     solutions = all_scenarios.iloc[indices, :]
-
     return solutions
 
 
@@ -158,7 +143,7 @@ def compute_reference_scenarios(n_ref_scenarios=4, saving=False):
     target_directory = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))), 'example_scenarios.csv'
     )
-    scenarios = pd.read_csv(target_directory, index_col='Unnamed: 0').iloc[:7, :9]  # Load only uncertainties
+    scenarios = pd.read_csv(target_directory, index_col='Unnamed: 0').iloc[:10, :9]  # Load only uncertainties
     scenarios = scenarios.to_dict('series')
 
     # Preparing outcomes
@@ -172,13 +157,14 @@ def compute_reference_scenarios(n_ref_scenarios=4, saving=False):
     n_combinations = _n_combinations(len(indices), n_ref_scenarios)
 
     # Iterating through the combinations
-    for idx, item in enumerate(itertools.combinations(indices, n_ref_scenarios)):
-        print(f'it #{idx}/{n_combinations}') if idx % 10 == 0 else 0
-        combos = [item]
-        solution = _select_scenarios(combos=combos, outcomes=scenarios, outcome_names=outcome_names)
-        potential_solutions.extend(solution)
+    with ProcessPoolExecutor() as executor:
+        for idx, item in enumerate(itertools.combinations(indices, n_ref_scenarios)):
+            print(f'it #{idx}/{n_combinations}') if idx % 500 == 0 else 0
+            combos = [item]
+            solution = executor.submit(_select_scenarios, combos=combos, outcomes=scenarios, outcome_names=outcome_names)
+            potential_solutions.extend(solution.result())
 
-    # Selecting maximam diverse scenarios
+    # Selecting maximum diverse scenarios
     max_diversity = 0.0
     solutions = []
     for r in potential_solutions:
@@ -202,4 +188,3 @@ if __name__ == "__main__":
 
     ref_scenarios = compute_reference_scenarios(n_ref_scenarios=4, saving=True)
     print(f'ref_scenarios: {ref_scenarios}')
-    print('\ndone\n')

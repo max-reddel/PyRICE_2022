@@ -29,7 +29,6 @@ from sklearn.metrics import silhouette_score
 from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
 from ema_workbench import load_results
 
-from optimization.general.visualization import plot_pathways
 from optimization.general.xlm_constants_epsilons import get_all_outcome_names
 from optimization.general.timer import *
 
