@@ -1,5 +1,5 @@
 """
-This module contains functions to visualize data, hypervolume, etc.
+This module contains functions to visualize outcomes, hypervolume, etc.
 """
 
 import plotly.graph_objects as go
@@ -134,13 +134,13 @@ def plot_one_pathway(outcomes_df, outcome_name, saving=False, file_name=None):
 
 def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=14):
     """
-    takes in data, processes it up to the finished interactive parallel axis plot.
+    takes in outcomes, processes it up to the finished interactive parallel axis plot.
     Parameters:
     ----------
         experiments :   dataframe
-                        all experimental data
+                        all experimental outcomes
         outcomes :      dataframe
-                        all outcome data
+                        all outcome outcomes
         limits :        dataframe
                         This should be an outcome dataframe. It can be the same as the 'outcome' parameter.
                         In this case, the plot will be shown as usual. If another outcomes dataframe is used, it will
@@ -240,7 +240,7 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
 
 
 if __name__ == '__main__':
-    directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/exploration/data/'
+    directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/exploration/outcomes/'
     results = load_results(file_name=directory + 'results_open_exploration_10')
     experiments, outcomes = results
     outcomes = pd.DataFrame(outcomes)

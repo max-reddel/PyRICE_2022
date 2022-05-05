@@ -18,10 +18,10 @@ ema_logging.log_to_stderr(ema_logging.INFO)
 
 def define_path_name(problem_formulation, nfe, directory=None, d_type='results', searchover=None):
     """
-    Define path and file name such that it can be used to save results_formatted and/or covergence data.
+    Define path and file name such that it can be used to save results_formatted and/or covergence outcomes.
     @param problem_formulation: ProblemFormulation
     @param nfe: integer
-    @param directory: String: where to save results and covergence data
+    @param directory: String: where to save results and covergence outcomes
     @param d_type: string: {'results_formatted', 'convergence'}
     @param searchover: String
     @return:
@@ -33,7 +33,7 @@ def define_path_name(problem_formulation, nfe, directory=None, d_type='results',
     elif d_type == 'hypervolume':
         file_name = ''
     else:
-        raise ValueError('You passed an unvalid d_type in order to save your resulting data.')
+        raise ValueError('You passed an unvalid d_type in order to save your resulting outcomes.')
 
     if directory is None:
         directory = get_directory(d_type, searchover, problem_formulation, nfe)
@@ -52,7 +52,7 @@ def get_directory(d_type, searchover, problem_formulation, nfe):
     # directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     directory = os.path.abspath(os.getcwd())
 
-    data_folder = 'data'
+    data_folder = 'outcomes'
     problem_folder = f'{problem_formulation.name}_{searchover}_{nfe}'
     if d_type == 'hypervolume':
         sub_folder = d_type
@@ -85,7 +85,7 @@ def run_optimization(
     @param nfe: integer
     @param searchover: String: {'levers', 'uncertainties'}
     @param saving_results: Boolean: whether to save results_formatted or not
-    @param with_convergence: Boolean: whether to save convergence data or not
+    @param with_convergence: Boolean: whether to save convergence outcomes or not
     """
 
     welfare_function, aggregation, _ = problem_formulation.value
@@ -162,7 +162,7 @@ def run_optimization(
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
-                    d_type='data',
+                    d_type='outcomes',
                     searchover=searchover
                 )
                 results.to_csv(path)

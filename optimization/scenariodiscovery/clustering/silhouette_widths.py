@@ -1,7 +1,7 @@
 """
 This module contains functions to compute the silhouette widths for some given objectives.
 
-1. load data from open exploration
+1. load outcomes from open exploration
 2. calculate distances with CID per objective
 3. apply agglomerative clustering on the distances and compute silhouette widths
 
@@ -60,7 +60,7 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
 def compute_silhouette_widths(results, objective_names=None, max_cluster=10, parallel=False):
     """
     Computes the slihouette widths for some given objectives.
-    @param results: DataFrame, dictionary (data from perform_experiments)
+    @param results: DataFrame, dictionary (outcomes from perform_experiments)
     @param objective_names: list with Strings
     @param max_cluster: maximal number of clusters to consider
     @param parallel: Boolean: whether to run computation in parallel or not
@@ -116,12 +116,12 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10, par
 
         widths_dict[objective] = widths
 
-    # Save resulting data
+    # Save resulting outcomes
 
     widths_df = pd.DataFrame(widths_dict, index=cluster_numbers)
     cluster_df = pd.DataFrame(cluster_dict)
 
-    target_directory = os.getcwd() + '/data/'
+    target_directory = os.getcwd() + '/outcomes/'
     # Save silhouette widths
     file_name = f'silhouette_widths_{len(experiments)}.csv'
     # noinspection PyTypeChecker
@@ -245,14 +245,14 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
         x: DataFrame: experiments with extra column (clusters)
     """
 
-    # Loading data
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
+    # Loading outcomes
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/outcomes/'
     results = load_results(file_name=target_directory + results_name)
 
     experiments, outcomes = results
 
-    # Load cluster data
-    target_directory = os.getcwd() + '/data/'
+    # Load cluster outcomes
+    target_directory = os.getcwd() + '/outcomes/'
     file_name = 'clusters_30000.csv'
     clusters_df = pd.read_csv(target_directory + file_name)
 
@@ -277,8 +277,8 @@ if __name__ == '__main__':
 
     n_scenarios = 1000
 
-    # Loading data
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
+    # Loading outcomes
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/outcomes/'
     file_name = f'results_open_exploration_{n_scenarios}'
     results = load_results(file_name=target_directory + file_name)
 
@@ -290,8 +290,8 @@ if __name__ == '__main__':
     # Plotting silhouette widths
     plot_silhouette_widths(widths, saving=True)
 
-    # print('\n############ Plotting open exploration data... ############')
-    # # Plotting open exploration data
+    # print('\n############ Plotting open exploration outcomes... ############')
+    # # Plotting open exploration outcomes
     # _, outcomes = results
     # outcomes_df = pd.DataFrame(outcomes)
     # outcome_names = get_all_outcome_names()

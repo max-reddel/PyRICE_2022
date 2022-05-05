@@ -230,7 +230,7 @@ class PyRICE(object):
             self.temp_atm, self.E_worldwilde_per_year, self.CPC_pre_damage, self.CPC_post_damage,
             self.CPC, self.start_year, self.end_year, self.tstep, costs, precision=precision)
 
-        # Save alternative format of data
+        # Save alternative format of outcomes
         self.data = self.utility_model.data
 
         return self.data_dict
@@ -381,7 +381,7 @@ class PyRICE(object):
         Returns the outcome data_dict as an Results object which contains 5 dataframes and 3 highly aggregated float
         variables as attributes.
         @return:
-            self.utility_model.data: Results
+            self.utility_model.outcomes: Results
         """
 
         return self.utility_model.data
@@ -419,6 +419,6 @@ if __name__ == '__main__':
 
     # Default levers are defined by the original Nordhaus policy
     results = model()
-    # [print(f'{k}: {v}') for k, v in data.items()]
-    # print(data['Temperature overshoot 2105'])
+    # [print(f'{k}: {v}') for k, v in outcomes.items()]
+    # print(outcomes['Temperature overshoot 2105'])
     [print(f'{k}: {v}') for k, v in results.items() if 'Temperature overshoot 2' in k]

@@ -1,5 +1,5 @@
 """
-This module contains functions to compute and visualize convergence data.
+This module contains functions to compute and visualize convergence outcomes.
 """
 
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ def visualize_epsilon_progress(saving=False):
 
     directory = os.getcwd()
 
-    # Load data
+    # Load outcomes
     df_con1 = pd.read_csv(directory + '/results_formatted/NORDHAUS_UTILITARIAN_200000_convergence.csv')
     df_con2 = pd.read_csv(directory + '/results_formatted/NORDHAUS_SUFFICIENTARIAN_200000_convergence.csv')
     df_con3 = pd.read_csv(directory + '/results_formatted/WEITZMAN_UTILITARIAN_200000_convergence.csv')

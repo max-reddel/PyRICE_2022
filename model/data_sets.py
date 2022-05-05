@@ -8,7 +8,7 @@ import pandas as pd
 
 class DataSets:
     """
-    This class loads all the relevant data from the folder inputdata.
+    This class loads all the relevant outcomes from the folder inputdata.
     """
     def __init__(self):
 

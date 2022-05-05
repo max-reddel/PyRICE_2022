@@ -77,7 +77,7 @@ def create_a_reference_set(problem, n_decision_vars, n_objs, problem_formulation
 
 def load_and_merge_archives(problem, n_decision_vars, n_objs, problem_formulation='WEITZMAN/SUFFICIENTARIAN', id=198):
     """
-    Loads and merges archive data for a specific problem formulation
+    Loads and merges archive outcomes for a specific problem formulation
     @param problem: Platypus Problem
     @param n_decision_vars: int: number of decision variables
     @param n_objs: int: number of relevant objectives

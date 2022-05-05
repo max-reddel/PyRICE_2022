@@ -32,7 +32,7 @@ results = model(sr=sr, miu=miu, irstp_consumption=irstp)
 
 # View results_formatted
 
-# `results_formatted` is a dictionary containing all outcomes (including time series data)
+# `results_formatted` is a dictionary containing all outcomes (including time series outcomes)
 # This format is used to make it easier to run further optimizations.
 # But there is a better way to view results_formatted from a simple simulation
 
