@@ -120,7 +120,7 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10, par
     widths_df = pd.DataFrame(widths_dict, index=cluster_numbers)
     cluster_df = pd.DataFrame(cluster_dict)
 
-    target_directory = os.getcwd() + '/outcomes/'
+    target_directory = os.getcwd() + '/data/'
     # Save silhouette widths
     file_name = f'silhouette_widths_{len(experiments)}.csv'
     # noinspection PyTypeChecker
@@ -245,13 +245,13 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
     """
 
     # Loading outcomes
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/outcomes/'
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
     results = load_results(file_name=target_directory + results_name)
 
     experiments, outcomes = results
 
     # Load cluster outcomes
-    target_directory = os.getcwd() + '/outcomes/'
+    target_directory = os.getcwd() + '/data/'
     file_name = 'clusters_30000.csv'
     clusters_df = pd.read_csv(target_directory + file_name)
 
@@ -263,7 +263,6 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
     x = experiments.copy()
     # x['clusters'] = clusters.astype('int')
     x['clusters'] = clusters.astype('object')
-
 
     return x
 
@@ -277,7 +276,7 @@ if __name__ == '__main__':
     n_scenarios = 1000
 
     # Loading outcomes
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/outcomes/'
+    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
     file_name = f'results_open_exploration_{n_scenarios}'
     results = load_results(file_name=target_directory + file_name)
 
