@@ -102,7 +102,7 @@ def run_optimization(
     model = Model('RICE', function=model)
 
     model.uncertainties, model.levers, model.constants = get_xlc()
-    model.outcomes, epsilons = get_outcomes_and_epsilons(problem_formulation=problem_formulation)
+    model.outcomes, epsilons = get_outcomes_and_epsilons(problem_formulation=problem_formulation, searchover=searchover)
 
     # Run optimization
     if with_convergence:
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         damage_function=DamageFunction.NORDHAUS,
         problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
         nfe=100000,
-        searchover='levers',
-        saving_results=True,
-        with_convergence=True
+        searchover='uncertainties',
+        saving_results=False,
+        with_convergence=False
     )

@@ -193,11 +193,12 @@ def _get_epsilons(
     return epsilons
 
 
-def get_outcomes_and_epsilons(problem_formulation, years=None):
+def get_outcomes_and_epsilons(problem_formulation, years=None, searchover='levers'):
     """
     Returns a list of outcomes and a list of epsilons for the STANDARD workbench.
     @param problem_formulation: ProblemFormulation
     @param years: list of integers
+    @param searchover: String
     @return:
             outcomes: list of ScalarOutcomes
             epsilons: list of epsilon values (floats)
@@ -363,6 +364,14 @@ def get_outcomes_and_epsilons(problem_formulation, years=None):
         outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names, outcomes_maximize_aggregated,
         outcomes_minimize_aggregated, years_optimize, years_info, outcomes_info_aggregated
     )
+
+    # Inverting optimization direction (for scenario search only)
+    if searchover == 'uncertainties':
+        for o in outcomes:
+            if o.kind == o.MINIMIZE:
+                o.kind = o.MAXIMIZE
+            elif o.kind == o.MAXIMIZE:
+                o.kind = o.MINIMIZE
 
     return outcomes, epsilons
 
