@@ -151,11 +151,13 @@ If the model has been initialized with e.g., `model = PyRICE()`, we can simply u
 
 ### Levers
 
-| Variable | Values           | Default | Description                                          |
-|----------|------------------|---------|------------------------------------------------------|
-| `sr`     | `[0.1, 0.5]`     | `0.248` | Savings rate                                         |
-| `miu`    | `[2005, 2305]`   | `2135`  | Emission control rate target (year of zero-emission) |
-| `irstp`  | `[0.001, 0.015]` | `0.015` | Initial rate of social time preference               |
+| Variable            | Values           | Default | Description                                           |
+|---------------------|------------------|---------|-------------------------------------------------------|
+| `sr`                | `[0.1, 0.5]`     | `0.248` | Savings rate                                          |
+| `miu`               | `[2005, 2305]`   | `2135`  | Emission control rate target (year of zero-emission)  |
+| `irstp_consumption` | `[0.001, 0.015]` | `0.015` | Initial rate of social time preference of consumption |
+| `irstp_damage`      | `[0.001, 0.015]` | `0.015` | Initial rate of social time preference of damage      |
+
 
 ### Miscellaneous Parameters
 
