@@ -111,20 +111,20 @@ Within the XLRM framework, the PyRICE model can be represented as seen in the fi
 
 The used regions within this PyRICE model are depicted in the following table:
 
-| RICE Region                 |  Description   |
-| -----------------------   | ---------------   | 
-| `US` | The United States of America |
-| `OECD-Europe` | European countries that are members of the OECD |
-| `Japan` | Japan |
-| `Russia` | Russia |
-| `Non-Russia Eurasia` | Countries that are in Eurasia \ {Russia}|
-| `China` | China|
-| `India` | India|
-| `Middle East` | Middle-Eastern countries|
-| `Africa` |Countries of the African continent|
-| `Latin America` | Countries of Latin America|
-| `OHI` | Other high income countries|
-| `Other non-OECD-Asia` | Countries in Asia that are not members of the OECD|
+|  RICE Region          | Description                                        |
+|-----------------------|----------------------------------------------------|
+| `US`                  | The United States of America                       |
+| `OECD-Europe`         | European countries that are members of the OECD    |
+| `Japan`               | Japan                                              |
+| `Russia`              | Russia                                             |
+| `Non-Russia Eurasia`  | Countries that are in Eurasia \ {Russia}           |
+| `China`               | China                                              |
+| `India`               | India                                              |
+| `Middle East`         | Middle-Eastern countries                           |
+| `Africa`              | Countries of the African continent                 |
+| `Latin America`       | Countries of Latin America                         |
+| `OHI`                 | Other high income countries                        |
+| `Other non-OECD-Asia` | Countries in Asia that are not members of the OECD |
 
 ---
 ## 5 How to Use the PyRICE Model
@@ -138,11 +138,11 @@ The most important parameters are listed below. Use simply **`model = PyRICE()`*
 
 **Bolded** elements are model default values.
 
-| Variable | Values | Description |
-| --------------- | --------------- | ---------------------------- |
-| `model_specification` | **`ModelSpec.STANDARD`** <br> `ModelSpec.Validation_1` <br> `ModelSpec.Validation_2` | Standard for simulation and optimizaiton <br> Replicating RICE2010 <br> Deterministic RICE2010|
-| `damage_function` | **`DamageFunction.NORDHAUS`** <br> `DamageFunction.NEWBOLD` <br> `DamageFunction.WEITZMAN` | Nordhaus + SLR <br> Newbold & Daigneault <br> Weitzman |
-| `welfare_function` | **`WelfareFunction.UTILITARIAN`** <br> `WelfareFunction.EGALITARIAN` <br> `WelfareFunction.SUFFICIENTARIAN` <br> `WelfareFunction.PRIORITARIAN`| Total aggregated utility <br> Equal distribution of risks & benefits <br> People above some threshold  <br> Wellbeing of worst-off region|
+| Variable              | Values                                                                                                                                          | Description                                                                                                                               |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `model_specification` | **`ModelSpec.STANDARD`** <br> `ModelSpec.Validation_1` <br> `ModelSpec.Validation_2`                                                            | Standard for simulation and optimizaiton <br> Replicating RICE2010 <br> Deterministic RICE2010                                            |
+| `damage_function`     | **`DamageFunction.NORDHAUS`** <br> `DamageFunction.NEWBOLD` <br> `DamageFunction.WEITZMAN`                                                      | Nordhaus + SLR <br> Newbold & Daigneault <br> Weitzman                                                                                    |
+| `welfare_function`    | **`WelfareFunction.UTILITARIAN`** <br> `WelfareFunction.EGALITARIAN` <br> `WelfareFunction.SUFFICIENTARIAN` <br> `WelfareFunction.PRIORITARIAN` | Total aggregated utility <br> Equal distribution of risks & benefits <br> People above some threshold  <br> Wellbeing of worst-off region |
 
 ### 5.2 Run the PyRICE Model
 Next, we can run the model with specific lever values. The most important parameters are listed below. The default values of the lever parameters represent the **original Nordhaus policy**. 
@@ -151,17 +151,17 @@ If the model has been initialized with e.g., `model = PyRICE()`, we can simply u
 
 ### Levers
 
-| Variable        | Values          | Default       | Description |
-| --------------- | --------------- | ----------    | ----------- |
-| `sr`            | `[0.1, 0.5]`    | `0.248`       | Savings rate |
-| `miu`           | `[2005, 2305]`  | `2135`        | Emission control rate target (year of zero-emission)|
-| `irstp`         | `[0.001, 0.015]`| `0.015`       | Initial rate of social time preference |
+| Variable | Values           | Default | Description                                          |
+|----------|------------------|---------|------------------------------------------------------|
+| `sr`     | `[0.1, 0.5]`     | `0.248` | Savings rate                                         |
+| `miu`    | `[2005, 2305]`   | `2135`  | Emission control rate target (year of zero-emission) |
+| `irstp`  | `[0.001, 0.015]` | `0.015` | Initial rate of social time preference               |
 
 ### Miscellaneous Parameters
 
-| Variable        | Values          | Default       | Description |
-| --------------- | --------------- | ----------    | ----------- |
-| `precision`     | `{10, 20, 30}` | `10`           | Precision of timeseries data of final outcomes in years |
+| Variable    | Values         | Default | Description                                             |
+|-------------|----------------|---------|---------------------------------------------------------|
+| `precision` | `{10, 20, 30}` | `10`    | Precision of timeseries data of final outcomes in years |
 
 
 Precision indicates how precise you want your timeseries data to be in the final outcomes. E.g., `10` means, you get a value every 10 years.
@@ -178,16 +178,16 @@ All relevant outcome data is saved into a `results` object and can be accessed v
 
 ### Results
 
-| Attribute                 |  Data Type        | Description   |
-| -----------------------   | ---------------   | ----------    |
-| `aggregated_utility`      | `float`           | Total aggregated utility   |
-| `aggregated_utility_gini` | `float`           | Total aggregated utility GINI   |
-| `aggregated_impact_gini`  | `float`           | Total aggregated impact GINI   |
-| `df_population`           | `dataframe`       | Population over regions over years |
-| `df_cpc`                  | `dataframe`       | Consumption per capita over regions over years   |
-| `df_cpc_pre_damage`       | `dataframe`       | Pre-damage consumption per capita over regions over years |
-| `df_cpc_post_damage`      | `dataframe`       | Post-damage consumption per capita over regions over years  |
-| `df_main`                 | `dataframe`       | Over years with following columns: <br> - damages <br> - utility lowest income per capita <br> - highest climate impact per capita <br> - distance to threshold <br> - population under threshold <br> - intratemporal utility GINI <br> - intratemporal impact GINI <br> - atmospheric temperature  |
+| Attribute                 | Data Type   | Description                                                                                                                                                                                                                                                                                         |
+|---------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `aggregated_utility`      | `float`     | Total aggregated utility                                                                                                                                                                                                                                                                            |
+| `aggregated_utility_gini` | `float`     | Total aggregated utility GINI                                                                                                                                                                                                                                                                       |
+| `aggregated_impact_gini`  | `float`     | Total aggregated impact GINI                                                                                                                                                                                                                                                                        |
+| `df_population`           | `dataframe` | Population over regions over years                                                                                                                                                                                                                                                                  |
+| `df_cpc`                  | `dataframe` | Consumption per capita over regions over years                                                                                                                                                                                                                                                      |
+| `df_cpc_pre_damage`       | `dataframe` | Pre-damage consumption per capita over regions over years                                                                                                                                                                                                                                           |
+| `df_cpc_post_damage`      | `dataframe` | Post-damage consumption per capita over regions over years                                                                                                                                                                                                                                          |
+| `df_main`                 | `dataframe` | Over years with following columns: <br> - damages <br> - utility lowest income per capita <br> - highest climate impact per capita <br> - distance to threshold <br> - population under threshold <br> - intratemporal utility GINI <br> - intratemporal impact GINI <br> - atmospheric temperature |
 
 
 
