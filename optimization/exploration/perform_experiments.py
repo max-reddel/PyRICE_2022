@@ -45,7 +45,7 @@ def perform_own_experiments(
     @param saving_results: Boolean: whether to save the outcomes or not
     @param file_name: String: name of file to save
     @return:
-        outcomes: dataframe, dictionary: experiments, outcomes
+        outcomes: (dataframe, dictionary): (experiments, outcomes)
     """
 
     model = PyRICE(

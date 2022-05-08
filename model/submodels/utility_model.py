@@ -446,8 +446,10 @@ class UtilityModel:
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
-    def run_egalitarian(self, t, year, irstp_consumption, tstep, egalitarian_discounting, CPC, damages, Y, CPC_lo,
-                        climate_impact_relative_to_capita, CPC_post_damage):
+    def run_egalitarian(
+            self, t, year, irstp_consumption, tstep, egalitarian_discounting, CPC, damages, Y, CPC_lo,
+            climate_impact_relative_to_capita, CPC_post_damage
+    ):
         """
         @param t: int
         @param year: int
@@ -480,8 +482,10 @@ class UtilityModel:
             t, year, CPC, damages, CPC_post_damage, CPC_lo, climate_impact_relative_to_capita, Y
         )
 
-    def get_outcomes(self, temp_atm, E_worldwilde_per_year, CPC_pre_damage, CPC_post_damage, CPC,
-                     start_year, end_year, tstep, costs, precision=10):
+    def get_outcomes(
+            self, temp_atm, E_worldwilde_per_year, CPC_pre_damage, CPC_post_damage, CPC, start_year, end_year, tstep,
+            costs, precision=10
+    ):
         """
         Prepare outcome variables in a dictionary and return it.
         @param temp_atm: numpy array (31,)
