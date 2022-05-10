@@ -52,7 +52,7 @@ def get_directory(d_type, searchover, problem_formulation, nfe):
     # directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     directory = os.path.abspath(os.getcwd())
 
-    data_folder = 'outcomes'
+    data_folder = 'data'
     problem_folder = f'{problem_formulation.name}_{searchover}_{nfe}'
     if d_type == 'hypervolume':
         sub_folder = d_type
@@ -75,6 +75,7 @@ def run_optimization(
         problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
         nfe=5000,
         searchover='levers',
+        reference=None,
         saving_results=False,
         with_convergence=False,
 ):
@@ -84,6 +85,7 @@ def run_optimization(
     @param problem_formulation: ProblemFormulation
     @param nfe: integer
     @param searchover: String: {'levers', 'uncertainties'}
+    @param reference: list with Scenario or Policy objects
     @param saving_results: Boolean: whether to save results_formatted or not
     @param with_convergence: Boolean: whether to save convergence outcomes or not
     """
@@ -126,7 +128,7 @@ def run_optimization(
                 searchover=searchover,
                 epsilons=epsilons,
                 convergence=convergence_metrics,
-                # logging_freq=int(nfe / 100)
+                reference=reference
             )
 
             if saving_results:
@@ -155,14 +157,15 @@ def run_optimization(
                 nfe=nfe,
                 searchover=searchover,
                 epsilons=epsilons,
-                # logging_freq=int(nfe/100)
+                reference=reference
+
             )
 
             if saving_results:
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
-                    d_type='outcomes',
+                    d_type='results',
                     searchover=searchover
                 )
                 results.to_csv(path)
@@ -172,7 +175,7 @@ if __name__ == '__main__':
     run_optimization(
         damage_function=DamageFunction.NORDHAUS,
         problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
-        nfe=100000,
+        nfe=200000,
         searchover='uncertainties',
         saving_results=False,
         with_convergence=False

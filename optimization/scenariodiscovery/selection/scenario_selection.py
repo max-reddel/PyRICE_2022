@@ -1,5 +1,6 @@
 """
-This module contains a function for the diversity maximization approach.
+This module contains fucntions around scenario selection, such as a function for the diversity maximization approach
+and to load reference scenarios.
 Remark: Some used functions have been adopted from
 https://github.com/shajeelwn/PyDICE/blob/master/4_Scenario_Discovery/Scenario_Selection_only_util_ds.py
 """
@@ -13,6 +14,7 @@ import pandas as pd
 from scipy.spatial.distance import pdist
 from concurrent.futures import ProcessPoolExecutor
 from model.enumerations import *
+from ema_workbench import Scenario
 
 
 def _n_combinations(n, r):
@@ -224,6 +226,29 @@ def merge_all_worst_scenarios(saving=False):
         all_scenarios.to_csv(target_directory)
 
     return all_scenarios
+
+
+def load_reference_scenarios():
+    """
+    Load reference scenarios as list of Scenario objects.
+    @return
+        scenarios: list with Scenario objects
+    """
+    target_directory = os.path.join(
+        os.path.dirname(os.getcwd()), 'scenariodiscovery/selection/data',  'reference_scenarios.csv'
+    )
+    scenarios_df = pd.read_csv(target_directory, index_col='Unnamed: 0')
+
+    scenarios = []
+
+    for idx, row in scenarios_df.iterrows():
+
+        row = row.to_dict()
+
+        scenario = Scenario(f'{idx}', **row)
+        scenarios.append(scenario)
+
+    return scenarios
 
 
 if __name__ == "__main__":
