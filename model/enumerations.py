@@ -9,6 +9,7 @@ class ModelSpec(Enum):
     """
     Model Specifications
     """
+
     Validation_1 = 1
     Validation_2 = 2
     STANDARD = 3
@@ -18,6 +19,7 @@ class WelfareFunction(Enum):
     """
     Social Welfare Functions
     """
+
     UTILITARIAN = 0
     PRIORITARIAN = 1
     SUFFICIENTARIAN = 2
@@ -28,6 +30,7 @@ class DamageFunction(Enum):
     """
     Damage Functions
     """
+
     NORDHAUS = 0
     NEWBOLD = 1
     WEITZMAN = 2
@@ -37,6 +40,7 @@ class ProblemFormulation(Enum):
     """
     Problem formulations. The values are tuples with (WelfareFunction, aggregation)
     """
+
     ALL_OBJECTIVES = WelfareFunction.UTILITARIAN, True, 0
     UTILITARIAN_COSTS = WelfareFunction.UTILITARIAN, False, 1
     UTILITARIAN_AGGREGATED = WelfareFunction.UTILITARIAN, True, 2

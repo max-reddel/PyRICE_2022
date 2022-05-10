@@ -10,16 +10,21 @@ class DataSets:
     """
     This class loads all the relevant outcomes from the folder inputdata.
     """
+
     def __init__(self):
 
-        directory = os.path.dirname(os.path.realpath(__file__)) + '/inputdata/'
+        directory = os.path.dirname(os.path.realpath(__file__)) + "/inputdata/"
 
         # Load in RICE input parameters for all regions
         self.RICE_DATA = pd.read_excel(directory + "RICE_data.xlsx")
         self.RICE_PARAMETER = pd.read_excel(directory + "RICE_parameter.xlsx")
         self.RICE_input = pd.read_excel(directory + "input_data_RICE.xlsx")
-        self.RICE_regional_damage_factor = pd.read_csv(directory + "regional damage frac factor RICE.csv")
-        self.RICE_regional_damage_factor = self.RICE_regional_damage_factor.iloc[:, 1:].to_numpy()
+        self.RICE_regional_damage_factor = pd.read_csv(
+            directory + "regional damage frac factor RICE.csv"
+        )
+        self.RICE_regional_damage_factor = self.RICE_regional_damage_factor.iloc[
+            :, 1:
+        ].to_numpy()
 
         # import World Bank income shares
         self.RICE_income_shares = pd.read_excel(directory + "RICE_income_shares.xlsx")

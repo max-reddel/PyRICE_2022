@@ -10,7 +10,9 @@ import pandas as pd
 import seaborn as sns
 import os
 
-from optimization.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
+from optimization.scenariodiscovery.clustering.silhouette_widths import (
+    get_outcomes_reshaped,
+)
 
 
 def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
@@ -56,8 +58,12 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         nrows = 5
         ncols = 5
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(28, 24), tight_layout=True)
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
+    fig, axes = plt.subplots(
+        nrows=nrows, ncols=ncols, figsize=(28, 24), tight_layout=True
+    )
+    plt.subplots_adjust(
+        left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8
+    )
 
     years = list(range(2005, 2310, 10))
 
@@ -79,18 +85,27 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         name = outcome_names[i]
         df = outcomes_df.filter(regex=name, axis=1)  # Filter columns to include "name"
         for idx, row in df.iterrows():
-            ax.plot(years, row.iloc[:], linewidth=linewidth, alpha=alpha, color='forestgreen')
+            ax.plot(
+                years,
+                row.iloc[:],
+                linewidth=linewidth,
+                alpha=alpha,
+                color="forestgreen",
+            )
 
         ax.set_title(name)
-        ax.set_xlabel('Time in years')
+        ax.set_xlabel("Time in years")
         ax.set_ylabel(name)
 
-    axes[-1, -1].axis('off')
+    axes[-1, -1].axis("off")
     plt.show()
 
     if saving:
 
-        visualization_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/outputimages/'
+        visualization_folder = (
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+            + "/outputimages/"
+        )
         if file_name is None:
             file_name = "open_exploration_pathways"
         file_name += ".png"
@@ -107,21 +122,26 @@ def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_nam
     @param file_name: String
     """
 
-    reshaphed_outcomes = get_outcomes_reshaped(outcomes_df=outcomes, objective_names=[outcome_name])
+    reshaphed_outcomes = get_outcomes_reshaped(
+        outcomes_df=outcomes, objective_names=[outcome_name]
+    )
 
     fig, axes = plotting.lines(
         experiments=experiments,
         outcomes=reshaphed_outcomes,
         outcomes_to_show=outcome_name,
         # group_by='clusters',
-        density=Density.BOXPLOT
+        density=Density.BOXPLOT,
     )
     fig.set_size_inches(15, 8)
     plt.show()
 
     if saving:
 
-        visualization_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/outputimages/'
+        visualization_folder = (
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+            + "/outputimages/"
+        )
         if file_name is None:
             file_name = "open_exploration_pathways"
         file_name += ".png"
@@ -149,17 +169,17 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
     """
 
     minimize_list = [
-        'Disutility',
-        'Intratemporal consumption Gini',
-        'Intratemporal damage Gini',
-        'Highest damage per capita',
-        'Distance to consumption threshold',
-        'Population below consumption threshold',
-        'Distance to damage threshold',
-        'Population above damage threshold',
-        'Temperature overshoot'
+        "Disutility",
+        "Intratemporal consumption Gini",
+        "Intratemporal damage Gini",
+        "Highest damage per capita",
+        "Distance to consumption threshold",
+        "Population below consumption threshold",
+        "Distance to damage threshold",
+        "Population above damage threshold",
+        "Temperature overshoot",
     ]
-    minimize_list = [x + ' 2105' for x in minimize_list]
+    minimize_list = [x + " 2105" for x in minimize_list]
 
     dimensions_list = []
 
@@ -183,9 +203,7 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
 
         # Create dict for objectives (i.e., dimensions)
         objective = dict(
-            range=range_boundaries,
-            label=obj_name,
-            values=outcomes.loc[:, obj_name]
+            range=range_boundaries, label=obj_name, values=outcomes.loc[:, obj_name]
         )
 
         # Add dict
@@ -196,12 +214,12 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
             # Policy lines
             # line_color = 'blue',
             # line=dict(color=experiments['policy'], showscale=True),
-
             # Outcomes
             dimensions=list(dimensions_list),
             # Formatting
             labelangle=-90,
-            labelside='bottom')
+            labelside="bottom",
+        )
     )
 
     nr_of_axes = len(outcomes.columns)
@@ -212,38 +230,35 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
     # Layout changes
     fig.update_layout(
         font=dict(size=font_size),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
+        plot_bgcolor="white",
+        paper_bgcolor="white",
         overwrite=True,
         autosize=False,
         width=width,
         height=height,
-        margin=dict(
-            l=50,
-            r=50,
-            b=8*max_length_objective_name,
-            t=50,
-            pad=4
-        )
+        margin=dict(l=50, r=50, b=8 * max_length_objective_name, t=50, pad=4),
     )
 
     fig.show()
     # return fig
 
 
-if __name__ == '__main__':
-    directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/exploration/outcomes/'
-    results = load_results(file_name=directory + 'results_open_exploration_10')
+if __name__ == "__main__":
+    directory = (
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        + "/exploration/outcomes/"
+    )
+    results = load_results(file_name=directory + "results_open_exploration_10")
     experiments, outcomes = results
     outcomes = pd.DataFrame(outcomes)
 
     outcome_names = [
-        'Distance to consumption threshold',
-        'Distance to damage threshold',
-        'Population below consumption threshold',
-        'Population above damage threshold',
-        'Utility',
-        'Disutility'
+        "Distance to consumption threshold",
+        "Distance to damage threshold",
+        "Population below consumption threshold",
+        "Population above damage threshold",
+        "Utility",
+        "Disutility",
     ]
 
-    plot_pathways(outcomes, outcome_names, saving=True, file_name='results_testing')
+    plot_pathways(outcomes, outcome_names, saving=True, file_name="results_testing")

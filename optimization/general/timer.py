@@ -25,5 +25,5 @@ class Timer:
         if self.tracking:
             self.end_time = time.time()
             self.duration = self.end_time - self.start_time
-            formatted_time = time.strftime('%H:%M:%S', time.gmtime(self.duration))
-            print(f'Runtime: {formatted_time}')
+            formatted_time = time.strftime("%H:%M:%S", time.gmtime(self.duration))
+            print(f"Runtime: {formatted_time}")

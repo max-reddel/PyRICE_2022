@@ -6,17 +6,22 @@ This module contains functions that support the run of an optimization.
 
 from model.pyrice import PyRICE
 from model.enumerations import *
-from optimization.general.xlm_constants_epsilons import get_outcomes_and_epsilons, get_xlc
+from optimization.general.xlm_constants_epsilons import (
+    get_outcomes_and_epsilons,
+    get_xlc,
+)
 import os
 
 # EMA
-from ema_workbench.em_framework.optimization import (EpsilonProgress, ArchiveLogger)
-from ema_workbench import (Model, MultiprocessingEvaluator, ema_logging)
+from ema_workbench.em_framework.optimization import EpsilonProgress, ArchiveLogger
+from ema_workbench import Model, MultiprocessingEvaluator, ema_logging
 
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def define_path_name(problem_formulation, nfe, directory=None, d_type='results', searchover=None):
+def define_path_name(
+    problem_formulation, nfe, directory=None, d_type="results", searchover=None
+):
     """
     Define path and file name such that it can be used to save results_formatted and/or covergence outcomes.
     @param problem_formulation: ProblemFormulation
@@ -28,12 +33,14 @@ def define_path_name(problem_formulation, nfe, directory=None, d_type='results',
         path: string (path + file name that is used for saving_results)
     """
 
-    if d_type == 'results' or d_type == 'epsilon_progress':
-        file_name = f'{d_type}.csv'
-    elif d_type == 'hypervolume':
-        file_name = ''
+    if d_type == "results" or d_type == "epsilon_progress":
+        file_name = f"{d_type}.csv"
+    elif d_type == "hypervolume":
+        file_name = ""
     else:
-        raise ValueError('You passed an unvalid d_type in order to save your resulting outcomes.')
+        raise ValueError(
+            "You passed an unvalid d_type in order to save your resulting outcomes."
+        )
 
     if directory is None:
         directory = get_directory(d_type, searchover, problem_formulation, nfe)
@@ -52,9 +59,9 @@ def get_directory(d_type, searchover, problem_formulation, nfe):
     # directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     directory = os.path.abspath(os.getcwd())
 
-    data_folder = 'data'
-    problem_folder = f'{problem_formulation.name}_{searchover}_{nfe}'
-    if d_type == 'hypervolume':
+    data_folder = "data"
+    problem_folder = f"{problem_formulation.name}_{searchover}_{nfe}"
+    if d_type == "hypervolume":
         sub_folder = d_type
         path = os.path.join(directory, data_folder, problem_folder, sub_folder)
     else:
@@ -71,13 +78,13 @@ def get_directory(d_type, searchover, problem_formulation, nfe):
 
 
 def run_optimization(
-        damage_function=DamageFunction.NORDHAUS,
-        problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
-        nfe=5000,
-        searchover='levers',
-        reference=None,
-        saving_results=False,
-        with_convergence=False,
+    damage_function=DamageFunction.NORDHAUS,
+    problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
+    nfe=5000,
+    searchover="levers",
+    reference=None,
+    saving_results=False,
+    with_convergence=False,
 ):
     """
     This function runs an optimization with the PyRICE model.
@@ -98,13 +105,15 @@ def run_optimization(
     model = PyRICE(
         model_specification=model_specification,
         damage_function=damage_function,
-        welfare_function=welfare_function
+        welfare_function=welfare_function,
     )
 
-    model = Model('RICE', function=model)
+    model = Model("RICE", function=model)
 
     model.uncertainties, model.levers, model.constants = get_xlc()
-    model.outcomes, epsilons = get_outcomes_and_epsilons(problem_formulation=problem_formulation, searchover=searchover)
+    model.outcomes, epsilons = get_outcomes_and_epsilons(
+        problem_formulation=problem_formulation, searchover=searchover
+    )
 
     # Run optimization
     if with_convergence:
@@ -112,23 +121,25 @@ def run_optimization(
         directory = define_path_name(
             problem_formulation=problem_formulation,
             nfe=nfe,
-            d_type='hypervolume',
-            searchover=searchover
+            d_type="hypervolume",
+            searchover=searchover,
         )
         convergence_metrics = [
             EpsilonProgress(),
             ArchiveLogger(
-                directory, [l.name for l in model.levers], [o.name for o in model.outcomes if o.kind != o.INFO]
-            )
+                directory,
+                [l.name for l in model.levers],
+                [o.name for o in model.outcomes if o.kind != o.INFO],
+            ),
         ]
 
-        with MultiprocessingEvaluator(model, n_processes=50) as evaluator:
+        with MultiprocessingEvaluator(model) as evaluator:
             results, convergence = evaluator.optimize(
                 nfe=nfe,
                 searchover=searchover,
                 epsilons=epsilons,
                 convergence=convergence_metrics,
-                reference=reference
+                reference=reference,
             )
 
             if saving_results:
@@ -136,8 +147,8 @@ def run_optimization(
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
-                    d_type='results',
-                    searchover=searchover
+                    d_type="results",
+                    searchover=searchover,
                 )
                 results.to_csv(path)
 
@@ -145,8 +156,8 @@ def run_optimization(
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
-                    d_type='epsilon_progress',
-                    searchover=searchover
+                    d_type="epsilon_progress",
+                    searchover=searchover,
                 )
                 convergence.to_csv(path)
 
@@ -154,29 +165,25 @@ def run_optimization(
 
         with MultiprocessingEvaluator(model, n_processes=50) as evaluator:
             results = evaluator.optimize(
-                nfe=nfe,
-                searchover=searchover,
-                epsilons=epsilons,
-                reference=reference
-
+                nfe=nfe, searchover=searchover, epsilons=epsilons, reference=reference
             )
 
             if saving_results:
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
-                    d_type='results',
-                    searchover=searchover
+                    d_type="results",
+                    searchover=searchover,
                 )
                 results.to_csv(path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_optimization(
         damage_function=DamageFunction.NORDHAUS,
         problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
         nfe=200000,
-        searchover='uncertainties',
+        searchover="uncertainties",
         saving_results=False,
-        with_convergence=False
+        with_convergence=False,
     )
