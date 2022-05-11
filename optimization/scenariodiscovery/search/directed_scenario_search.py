@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
         run_optimization(
             problem_formulation=problem_formulation,
-            nfe=10,
+            nfe=200000,
             searchover='uncertainties',
             saving_results=True,
             with_convergence=True
