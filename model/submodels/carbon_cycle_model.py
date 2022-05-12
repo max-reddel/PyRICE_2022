@@ -72,8 +72,11 @@ class CarbonCycleModel:
 
         # Radiative forcing
         self.forcoth[0] = self.fex0
-        self.forc[0] = self.fco22x * (np.log(((self.mat[0] + self.mat[1]) / 2) / 596.40) / np.log(2.0)) \
-                       + self.forcoth[0]
+        self.forc[0] = (
+            self.fco22x
+            * (np.log(((self.mat[0] + self.mat[1]) / 2) / 596.40) / np.log(2.0))
+            + self.forcoth[0]
+        )
 
     def run(self, t, E):
         """
@@ -89,7 +92,11 @@ class CarbonCycleModel:
         E_worldwilde_per_year = E.sum(axis=0)
 
         # calculate concentration in bioshpere and upper oceans
-        self.mu[t] = 12 / 100 * self.mat[t - 1] + 94.796 / 100 * self.mu[t - 1] + 0.075 / 100 * self.ml[t - 1]
+        self.mu[t] = (
+            12 / 100 * self.mat[t - 1]
+            + 94.796 / 100 * self.mu[t - 1]
+            + 0.075 / 100 * self.ml[t - 1]
+        )
 
         # set lower constraint for shallow ocean concentration
         if self.mu[t] < self.limits.mu_lo:
@@ -104,7 +111,11 @@ class CarbonCycleModel:
 
         # calculate concentration in atmosphere for t + 1 (because of averaging in forcing formula
         if t < 30:
-            self.mat[t + 1] = 88 / 100 * self.mat[t] + 4.704 / 100 * self.mu[t] + E_worldwilde_per_year[t] * 10
+            self.mat[t + 1] = (
+                88 / 100 * self.mat[t]
+                + 4.704 / 100 * self.mu[t]
+                + E_worldwilde_per_year[t] * 10
+            )
 
             # set lower constraint for atmospheric concentration
             if self.mat[t + 1] < self.limits.mat_lo:
@@ -118,7 +129,9 @@ class CarbonCycleModel:
         exo_forcing_2100 = 0.3000
 
         if t < 11:
-            self.forcoth[t] = self.fex0 + 0.1 * (exo_forcing_2100 - exo_forcing_2000) * t
+            self.forcoth[t] = (
+                self.fex0 + 0.1 * (exo_forcing_2100 - exo_forcing_2000) * t
+            )
         else:
             self.forcoth[t] = exo_forcing_2100
 
@@ -126,9 +139,18 @@ class CarbonCycleModel:
         # forcing = constant * Log2( current concentration / concentration of forcing in 1900 at a
         # doubling of CO2 (η)[◦C/2xCO2] ) + external forcing
         if t < 30:
-            self.forc[t] = self.fco22x * (
-                    np.log(((self.mat[t] + self.mat[t + 1]) / 2) / (280 * 2.13)) / np.log(2.0)) + self.forcoth[t]
+            self.forc[t] = (
+                self.fco22x
+                * (
+                    np.log(((self.mat[t] + self.mat[t + 1]) / 2) / (280 * 2.13))
+                    / np.log(2.0)
+                )
+                + self.forcoth[t]
+            )
         if t == 30:
-            self.forc[t] = self.fco22x * (np.log((self.mat[t]) / (280 * 2.13)) / np.log(2.0)) + self.forcoth[t]
+            self.forc[t] = (
+                self.fco22x * (np.log((self.mat[t]) / (280 * 2.13)) / np.log(2.0))
+                + self.forcoth[t]
+            )
 
         return self.fco22x, self.forc, E_worldwilde_per_year

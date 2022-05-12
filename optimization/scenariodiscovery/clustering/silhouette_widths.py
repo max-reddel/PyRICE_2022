@@ -53,12 +53,14 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
     # Adding time
 
     years = np.arange(2005, 2310, 10)
-    outcomes_reshaped['TIME'] = np.array([years for _ in range(30000)])
+    outcomes_reshaped["TIME"] = np.array([years for _ in range(30000)])
 
     return outcomes_reshaped
 
 
-def compute_silhouette_widths(results, objective_names=None, max_cluster=10, parallel=False):
+def compute_silhouette_widths(
+    results, objective_names=None, max_cluster=10, parallel=False
+):
     """
     Computes the slihouette widths for some given objectives.
     @param results: DataFrame, dictionary (outcomes from perform_experiments)
@@ -89,11 +91,11 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10, par
     outcomes_reshaped = get_outcomes_reshaped(outcomes_df, objective_names)
 
     # Clustering
-    cluster_numbers = list(range(2, max_cluster+1))
+    cluster_numbers = list(range(2, max_cluster + 1))
 
     for idx, objective in enumerate(objective_names):
 
-        print(f'\nComputing objective #{idx+1}/{len(objective_names)}')
+        print(f"\nComputing objective #{idx+1}/{len(objective_names)}")
 
         # Compute distances
         data = outcomes_reshaped[objective]
@@ -105,15 +107,19 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10, par
 
             # print(f'\tcluster #{k}/{max_cluster}')
 
-            clusterers = AgglomerativeClustering(n_clusters=k, affinity='precomputed', linkage="complete")
+            clusterers = AgglomerativeClustering(
+                n_clusters=k, affinity="precomputed", linkage="complete"
+            )
             cluster_labels = clusterers.fit_predict(distances)
-            silhouette_avg = silhouette_score(distances, cluster_labels, metric="precomputed")
+            silhouette_avg = silhouette_score(
+                distances, cluster_labels, metric="precomputed"
+            )
             widths.append(silhouette_avg)
 
             # apply agglomerative clustering on distances and create appropriate csv files
             clusters = apply_agglomerative_clustering(distances, n_clusters=k)
 
-            cluster_dict[objective + '_' + str(k)] = clusters
+            cluster_dict[objective + "_" + str(k)] = clusters
 
         widths_dict[objective] = widths
 
@@ -122,14 +128,14 @@ def compute_silhouette_widths(results, objective_names=None, max_cluster=10, par
     widths_df = pd.DataFrame(widths_dict, index=cluster_numbers)
     cluster_df = pd.DataFrame(cluster_dict)
 
-    target_directory = os.getcwd() + '/data/'
+    target_directory = os.getcwd() + "/data/"
     # Save silhouette widths
-    file_name = f'silhouette_widths_{len(experiments)}.csv'
+    file_name = f"silhouette_widths_{len(experiments)}.csv"
     # noinspection PyTypeChecker
     widths_df.to_csv(target_directory + file_name, index=cluster_numbers)
 
     # Save clusters
-    file_name = f'clusters_{len(experiments)}.csv'
+    file_name = f"clusters_{len(experiments)}.csv"
     # noinspection PyTypeChecker
     cluster_df.to_csv(target_directory + file_name, index=cluster_numbers)
 
@@ -162,7 +168,9 @@ def calculate_cid(data, parallel=False):
                 ce_i = ce[i]
                 ce_j = ce[j]
 
-                future = executor.submit(fn=_calculate_cid, xi=xi, xj=xj, ce_i=ce_i, ce_j=ce_j)
+                future = executor.submit(
+                    fn=_calculate_cid, xi=xi, xj=xj, ce_i=ce_i, ce_j=ce_j
+                )
                 futures.append((future, i, j))
 
             for future, i, j in futures:
@@ -192,7 +200,9 @@ def _calculate_cid(xi, xj, ce_i, ce_j):
     @param ce_j:
     @return:
     """
-    return np.linalg.norm(xi - xj) * (max(ce_i, ce_j) / max(0.001, min(ce_i, ce_j)))  # avoid to divide by zero
+    return np.linalg.norm(xi - xj) * (
+        max(ce_i, ce_j) / max(0.001, min(ce_i, ce_j))
+    )  # avoid to divide by zero
 
 
 def plot_silhouette_widths(widths, saving=False, file_name=None):
@@ -208,7 +218,9 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
     objectives = list(widths.columns)
 
     fig, axes = plt.subplots(nrows=3, ncols=4, figsize=(36, 26), tight_layout=True)
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
+    plt.subplots_adjust(
+        left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8
+    )
 
     # Figures
     for i, ax in enumerate(axes.flat):
@@ -217,26 +229,37 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
 
         objective = objectives[i]
         data = widths.loc[:, objective]
-        ax.plot(data, linewidth=5.0, alpha=1.0, color='forestgreen', marker='o', markersize=20)
+        ax.plot(
+            data,
+            linewidth=5.0,
+            alpha=1.0,
+            color="forestgreen",
+            marker="o",
+            markersize=20,
+        )
         ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
 
         ax.set_title(objective, fontsize=30)
-        ax.set_xlabel('Number of clusters')
-        ax.set_ylabel('Average silhouette width')
+        ax.set_xlabel("Number of clusters")
+        ax.set_ylabel("Average silhouette width")
 
-    axes[-1, -1].axis('off')
+    axes[-1, -1].axis("off")
     plt.show()
 
     if saving:
 
-        visualization_folder = os.path.dirname(os.path.dirname(os.getcwd())) + '/outputimages/'
+        visualization_folder = (
+            os.path.dirname(os.path.dirname(os.getcwd())) + "/outputimages/"
+        )
         if file_name is None:
             file_name = "scenario_discovery_time_series_clustering_silhouette_widths"
         file_name += ".png"
         fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
 
 
-def get_experiments_with_clusters(objective, cluster_number, results_name='results_open_exploration_30000'):
+def get_experiments_with_clusters(
+    objective, cluster_number, results_name="results_open_exploration_30000"
+):
     """
     Get the experiments dataframe with the corresponding clusters-column
     @param objective: String
@@ -247,24 +270,26 @@ def get_experiments_with_clusters(objective, cluster_number, results_name='resul
     """
 
     # Loading outcomes
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
+    target_directory = (
+        os.path.dirname(os.path.dirname(os.getcwd())) + "/exploration/data/"
+    )
     results = load_results(file_name=target_directory + results_name)
 
     experiments, outcomes = results
 
     # Load cluster outcomes
-    target_directory = os.getcwd() + '/data/'
-    file_name = 'clusters_30000.csv'
+    target_directory = os.getcwd() + "/data/"
+    file_name = "clusters_30000.csv"
     clusters_df = pd.read_csv(target_directory + file_name)
 
     # Get specific clusters for objective and cluster number
-    objective_name = f'{objective}_{cluster_number}'
+    objective_name = f"{objective}_{cluster_number}"
     clusters = clusters_df[objective_name]
 
     # Save into dataframe
     x = experiments.copy()
     # x['clusters'] = clusters.astype('int')
-    x['clusters'] = clusters.astype('object')
+    x["clusters"] = clusters.astype("object")
 
     return x
 
@@ -277,20 +302,23 @@ def plot_clustered_pathways(outcomes, outcome_name, relevant_clusters):
     @param relevant_clusters: list with integers
     """
     experiments_list = [
-        get_experiments_with_clusters(objective=outcome_name, cluster_number=c) for c in relevant_clusters
+        get_experiments_with_clusters(objective=outcome_name, cluster_number=c)
+        for c in relevant_clusters
     ]
-    reshaphed_outcomes = get_outcomes_reshaped(outcomes_df=outcomes, objective_names=[outcome_name])
+    reshaphed_outcomes = get_outcomes_reshaped(
+        outcomes_df=outcomes, objective_names=[outcome_name]
+    )
 
     for idx, cluster in enumerate(relevant_clusters):
         fig, axes = plotting.lines(
             experiments=experiments_list[idx],
             outcomes=reshaphed_outcomes,
             outcomes_to_show=outcome_name,
-            group_by='clusters',
-            density=Density.BOXPLOT
+            group_by="clusters",
+            density=Density.BOXPLOT,
         )
         fig.set_size_inches(15, 8)
-        fig.suptitle(f'{outcome_name} with {cluster} clusters', y=1.1)
+        fig.suptitle(f"{outcome_name} with {cluster} clusters", y=1.1)
         plt.show()
 
 
@@ -308,7 +336,9 @@ def merge_clustered_scenarios(mapping, saving=False):
     for idx, (outcome_name, (cluster, kind)) in enumerate(mapping.items()):
 
         # Load experiments with corresponding clusters
-        experiments = get_experiments_with_clusters(objective=outcome_name, cluster_number=cluster)
+        experiments = get_experiments_with_clusters(
+            objective=outcome_name, cluster_number=cluster
+        )
 
         # Choose 'worst' cluster
 
@@ -317,7 +347,7 @@ def merge_clustered_scenarios(mapping, saving=False):
         elif kind == ScalarOutcome.MINIMIZE:
             cluster = 0
 
-        relevant_x = experiments[experiments['clusters'] == cluster]
+        relevant_x = experiments[experiments["clusters"] == cluster]
 
         if idx == 0:
             scenarios = relevant_x
@@ -326,30 +356,32 @@ def merge_clustered_scenarios(mapping, saving=False):
 
     # Save scenarios
     if saving:
-        target_directory = os.path.join(os.getcwd(), 'data/time_series_scenarios.csv')
+        target_directory = os.path.join(os.getcwd(), "data/time_series_scenarios.csv")
         scenarios.to_csv(target_directory)
 
     return scenarios
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     timer = Timer(tracking=True)
 
-    print('Starting...\n')
+    print("Starting...\n")
 
     n_scenarios = 1000
 
     # Loading outcomes
-    target_directory = os.path.dirname(os.path.dirname(os.getcwd())) + '/exploration/data/'
-    file_name = f'results_open_exploration_{n_scenarios}'
+    target_directory = (
+        os.path.dirname(os.path.dirname(os.getcwd())) + "/exploration/data/"
+    )
+    file_name = f"results_open_exploration_{n_scenarios}"
     results = load_results(file_name=target_directory + file_name)
 
     # Computing silhouette widths
-    print('\n############ Computing silhouette widths... ############')
+    print("\n############ Computing silhouette widths... ############")
     widths = compute_silhouette_widths(results, parallel=False)
 
-    print('\n############ Plotting silhouette widths... ############')
+    print("\n############ Plotting silhouette widths... ############")
     # Plotting silhouette widths
     plot_silhouette_widths(widths, saving=True)
 
@@ -360,6 +392,6 @@ if __name__ == '__main__':
     # outcome_names = get_all_outcome_names()
     # plot_pathways(outcomes_df, outcome_names, saving=True, file_name=f'pathways_open_exploration_{n_scenarios}')
 
-    print('\n############ Done! ############')
+    print("\n############ Done! ############")
 
     timer.stop()

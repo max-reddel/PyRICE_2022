@@ -31,23 +31,25 @@ class Check:
             self.mius = [2135, 2070]
             self.irstps = [0.015, 0.07]
 
-        self.spec = [ModelSpec.STANDARD,
-                     ModelSpec.Validation_1,
-                     ModelSpec.Validation_2]
+        self.spec = [ModelSpec.STANDARD, ModelSpec.Validation_1, ModelSpec.Validation_2]
 
-        self.wf = [WelfareFunction.UTILITARIAN,
-                   WelfareFunction.EGALITARIAN,
-                   WelfareFunction.SUFFICIENTARIAN,
-                   WelfareFunction.PRIORITARIAN]
+        self.wf = [
+            WelfareFunction.UTILITARIAN,
+            WelfareFunction.EGALITARIAN,
+            WelfareFunction.SUFFICIENTARIAN,
+            WelfareFunction.PRIORITARIAN,
+        ]
 
-        self.f_damage = [DamageFunction.NORDHAUS,
-                         DamageFunction.NEWBOLD,
-                         DamageFunction.WEITZMAN]
+        self.f_damage = [
+            DamageFunction.NORDHAUS,
+            DamageFunction.NEWBOLD,
+            DamageFunction.WEITZMAN,
+        ]
 
         self.dicts = []
 
         if save:
-            self.save_my_pickle(file='new_data')
+            self.save_my_pickle(file="new_data")
 
     def run_models(self):
 
@@ -59,8 +61,14 @@ class Check:
         self.dicts = []
 
         counter = 0
-        max_runs = \
-            len(self.srs) * len(self.mius) * len(self.irstps) * len(self.spec) * len(self.wf) * len(self.f_damage)
+        max_runs = (
+            len(self.srs)
+            * len(self.mius)
+            * len(self.irstps)
+            * len(self.spec)
+            * len(self.wf)
+            * len(self.f_damage)
+        )
 
         print_step = int(max_runs / 10)
 
@@ -73,18 +81,22 @@ class Check:
 
                                 counter += 1
                                 if counter % print_step == 0 and counter != max_runs:
-                                    print(f'Run #{counter}/{max_runs}')
+                                    print(f"Run #{counter}/{max_runs}")
 
-                                m = PyRICE(model_specification=spec, damage_function=damage, welfare_function=welfare)
+                                m = PyRICE(
+                                    model_specification=spec,
+                                    damage_function=damage,
+                                    welfare_function=welfare,
+                                )
                                 results = m(sr=sr, miu=miu, irstp_consumption=irstp)
 
                                 self.dicts.append(results)
 
-        print(f'Run #{counter}/{max_runs}\n')
+        print(f"Run #{counter}/{max_runs}\n")
         return self.dicts
 
     @staticmethod
-    def load_my_pickle(folder='/testdata/', file='original_data'):
+    def load_my_pickle(folder="/testdata/", file="original_data"):
         """
         @param folder: string
         @param file: string
@@ -95,12 +107,12 @@ class Check:
         highest_directory = os.path.dirname(directory)
         original_pyrice_directory = highest_directory + "/verification/pyrice"
 
-        with open(f'{original_pyrice_directory + folder}{file}.pickle', 'rb') as handle:
+        with open(f"{original_pyrice_directory + folder}{file}.pickle", "rb") as handle:
             original_data = pickle.load(handle)
 
         return original_data
 
-    def save_my_pickle(self, folder='/testdata/', file='original_data'):
+    def save_my_pickle(self, folder="/testdata/", file="original_data"):
         """
 
         @param folder: string
@@ -111,9 +123,11 @@ class Check:
         original_pyrice_directory = highest_directory + "/verification/pyrice"
 
         results = self.run_models()
-        modifier = '_quick' if self.quick else '_slow'
+        modifier = "_quick" if self.quick else "_slow"
 
-        with open(f'{original_pyrice_directory + folder}{file}{modifier}.pickle', 'wb') as handle:
+        with open(
+            f"{original_pyrice_directory + folder}{file}{modifier}.pickle", "wb"
+        ) as handle:
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def __call__(self):
@@ -122,25 +136,27 @@ class Check:
         with the saved results_formatted from the folder testdata.
         """
 
-        modifier = '_quick' if self.quick else '_slow'
-        original_data = self.load_my_pickle(file=f'original_data{modifier}')
+        modifier = "_quick" if self.quick else "_slow"
+        original_data = self.load_my_pickle(file=f"original_data{modifier}")
         new_data = self.run_models()
 
         run_time = round(time.time() - self.start_time, 2)
-        print(f'Run time: {run_time} seconds')
+        print(f"Run time: {run_time} seconds")
 
         is_identical = original_data == new_data
 
-        print(f'\nOriginal and new results_formatted are identical: {is_identical}')
+        print(f"\nOriginal and new results_formatted are identical: {is_identical}")
 
         modifier_ = "GOOD JOB! :D" if is_identical else "OH, NOOO! :("
 
-        message = f"\n####################################################################################\n" \
-                  "####################################################################################\n" \
-                  "####################################################################################\n" \
-                  f"################################# {modifier_} #####################################\n" \
-                  "####################################################################################\n" \
-                  "####################################################################################\n" \
-                  "####################################################################################"
+        message = (
+            f"\n####################################################################################\n"
+            "####################################################################################\n"
+            "####################################################################################\n"
+            f"################################# {modifier_} #####################################\n"
+            "####################################################################################\n"
+            "####################################################################################\n"
+            "####################################################################################"
+        )
 
         print(message)

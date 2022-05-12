@@ -99,12 +99,18 @@ class ClimateModel:
         self.aisother = 51.6
 
         self.THERMEQUIL[0] = self.temp_atm[0] * self.thermeq
-        self.SLRTHERM[0] = self.therm0 + self.thermadj * (self.THERMEQUIL[0] - self.therm0)
+        self.SLRTHERM[0] = self.therm0 + self.thermadj * (
+            self.THERMEQUIL[0] - self.therm0
+        )
 
         self.GSICREMAIN[0] = self.gsictotal
 
-        self.GSICMELTRATE[0] = self.gsicmelt * 10 * (self.GSICREMAIN[0] / self.gsictotal) ** self.gsicexp * (
-                self.temp_atm[0] - self.gsieq)
+        self.GSICMELTRATE[0] = (
+            self.gsicmelt
+            * 10
+            * (self.GSICREMAIN[0] / self.gsictotal) ** self.gsicexp
+            * (self.temp_atm[0] - self.gsieq)
+        )
         self.GSICCUM[0] = self.GSICMELTRATE[0]
         self.GISREMAIN[0] = self.gis0
         self.GISMELTRATE[0] = self.gismelt0
@@ -114,15 +120,46 @@ class ClimateModel:
         self.AISMELTRATE[0] = 0.1225
         self.AISCUM[0] = self.AISMELTRATE[0] / 100
 
-        self.TOTALSLR[0] = self.SLRTHERM[0] + self.GSICCUM[0] + self.GISCUM[0] + self.AISCUM[0]
+        self.TOTALSLR[0] = (
+            self.SLRTHERM[0] + self.GSICCUM[0] + self.GISCUM[0] + self.AISCUM[0]
+        )
 
         self.slrmultiplier = 2
         self.slrelasticity = 4
 
         self.SLRDAMAGES = np.zeros((len(regions_list), steps))
-        self.slrdamlinear = np.array([0, 0.00452, 0.00053, 0, 0.00011, 0.01172, 0, 0.00138, 0.00351, 0, 0.00616, 0])
+        self.slrdamlinear = np.array(
+            [
+                0,
+                0.00452,
+                0.00053,
+                0,
+                0.00011,
+                0.01172,
+                0,
+                0.00138,
+                0.00351,
+                0,
+                0.00616,
+                0,
+            ]
+        )
         self.slrdamquadratic = np.array(
-            [0.000255, 0, 0.000053, 0.000042, 0, 0.000001, 0.000255, 0, 0, 0.000071, 0, 0.001239])
+            [
+                0.000255,
+                0,
+                0.000053,
+                0.000042,
+                0,
+                0.000001,
+                0.000255,
+                0,
+                0,
+                0.000071,
+                0,
+                0.001239,
+            ]
+        )
 
         self.SLRDAMAGES[:, 0] = 0
 
@@ -138,8 +175,10 @@ class ClimateModel:
         """
         # heating of oceans and atmospheric according to matrix equations
         if t > 1:
-            self.temp_atm[t] = (self.temp_atm[t - 1] + self.c1 * ((forc[t] - ((fco22x / t2xco2) * self.temp_atm[t - 1]))
-                                   - (self.c3 * (self.temp_atm[t - 1] - self.temp_ocean[t - 1]))))
+            self.temp_atm[t] = self.temp_atm[t - 1] + self.c1 * (
+                (forc[t] - ((fco22x / t2xco2) * self.temp_atm[t - 1]))
+                - (self.c3 * (self.temp_atm[t - 1] - self.temp_ocean[t - 1]))
+            )
 
         # setting up lower and upper bound for temperatures
         if self.temp_atm[t] < self.limits.temp_atm_lo:
@@ -148,7 +187,9 @@ class ClimateModel:
         if self.temp_atm[t] > self.limits.temp_atm_up:
             self.temp_atm[t] = self.limits.temp_atm_up
 
-        self.temp_ocean[t] = self.temp_ocean[t - 1] + self.c4 * (self.temp_atm[t - 1] - self.temp_ocean[t - 1])
+        self.temp_ocean[t] = self.temp_ocean[t - 1] + self.c4 * (
+            self.temp_atm[t - 1] - self.temp_ocean[t - 1]
+        )
 
         # setting up lower and upper bound for temperatures
         if self.temp_ocean[t] < self.limits.temp_ocean_lo:
@@ -160,13 +201,19 @@ class ClimateModel:
         # thermal expansion
         self.THERMEQUIL[t] = self.temp_atm[t] * self.thermeq
 
-        self.SLRTHERM[t] = self.SLRTHERM[t - 1] + self.thermadj * (self.THERMEQUIL[t] - self.SLRTHERM[t - 1])
+        self.SLRTHERM[t] = self.SLRTHERM[t - 1] + self.thermadj * (
+            self.THERMEQUIL[t] - self.SLRTHERM[t - 1]
+        )
 
         # glacier ice cap
         self.GSICREMAIN[t] = self.gsictotal - self.GSICCUM[t - 1]
 
-        self.GSICMELTRATE[t] = self.gsicmelt * 10 * (self.GSICREMAIN[t] / self.gsictotal) ** self.gsicexp * \
-                               self.temp_atm[t]
+        self.GSICMELTRATE[t] = (
+            self.gsicmelt
+            * 10
+            * (self.GSICREMAIN[t] / self.gsictotal) ** self.gsicexp
+            * self.temp_atm[t]
+        )
 
         self.GSICCUM[t] = self.GSICCUM[t - 1] + self.GSICMELTRATE[t]
 
@@ -174,8 +221,9 @@ class ClimateModel:
         self.GISREMAIN[t] = self.GISREMAIN[t - 1] - (self.GISMELTRATE[t - 1] / 100)
 
         if t > 1:
-            self.GISMELTRATE[t] = (self.gismeltabove * (self.temp_atm[t] - self.gismineq) + self.gismelt0) * \
-                                  self.GISEXPONENT[t - 1]
+            self.GISMELTRATE[t] = (
+                self.gismeltabove * (self.temp_atm[t] - self.gismineq) + self.gismelt0
+            ) * self.GISEXPONENT[t - 1]
         else:
             self.GISMELTRATE[1] = 0.60
 
@@ -189,26 +237,44 @@ class ClimateModel:
         # antartica ice cap
         if t <= 11:
             if self.temp_atm[t] < 3:
-                self.AISMELTRATE[t] = self.aismeltlow * self.temp_atm[t] * self.aisratio + self.aisintercept
+                self.AISMELTRATE[t] = (
+                    self.aismeltlow * self.temp_atm[t] * self.aisratio
+                    + self.aisintercept
+                )
             else:
-                self.AISMELTRATE[t] = self.aisinflection * self.aismeltlow + self.aismeltup * (
-                        self.temp_atm[t] - 3.) + self.aisintercept
+                self.AISMELTRATE[t] = (
+                    self.aisinflection * self.aismeltlow
+                    + self.aismeltup * (self.temp_atm[t] - 3.0)
+                    + self.aisintercept
+                )
         else:
             if self.temp_atm[t] < 3:
-                self.AISMELTRATE[t] = self.aismeltlow * self.temp_atm[t] * self.aisratio + self.aismelt0
+                self.AISMELTRATE[t] = (
+                    self.aismeltlow * self.temp_atm[t] * self.aisratio + self.aismelt0
+                )
             else:
-                self.AISMELTRATE[t] = self.aisinflection * self.aismeltlow + self.aismeltup * (
-                        self.temp_atm[t] - 3) + self.aismelt0
+                self.AISMELTRATE[t] = (
+                    self.aisinflection * self.aismeltlow
+                    + self.aismeltup * (self.temp_atm[t] - 3)
+                    + self.aismelt0
+                )
 
         self.AISCUM[t] = self.AISCUM[t - 1] + self.AISMELTRATE[t] / 100
 
         self.AISREMAIN[t] = self.AISREMAIN[0] - self.AISCUM[t]
 
-        self.TOTALSLR[t] = self.SLRTHERM[t] + self.GSICCUM[t] + self.GISCUM[t] + self.AISCUM[t]
+        self.TOTALSLR[t] = (
+            self.SLRTHERM[t] + self.GSICCUM[t] + self.GISCUM[t] + self.AISCUM[t]
+        )
 
-        self.SLRDAMAGES[:, t] = 100 * self.slrmultiplier * (self.TOTALSLR[t - 1] * self.slrdamlinear + (
-                self.TOTALSLR[t - 1] ** 2) * self.slrdamquadratic) * (
-                                        Y_gross[:, t - 1] / Y_gross[:, 0]) ** (
-                                            1 / self.slrelasticity)
+        self.SLRDAMAGES[:, t] = (
+            100
+            * self.slrmultiplier
+            * (
+                self.TOTALSLR[t - 1] * self.slrdamlinear
+                + (self.TOTALSLR[t - 1] ** 2) * self.slrdamquadratic
+            )
+            * (Y_gross[:, t - 1] / Y_gross[:, 0]) ** (1 / self.slrelasticity)
+        )
 
         return self.temp_atm

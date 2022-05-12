@@ -16,25 +16,25 @@ def get_xlc():
         constants: list of Constants
     """
     levers = [
-        RealParameter('sr', 0.1, 0.5),
-        RealParameter('miu', 2065, 2300),
-        RealParameter('irstp_consumption', 0.001, 0.015),
-        RealParameter('irstp_damage', 0.001, 0.015)
+        RealParameter("sr", 0.1, 0.5),
+        RealParameter("miu", 2065, 2300),
+        RealParameter("irstp_consumption", 0.001, 0.015),
+        RealParameter("irstp_damage", 0.001, 0.015),
     ]
 
     uncertainties = [
-        IntegerParameter('t2xco2_index', 0, 999),
-        IntegerParameter('t2xco2_dist', 0, 2),
-        RealParameter('fosslim', 4000, 13649),
-        IntegerParameter('scenario_pop_gdp', 0, 5),
-        IntegerParameter('scenario_sigma', 0, 2),
-        IntegerParameter('scenario_cback', 0, 1),
-        IntegerParameter('scenario_elasticity_of_damages', 0, 2),
-        IntegerParameter('scenario_limmiu', 0, 1),
-        RealParameter('emdd', 0.001, 0.6)
+        IntegerParameter("t2xco2_index", 0, 999),
+        IntegerParameter("t2xco2_dist", 0, 2),
+        RealParameter("fosslim", 4000, 13649),
+        IntegerParameter("scenario_pop_gdp", 0, 5),
+        IntegerParameter("scenario_sigma", 0, 2),
+        IntegerParameter("scenario_cback", 0, 1),
+        IntegerParameter("scenario_elasticity_of_damages", 0, 2),
+        IntegerParameter("scenario_limmiu", 0, 1),
+        RealParameter("emdd", 0.001, 0.6),
     ]
 
-    constants = [Constant('precision', 10)]
+    constants = [Constant("precision", 10)]
 
     return uncertainties, levers, constants
 
@@ -52,14 +52,16 @@ def _get_outcomes_for_years(outcome_name, years_list, direction):
     outcomes = []
 
     for year in years_list:
-        outcome_name_with_year = outcome_name + ' ' + str(year)
+        outcome_name_with_year = outcome_name + " " + str(year)
         o = ScalarOutcome(outcome_name_with_year, direction)
         outcomes.append(o)
 
     return outcomes
 
 
-def _get_outcomes_to_optimize(outcomes_maximize_names, outcomes_minimize_names, years_optimize):
+def _get_outcomes_to_optimize(
+    outcomes_maximize_names, outcomes_minimize_names, years_optimize
+):
     """
     Return all the outcomes that should be optimized.
     @param outcomes_maximize_names: list of outcome names (without years)
@@ -71,15 +73,21 @@ def _get_outcomes_to_optimize(outcomes_maximize_names, outcomes_minimize_names, 
     outcomes_optimize = []
 
     for outcome_name in outcomes_maximize_names:
-        outcomes_optimize += _get_outcomes_for_years(outcome_name, years_optimize, ScalarOutcome.MAXIMIZE)
+        outcomes_optimize += _get_outcomes_for_years(
+            outcome_name, years_optimize, ScalarOutcome.MAXIMIZE
+        )
 
     for outcome_name in outcomes_minimize_names:
-        outcomes_optimize += _get_outcomes_for_years(outcome_name, years_optimize, ScalarOutcome.MINIMIZE)
+        outcomes_optimize += _get_outcomes_for_years(
+            outcome_name, years_optimize, ScalarOutcome.MINIMIZE
+        )
 
     return outcomes_optimize
 
 
-def _get_outcomes_to_info(outcomes_info_names, outcomes_optimize_names, years_optimize, years_info):
+def _get_outcomes_to_info(
+    outcomes_info_names, outcomes_optimize_names, years_optimize, years_info
+):
     """
     Return all the outcomes that should not be optimized but just presented as info.
     @param outcomes_info_names: list of outcome names (without years)
@@ -93,18 +101,28 @@ def _get_outcomes_to_info(outcomes_info_names, outcomes_optimize_names, years_op
     outcomes_info = []
 
     for outcome_name in outcomes_info_names:
-        outcomes_info += _get_outcomes_for_years(outcome_name, years_optimize + years_info, ScalarOutcome.INFO)
+        outcomes_info += _get_outcomes_for_years(
+            outcome_name, years_optimize + years_info, ScalarOutcome.INFO
+        )
 
     # Add remaining variables
     for outcome_name in outcomes_optimize_names:
-        outcomes_info += _get_outcomes_for_years(outcome_name, years_info, ScalarOutcome.INFO)
+        outcomes_info += _get_outcomes_for_years(
+            outcome_name, years_info, ScalarOutcome.INFO
+        )
 
     return outcomes_info
 
 
 def _get_relevant_outcomes(
-        outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names, outcomes_maximize_aggregated,
-        outcomes_minimize_aggregated, years_optimize, years_info, outcomes_info_aggregated
+    outcomes_all_names,
+    outcomes_maximize_names,
+    outcomes_minimize_names,
+    outcomes_maximize_aggregated,
+    outcomes_minimize_aggregated,
+    years_optimize,
+    years_info,
+    outcomes_info_aggregated,
 ):
     """
     This is a helper function. It returns the outcomes given a specification of all the above variables.
@@ -129,7 +147,9 @@ def _get_relevant_outcomes(
     for outcome in outcomes_minimize_aggregated:
         outcomes_optimize.append((ScalarOutcome(outcome, ScalarOutcome.MINIMIZE)))
 
-    outcomes_optimize += _get_outcomes_to_optimize(outcomes_maximize_names, outcomes_minimize_names, years_optimize)
+    outcomes_optimize += _get_outcomes_to_optimize(
+        outcomes_maximize_names, outcomes_minimize_names, years_optimize
+    )
 
     # Outcomes that should only be displayed (i.e., not optimized)
     outcomes_info_names = list(
@@ -146,7 +166,7 @@ def _get_relevant_outcomes(
         outcomes_info_names,
         outcomes_minimize_names + outcomes_maximize_names,
         years_optimize,
-        years_info
+        years_info,
     )
 
     # Put them all together
@@ -156,8 +176,12 @@ def _get_relevant_outcomes(
 
 
 def _get_epsilons(
-        dict_epsilons, years_optimize, outcomes_maximize_names, outcomes_minimize_names, outcomes_maximize_aggregated,
-        outcomes_minimize_aggregated
+    dict_epsilons,
+    years_optimize,
+    outcomes_maximize_names,
+    outcomes_minimize_names,
+    outcomes_maximize_aggregated,
+    outcomes_minimize_aggregated,
 ):
     """
     Calculate epsilon values.
@@ -193,7 +217,7 @@ def _get_epsilons(
     return epsilons
 
 
-def get_outcomes_and_epsilons(problem_formulation, years=None, searchover='levers'):
+def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="levers"):
     """
     Returns a list of outcomes and a list of epsilons for the STANDARD workbench.
     @param problem_formulation: ProblemFormulation
@@ -205,34 +229,33 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover='lever
     """
 
     dict_epsilons = {
-        'Utility': 0.1,  # 7.6
-        'Disutility': 0.1,  # 6.4
-        'Lowest income per capita': 0.1,  # 0.516
-        'Intratemporal consumption Gini': 0.0001,  # 0.00049
-        'Highest damage per capita': 0.01,  # 0.071
-        'Intratemporal damage Gini': 0.001,  # 0.038
-        'Population below consumption threshold': 5.0,  # 75
-        'Distance to consumption threshold': 0.1,  # 0.172
-        'Population above damage threshold': 5.0,  # 691
-        'Distance to damage threshold': 0.1,  # 0.4
-        'Temperature overshoot': 0.1,
-
-        'Damages': 0.1,  # 0.1
-        'Industrial Emission': 0.1,  # 1.0
-        'Atmospheric Temperature': 0.1,  # 0.55
-        'Intertemporal consumption distance': 1.0,  # 140
-        'Intertemporal consumption population': 100.0,  # 4200
-        'Intertemporal damage distance': 1.0,  # 137
-        'Intertemporal damage population': 100.0,  # 19500
-        'Intertemporal lowest income p/c': 5.0,  # 52.31
-        'Intertemporal highest damage p/c': 0.2,  # 2.328
-        'Intertemporal consumption Gini': 0.01,  # 0.01
-        'Intertemporal damage Gini': 0.01,  # 0.024
-        'Total Aggregated Utility': 100,  # 1575
-        'Total Aggregated Disutility': 100,  # 9942
-        'Costs': 0.1,  # 0.18
-        'Total Output': 1.0,  # 25
-        'Total Aggregated Costs': 20,  # 943
+        "Utility": 0.1,  # 7.6
+        "Disutility": 0.1,  # 6.4
+        "Lowest income per capita": 0.1,  # 0.516
+        "Intratemporal consumption Gini": 0.0001,  # 0.00049
+        "Highest damage per capita": 0.01,  # 0.071
+        "Intratemporal damage Gini": 0.001,  # 0.038
+        "Population below consumption threshold": 5.0,  # 75
+        "Distance to consumption threshold": 0.1,  # 0.172
+        "Population above damage threshold": 5.0,  # 691
+        "Distance to damage threshold": 0.1,  # 0.4
+        "Temperature overshoot": 0.1,
+        "Damages": 0.1,  # 0.1
+        "Industrial Emission": 0.1,  # 1.0
+        "Atmospheric Temperature": 0.1,  # 0.55
+        "Intertemporal consumption distance": 1.0,  # 140
+        "Intertemporal consumption population": 100.0,  # 4200
+        "Intertemporal damage distance": 1.0,  # 137
+        "Intertemporal damage population": 100.0,  # 19500
+        "Intertemporal lowest income p/c": 5.0,  # 52.31
+        "Intertemporal highest damage p/c": 0.2,  # 2.328
+        "Intertemporal consumption Gini": 0.01,  # 0.01
+        "Intertemporal damage Gini": 0.01,  # 0.024
+        "Total Aggregated Utility": 100,  # 1575
+        "Total Aggregated Disutility": 100,  # 9942
+        "Costs": 0.1,  # 0.18
+        "Total Output": 1.0,  # 25
+        "Total Aggregated Costs": 20,  # 943
     }
 
     # Relevant years
@@ -247,19 +270,19 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover='lever
 
     if problem_formulation == ProblemFormulation.ALL_OBJECTIVES:
         outcomes_maximize_names = [
-            'Utility',
-            'Lowest income per capita',
+            "Utility",
+            "Lowest income per capita",
         ]
         outcomes_minimize_names = [
-            'Disutility',
-            'Intratemporal consumption Gini',
-            'Intratemporal damage Gini',
-            'Highest damage per capita',
-            'Distance to consumption threshold',
-            'Population below consumption threshold',
-            'Distance to damage threshold',
-            'Population above damage threshold',
-            'Temperature overshoot'
+            "Disutility",
+            "Intratemporal consumption Gini",
+            "Intratemporal damage Gini",
+            "Highest damage per capita",
+            "Distance to consumption threshold",
+            "Population below consumption threshold",
+            "Distance to damage threshold",
+            "Population above damage threshold",
+            "Temperature overshoot",
         ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
@@ -271,78 +294,85 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover='lever
 
     elif problem_formulation == ProblemFormulation.UTILITARIAN_COSTS:
         outcomes_maximize_names = []
-        outcomes_minimize_names = ['Costs', 'Temperature overshoot']
+        outcomes_minimize_names = ["Costs", "Temperature overshoot"]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.UTILITARIAN_AGGREGATED:
-        outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = ['Temperature overshoot']
+        outcomes_maximize_names = ["Utility"]
+        outcomes_minimize_names = ["Temperature overshoot"]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.UTILITARIAN_DISAGGREGATED:
-        outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = ['Disutility', 'Temperature overshoot']
+        outcomes_maximize_names = ["Utility"]
+        outcomes_minimize_names = ["Disutility", "Temperature overshoot"]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.SUFFICIENTARIAN_AGGREGATED:
-        outcomes_maximize_names = ['Utility']
+        outcomes_maximize_names = ["Utility"]
         outcomes_minimize_names = [
-            'Distance to consumption threshold',
-            'Population below consumption threshold',
-            'Temperature overshoot'
+            "Distance to consumption threshold",
+            "Population below consumption threshold",
+            "Temperature overshoot",
         ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED:
-        outcomes_maximize_names = ['Utility']
+        outcomes_maximize_names = ["Utility"]
         outcomes_minimize_names = [
-            'Disutility',
-            'Distance to consumption threshold',
-            'Population below consumption threshold',
-            'Distance to damage threshold',
-            'Population above damage threshold',
-            'Temperature overshoot'
+            "Disutility",
+            "Distance to consumption threshold",
+            "Population below consumption threshold",
+            "Distance to damage threshold",
+            "Population above damage threshold",
+            "Temperature overshoot",
         ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.PRIORITARIAN_AGGREGATED:
-        outcomes_maximize_names = ['Utility', 'Lowest income per capita']
-        outcomes_minimize_names = ['Temperature overshoot']
+        outcomes_maximize_names = ["Utility", "Lowest income per capita"]
+        outcomes_minimize_names = ["Temperature overshoot"]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.PRIORITARIAN_DISAGGREGATED:
-        outcomes_maximize_names = ['Utility', 'Lowest income per capita']
-        outcomes_minimize_names = ['Disutility', 'Highest damage per capita', 'Temperature overshoot']
+        outcomes_maximize_names = ["Utility", "Lowest income per capita"]
+        outcomes_minimize_names = [
+            "Disutility",
+            "Highest damage per capita",
+            "Temperature overshoot",
+        ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.EGALITARIAN_AGGREGATED:
-        outcomes_maximize_names = ['Utility']
-        outcomes_minimize_names = ['Intratemporal consumption Gini', 'Temperature overshoot']
+        outcomes_maximize_names = ["Utility"]
+        outcomes_minimize_names = [
+            "Intratemporal consumption Gini",
+            "Temperature overshoot",
+        ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
 
     elif problem_formulation == ProblemFormulation.EGALITARIAN_DISAGGREGATED:
-        outcomes_maximize_names = ['Utility']
+        outcomes_maximize_names = ["Utility"]
         outcomes_minimize_names = [
-            'Disutility',
-            'Intratemporal consumption Gini',
-            'Intratemporal damage Gini',
-            'Temperature overshoot'
+            "Disutility",
+            "Intratemporal consumption Gini",
+            "Intratemporal damage Gini",
+            "Temperature overshoot",
         ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
@@ -356,17 +386,27 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover='lever
         outcomes_info_aggregated = []
 
     epsilons = _get_epsilons(
-        dict_epsilons, years_optimize, outcomes_maximize_names, outcomes_minimize_names,
-        outcomes_maximize_aggregated, outcomes_minimize_aggregated
+        dict_epsilons,
+        years_optimize,
+        outcomes_maximize_names,
+        outcomes_minimize_names,
+        outcomes_maximize_aggregated,
+        outcomes_minimize_aggregated,
     )
 
     outcomes = _get_relevant_outcomes(
-        outcomes_all_names, outcomes_maximize_names, outcomes_minimize_names, outcomes_maximize_aggregated,
-        outcomes_minimize_aggregated, years_optimize, years_info, outcomes_info_aggregated
+        outcomes_all_names,
+        outcomes_maximize_names,
+        outcomes_minimize_names,
+        outcomes_maximize_aggregated,
+        outcomes_minimize_aggregated,
+        years_optimize,
+        years_info,
+        outcomes_info_aggregated,
     )
 
     # Inverting optimization direction (for scenario search only)
-    if searchover == 'uncertainties':
+    if searchover == "uncertainties":
         for o in outcomes:
             if o.kind == o.MINIMIZE:
                 o.kind = o.MAXIMIZE
@@ -384,23 +424,23 @@ def get_all_outcome_names():
     """
 
     outcomes_all_names = [
-        'Utility',
-        'Disutility',
-        'Intratemporal consumption Gini',
-        'Intratemporal damage Gini',
-        'Lowest income per capita',
-        'Highest damage per capita',
-        'Distance to consumption threshold',
-        'Population below consumption threshold',
-        'Distance to damage threshold',
-        'Population above damage threshold',
-        'Temperature overshoot'
+        "Utility",
+        "Disutility",
+        "Intratemporal consumption Gini",
+        "Intratemporal damage Gini",
+        "Lowest income per capita",
+        "Highest damage per capita",
+        "Distance to consumption threshold",
+        "Population below consumption threshold",
+        "Distance to damage threshold",
+        "Population above damage threshold",
+        "Temperature overshoot",
     ]
 
     return outcomes_all_names
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     with_all_PFs = True
 
@@ -411,20 +451,24 @@ if __name__ == '__main__':
             results = get_outcomes_and_epsilons(problem_formulation=p)
             outcomes_list, eps = results
 
-            print(f'PF: {p}')
+            print(f"PF: {p}")
             for out in outcomes_list:
                 if out.kind != ScalarOutcome.INFO:
-                    print(f'Outcome name: {out.name},\t optimization direction: {out.kind}')
+                    print(
+                        f"Outcome name: {out.name},\t optimization direction: {out.kind}"
+                    )
             print()
 
     else:
-        results = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED)
+        results = get_outcomes_and_epsilons(
+            problem_formulation=ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
+        )
         outcomes_list, eps = results
 
-        print('Outcomes:')
+        print("Outcomes:")
         for out in outcomes_list:
-            print(f'Outcome name: {out.name},\t optimization direction: {out.kind}')
+            print(f"Outcome name: {out.name},\t optimization direction: {out.kind}")
 
-        print('\nEpsilons:')
+        print("\nEpsilons:")
         for e in eps:
-            print(f'Epsilon: {e}')
+            print(f"Epsilon: {e}")

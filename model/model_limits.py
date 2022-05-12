@@ -7,6 +7,7 @@ class ModelLimits:
     """
     This class contains the limits of the model.
     """
+
     def __init__(self):
 
         # Output low (constraints of the model)

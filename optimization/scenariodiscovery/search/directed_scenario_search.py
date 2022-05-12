@@ -8,7 +8,7 @@ from optimization.general.timer import *
 from model.enumerations import *
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     timer = Timer()
 
@@ -16,15 +16,16 @@ if __name__ == '__main__':
 
     for idx, problem_formulation in enumerate(problem_formulations):
 
-        print(f'Running problem formulation {idx+1}/{len(problem_formulations)} ({problem_formulation.name})')
+        print(
+            f"Running problem formulation {idx+1}/{len(problem_formulations)} ({problem_formulation.name})"
+        )
 
         run_optimization(
             problem_formulation=problem_formulation,
             nfe=200000,
-            searchover='uncertainties',
+            searchover="uncertainties",
             saving_results=True,
-            with_convergence=True
+            with_convergence=True,
         )
 
     timer.stop()
-
