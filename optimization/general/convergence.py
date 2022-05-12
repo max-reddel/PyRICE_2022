@@ -224,21 +224,15 @@ def _wrapper_hypervolume(folder_path, problem_formulation, searchover, nfe):
     """
     problem, n_objs, n_decision_vars = _define_problem(problem_formulation)
 
-    hypervolume_folder = os.path.join(
-        folder_path,
-        f'{problem_formulation.name}_{searchover}_{nfe}',
-        'hypervolume'
-    )
+    hypervolume_folder = os.path.join(folder_path, f'{problem_formulation.name}_{searchover}_{nfe}', 'hypervolume')
 
     id = _find_highest_archive_id(hypervolume_folder)
 
     ref_set = _create_a_reference_set(problem, n_decision_vars, n_objs, hypervolume_folder, id)
     archives = _load_and_merge_archives(problem, n_decision_vars, n_objs, hypervolume_folder, id)
 
-    # print(archives)
     nfes, hvs = _compute_hypervolumes(ref_set, archives)
 
-    # print(hvs)
     return nfes, hvs
 
 

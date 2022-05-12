@@ -229,33 +229,33 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
     """
 
     dict_epsilons = {
-        "Utility": 0.1,  # 7.6
-        "Disutility": 0.1,  # 6.4
-        "Lowest income per capita": 0.1,  # 0.516
-        "Intratemporal consumption Gini": 0.0001,  # 0.00049
-        "Highest damage per capita": 0.01,  # 0.071
-        "Intratemporal damage Gini": 0.001,  # 0.038
-        "Population below consumption threshold": 5.0,  # 75
-        "Distance to consumption threshold": 0.1,  # 0.172
-        "Population above damage threshold": 5.0,  # 691
-        "Distance to damage threshold": 0.1,  # 0.4
-        "Temperature overshoot": 0.1,
-        "Damages": 0.1,  # 0.1
-        "Industrial Emission": 0.1,  # 1.0
-        "Atmospheric Temperature": 0.1,  # 0.55
-        "Intertemporal consumption distance": 1.0,  # 140
-        "Intertemporal consumption population": 100.0,  # 4200
+        "Utility": 0.05,  #
+        "Disutility": 0.05,  #
+        "Lowest income per capita": 0.05,  #
+        "Intratemporal consumption Gini": 0.0001,  #
+        "Highest damage per capita": 0.01,  #
+        "Intratemporal damage Gini": 0.01,  #
+        "Population below consumption threshold": 1.0,  #
+        "Distance to consumption threshold": 0.05,  #
+        "Population above damage threshold": 5.0,  #
+        "Distance to damage threshold": 0.1,  #
+        "Temperature overshoot": 0.5,
+        "Damages": 0.1,  #
+        "Industrial Emission": 0.1,  #
+        "Atmospheric Temperature": 0.1,  #
+        "Intertemporal consumption distance": 1.0,  #
+        "Intertemporal consumption population": 100.0,  #
         "Intertemporal damage distance": 1.0,  # 137
-        "Intertemporal damage population": 100.0,  # 19500
-        "Intertemporal lowest income p/c": 5.0,  # 52.31
-        "Intertemporal highest damage p/c": 0.2,  # 2.328
-        "Intertemporal consumption Gini": 0.01,  # 0.01
-        "Intertemporal damage Gini": 0.01,  # 0.024
-        "Total Aggregated Utility": 100,  # 1575
-        "Total Aggregated Disutility": 100,  # 9942
-        "Costs": 0.1,  # 0.18
-        "Total Output": 1.0,  # 25
-        "Total Aggregated Costs": 20,  # 943
+        "Intertemporal damage population": 100.0,  #
+        "Intertemporal lowest income p/c": 5.0,  #
+        "Intertemporal highest damage p/c": 0.2,  #
+        "Intertemporal consumption Gini": 0.01,  #
+        "Intertemporal damage Gini": 0.01,  #
+        "Total Aggregated Utility": 100,  #
+        "Total Aggregated Disutility": 100,  #
+        "Costs": 0.1,  #
+        "Total Output": 1.0,  #
+        "Total Aggregated Costs": 20,  #
     }
 
     # Relevant years
