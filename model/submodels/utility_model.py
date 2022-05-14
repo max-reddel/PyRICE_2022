@@ -1004,7 +1004,7 @@ class UtilityModel:
         # cummulative utility with ww
         self.reg_cum_util[:, t] = self.reg_cum_util[:, t - 1] + self.per_util_ww[:, t]
 
-        # scale utility with weights derived from the excel
+        # scale utility with weights derived from the Excel
         if t == 30:
             self.reg_util = (
                 10 * self.multiplutacive_scaling_weights[:, 0] * self.reg_cum_util[:, t]
@@ -1064,9 +1064,11 @@ class UtilityModel:
 
         # calculate Gini as measure of current inequality in climate impact (per dollar consumption)
         # (intragenerational)
-        self.climate_impact_per_dollar_consumption[:, t] = np.where(
-            damages[:, t] < 0.001, CPC[:, t], damages[:, t] / CPC[:, t]
-        )
+        # self.climate_impact_per_dollar_consumption[:, t] = np.where(
+        #     damages[:, t] < 0.001, CPC[:, t], damages[:, t] / CPC[:, t]
+        # )
+
+        self.climate_impact_per_dollar_consumption[:, t] = damages[:, t] / CPC[:, t]
 
         input_gini_intra_impact = self.climate_impact_per_dollar_consumption[:, t]
 
@@ -1074,9 +1076,8 @@ class UtilityModel:
         for i, xi in enumerate(input_gini_intra_impact[:-1], 1):
             diffsum += np.sum(np.abs(xi - input_gini_intra_impact[i:]))
 
-        self.climate_impact_per_dollar_gini[t] = diffsum / (
-            (len(input_gini_intra_impact) ** 2) * np.mean(input_gini_intra_impact)
-        )
+        self.climate_impact_per_dollar_gini[t] = \
+            diffsum / ((len(input_gini_intra_impact) ** 2) * np.mean(input_gini_intra_impact))
 
         # sufficientarian objectives
         # growth by the world
@@ -1214,7 +1215,7 @@ class UtilityModel:
                 self.reg_cum_disutil[:, t - 1] + self.per_disutility_ww[:, t]
             )
 
-        # scale utility with weights derived from the excel
+        # scale utility with weights derived from the Excel
         if t == 30:
             self.reg_disutil = (
                 self.multiplutacive_scaling_weights[:, 0] * self.reg_cum_disutil[:, t]

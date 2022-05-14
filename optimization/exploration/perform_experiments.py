@@ -79,9 +79,9 @@ def perform_own_experiments(
             if file_name is None:
                 file_name = f"results_open_exploration_{n_scenarios}"
 
-            target_directory = os.getcwd() + "/outcomes/"
+            target_directory = os.path.join(os.getcwd(), 'data', file_name)
 
-            save_results(results=results, file_name=target_directory + file_name)
+            save_results(results=results, file_name=target_directory)
 
     return results
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     n = 1000
     results = perform_own_experiments(
-        n_scenarios=n, saving_results=True, file_name=f"results_open_exploration_{n}"
+        n_scenarios=n, saving_results=True, file_name=f"results_open_exploration_damage_gini_adjusted_{n}"
     )
 
     if printing:
