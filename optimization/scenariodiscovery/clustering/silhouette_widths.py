@@ -29,7 +29,6 @@ from sklearn.metrics import silhouette_score
 from ema_workbench.analysis.clusterer import apply_agglomerative_clustering
 from ema_workbench import load_results
 from ema_workbench.analysis import plotting, Density
-from ema_workbench import ScalarOutcome
 
 from optimization.general.xlm_constants_epsilons import get_all_outcome_names
 from optimization.general.timer import *
@@ -333,7 +332,7 @@ def merge_clustered_scenarios(mapping, saving=False):
 
     scenarios = pd.DataFrame()
 
-    for idx, (outcome_name, (cluster, kind)) in enumerate(mapping.items()):
+    for idx, (outcome_name, (cluster, worst_cluster)) in enumerate(mapping.items()):
 
         # Load experiments with corresponding clusters
         experiments = get_experiments_with_clusters(
@@ -341,22 +340,18 @@ def merge_clustered_scenarios(mapping, saving=False):
         )
 
         # Choose 'worst' cluster
-
-        if kind == ScalarOutcome.MAXIMIZE:
-            cluster = cluster
-        elif kind == ScalarOutcome.MINIMIZE:
-            cluster = 0
-
-        relevant_x = experiments[experiments["clusters"] == cluster]
+        relevant_x = experiments[experiments['clusters'] == worst_cluster]
 
         if idx == 0:
             scenarios = relevant_x
         else:
             scenarios.update(relevant_x)
 
+    scenarios = scenarios.iloc[:, :-8]
+
     # Save scenarios
     if saving:
-        target_directory = os.path.join(os.getcwd(), "data/time_series_scenarios.csv")
+        target_directory = os.path.join(os.getcwd(), 'data', 'time_series_scenarios.csv')
         scenarios.to_csv(target_directory)
 
     return scenarios
