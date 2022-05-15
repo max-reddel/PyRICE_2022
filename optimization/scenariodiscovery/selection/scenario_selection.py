@@ -1,6 +1,7 @@
 """
 This module contains fucntions around scenario selection, such as a function for the diversity maximization approach
 and to load reference scenarios.
+
 Remark: Some used functions have been adopted from
 https://github.com/shajeelwn/PyDICE/blob/master/4_Scenario_Discovery/Scenario_Selection_only_util_ds.py
 """
@@ -144,16 +145,7 @@ def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False)
         solutions: list with 4 items
     """
 
-    # Loading results
-    if scenarios is None:
-        target_directory = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))),
-            "example_scenarios.csv",
-        )
-        scenarios = pd.read_csv(target_directory, index_col="Unnamed: 0").iloc[
-            :10, :9
-        ]  # Load only uncertainties
-    scenarios = scenarios.to_dict("series")
+    scenarios = scenarios.to_dict('series')
 
     # Preparing outcomes
     scenarios = _normalize(scenarios)
@@ -192,38 +184,34 @@ def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False)
 
     if saving:
         scenarios_df = _look_up_scenarios(scenarios, solutions)
-        directory = os.path.join(os.getcwd(), "data", "reference_scenarios.csv")
+        directory = os.path.join(os.getcwd(), 'data', 'reference_scenarios.csv')
         scenarios_df.to_csv(directory)
 
     return solutions
 
 
-def merge_all_worst_scenarios(saving=False):
+def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=False):
     """
     Merge all worst scenarios resulting from time series clustering and from directed scenario search.
+    @param searchover: String: {'uncertainties', 'levers'}
+    @param nfe: int: number of function evaluations
     @param saving: Boolean: whether to save the scenarios or not
     @return:
-        all_scenarios: DataFrame
+        all_bad_scenarios: DataFrame
     """
 
     # Load scenarios from time series clustering (tsc)
-    target_directory = os.path.join(
-        os.path.dirname(os.getcwd()), "clustering/data", "time_series_scenarios.csv"
-    )
+    target_directory = os.path.join(os.path.dirname(os.getcwd()), 'clustering', 'data', 'time_series_scenarios.csv')
     scenarios_tsc = pd.read_csv(target_directory)
 
     # Load scenarios from directed scenario search (dss)
-    target_directory = os.path.join(os.path.dirname(os.getcwd()), "search/data")
-    n = 20000
-    searchover = "uncertainties"
+    target_directory = os.path.join(os.path.dirname(os.getcwd()), 'search', 'data')
     scenarios_dss = pd.DataFrame()
 
-    for idx, problem_formulation in enumerate(
-        ProblemFormulation.get_8_problem_formulations()
-    ):
+    for idx, problem_formulation in enumerate(ProblemFormulation.get_8_problem_formulations()):
 
-        folder = f"{problem_formulation}_{searchover}_{n}"
-        target_directory = os.path.join(target_directory, folder, "results.csv")
+        folder = f'{problem_formulation}_{searchover}_{nfe}'
+        target_directory = os.path.join(target_directory, folder, 'results.csv')
 
         new_scenarios = pd.read_csv(target_directory)
         if idx == 0:
@@ -232,14 +220,14 @@ def merge_all_worst_scenarios(saving=False):
             scenarios_dss.append(new_scenarios)
 
     # Merging all scenarios
-    all_scenarios = scenarios_tsc.append(scenarios_dss)
+    all_bad_scenarios = scenarios_tsc.append(scenarios_dss)
 
     # Save scenarios
     if saving:
-        target_directory = os.path.join(os.getcwd(), "data", "all_worst_scenarios.csv")
-        all_scenarios.to_csv(target_directory)
+        target_directory = os.path.join(os.getcwd(), 'data', 'all_worst_scenarios.csv')
+        all_bad_scenarios.to_csv(target_directory)
 
-    return all_scenarios
+    return all_bad_scenarios
 
 
 def load_reference_scenarios():
@@ -249,11 +237,9 @@ def load_reference_scenarios():
         scenarios: list with Scenario objects
     """
     target_directory = os.path.join(
-        os.path.dirname(os.getcwd()),
-        "scenariodiscovery/selection/data",
-        "reference_scenarios.csv",
+        os.path.dirname(os.getcwd()), 'scenariodiscovery', 'selection', 'data', 'reference_scenarios.csv',
     )
-    scenarios_df = pd.read_csv(target_directory, index_col="Unnamed: 0")
+    scenarios_df = pd.read_csv(target_directory, index_col='Unnamed: 0')
 
     scenarios = []
 
@@ -261,16 +247,15 @@ def load_reference_scenarios():
 
         row = row.to_dict()
 
-        scenario = Scenario(f"{idx}", **row)
+        scenario = Scenario(f'{idx}', **row)
         scenarios.append(scenario)
 
     return scenarios
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
-    scenarios = merge_all_worst_scenarios(saving=True)
-    ref_scenarios = compute_reference_scenarios(
-        scenarios=scenarios, n_ref_scenarios=4, saving=True
-    )
-    print(f"ref_scenarios: {ref_scenarios}")
+    all_bad_scenarios = merge_all_worst_scenarios(saving=True)
+
+    ref_scenarios = compute_reference_scenarios(scenarios=all_bad_scenarios, n_ref_scenarios=4, saving=True)
+    print(f'ref_scenarios: {ref_scenarios}')
