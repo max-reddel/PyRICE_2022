@@ -90,9 +90,11 @@ if __name__ == "__main__":
 
     printing = False
 
-    n = 1000
+    n = 30000
     results = perform_own_experiments(
-        n_scenarios=n, saving_results=True, file_name=f"results_open_exploration_damage_gini_adjusted_{n}"
+        n_scenarios=n,
+        saving_results=True,
+        file_name=f"results_open_exploration_new_{n}"
     )
 
     if printing:
