@@ -85,6 +85,8 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         name = outcome_names[i]
         df = outcomes_df.filter(regex=name, axis=1)  # Filter columns to include "name"
         for idx, row in df.iterrows():
+            # print(f'len(years): {len(years)}')
+            # print(f'len(row): {len(row.iloc[:])}')
             ax.plot(
                 years,
                 row.iloc[:],
