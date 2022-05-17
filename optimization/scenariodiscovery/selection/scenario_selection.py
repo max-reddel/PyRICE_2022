@@ -10,6 +10,7 @@ import numpy as np
 import os
 import itertools
 import math
+# from optimization.general.timer import Timer
 
 import pandas as pd
 from scipy.spatial.distance import pdist
@@ -157,10 +158,13 @@ def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False)
     potential_solutions = []
     n_combinations = _n_combinations(len(indices), n_ref_scenarios)
 
+    # timer = Timer()
+
     # Iterating through the combinations
     with ProcessPoolExecutor() as executor:
         for idx, item in enumerate(itertools.combinations(indices, n_ref_scenarios)):
-            print(f"it #{idx}/{n_combinations}") if idx % 500 == 0 else 0
+
+            print(f"iteration #{idx}/{n_combinations}") if idx % 2000 == 0 else 0
             combos = [item]
             solution = executor.submit(
                 _select_scenarios,
@@ -169,6 +173,11 @@ def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False)
                 outcome_names=outcome_names,
             )
             potential_solutions.extend(solution.result())
+
+            # if idx >= 50000:
+            #     timer.stop()
+            # if idx > 50010:
+            #     break
 
     # Selecting maximum diverse scenarios
     max_diversity = 0.0
@@ -200,9 +209,11 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=Fal
         all_bad_scenarios: DataFrame
     """
 
+    nr_of_uncertainties = 9
+
     # Load scenarios from time series clustering (tsc)
     target_directory = os.path.join(os.path.dirname(os.getcwd()), 'clustering', 'data', 'time_series_scenarios.csv')
-    scenarios_tsc = pd.read_csv(target_directory)
+    scenarios_tsc = pd.read_csv(target_directory, index_col='Unnamed: 0')
 
     # Load scenarios from directed scenario search (dss)
     target_directory = os.path.join(os.path.dirname(os.getcwd()), 'search', 'data')
@@ -210,10 +221,10 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=Fal
 
     for idx, problem_formulation in enumerate(ProblemFormulation.get_8_problem_formulations()):
 
-        folder = f'{problem_formulation}_{searchover}_{nfe}'
-        target_directory = os.path.join(target_directory, folder, 'results.csv')
+        folder = f'{problem_formulation.name}_{searchover}_{nfe}'
+        current_directory = os.path.join(target_directory, folder, 'results.csv')
 
-        new_scenarios = pd.read_csv(target_directory)
+        new_scenarios = pd.read_csv(current_directory, index_col='Unnamed: 0').iloc[:, :nr_of_uncertainties]
         if idx == 0:
             scenarios_dss = new_scenarios
         else:
@@ -221,6 +232,7 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=Fal
 
     # Merging all scenarios
     all_bad_scenarios = scenarios_tsc.append(scenarios_dss)
+    all_bad_scenarios = all_bad_scenarios.reset_index()
 
     # Save scenarios
     if saving:
@@ -255,7 +267,7 @@ def load_reference_scenarios():
 
 if __name__ == '__main__':
 
-    all_bad_scenarios = merge_all_worst_scenarios(saving=True)
+    all_bad_scenarios = merge_all_worst_scenarios(saving=True)  # .iloc[:200, :]
 
     ref_scenarios = compute_reference_scenarios(scenarios=all_bad_scenarios, n_ref_scenarios=4, saving=True)
     print(f'ref_scenarios: {ref_scenarios}')
