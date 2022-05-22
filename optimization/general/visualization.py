@@ -10,9 +10,7 @@ import pandas as pd
 import seaborn as sns
 import os
 
-from optimization.scenariodiscovery.clustering.silhouette_widths import (
-    get_outcomes_reshaped,
-)
+from optimization.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
 
 
 def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
@@ -59,7 +57,7 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         ncols = 5
 
     fig, axes = plt.subplots(
-        nrows=nrows, ncols=ncols, figsize=(28, 24), tight_layout=True
+        nrows=nrows, ncols=ncols, figsize=(36, 24), tight_layout=True
     )
     plt.subplots_adjust(
         left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8
@@ -214,8 +212,9 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
     fig = go.Figure(
         data=go.Parcoords(
             # Policy lines
-            # line_color = 'blue',
             # line=dict(color=experiments['policy'], showscale=True),
+            # line=dict(color=((34, 139, 34), alpha)),
+            # line=dict(color='forestgreen', showscale=True),
             # Outcomes
             dimensions=list(dimensions_list),
             # Formatting
@@ -242,13 +241,39 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
     )
 
     fig.show()
-    # return fig
+
+
+def get_y_labels_dict():
+    """
+    Returns a dictionary that provides y_label information for a given objective.
+    @return
+        info_dict: dictionary: {objective_name (string): name + units (string)}
+    """
+
+    info_dict = {
+        'Utility': 'Welfare of Utility',
+        'Disutility': 'Welfare of Disutility',
+        'Lowest income per capita': 'Lowest income per capita ($1000)',
+        'Intratemporal consumption Gini': 'Intratemporal consumption Gini',
+        'Highest damage per capita': 'Highest damage per capita',
+        'Intratemporal damage Gini': 'Intratemporal damage Gini',
+        'Population below consumption threshold': 'Population below consumption threshold (million)',
+        'Distance to consumption threshold': 'Distance to consumption threshold',
+        'Population above damage threshold': 'Population above damage threshold (million)',
+        'Distance to damage threshold': 'Distance to damage threshold (trillion $)',
+        'Temperature overshoot': '# of temperature overshoot time steps',
+        'Damages': 'Economic damages (trillion $)',
+        'Industrial Emission': 'Global emissions (GTon CO2)',
+        'Atmospheric Temperature': 'Increase in ATM temperature (Celsius)',
+    }
+
+    return info_dict
 
 
 if __name__ == "__main__":
     directory = (
         os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        + "/exploration/outcomes/"
+        + "/exploration/data/"
     )
     results = load_results(file_name=directory + "results_open_exploration_10")
     experiments, outcomes = results

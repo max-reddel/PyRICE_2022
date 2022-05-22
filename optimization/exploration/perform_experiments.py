@@ -10,7 +10,7 @@ import os
 
 # EMA
 from ema_workbench import Model, Policy, ema_logging, MultiprocessingEvaluator
-from ema_workbench.util.utilities import save_results
+from ema_workbench.util.utilities import save_results, load_results
 
 ema_logging.log_to_stderr(ema_logging.INFO)
 
@@ -77,11 +77,21 @@ def perform_own_experiments(
         if saving_results:
 
             if file_name is None:
-                file_name = f"results_open_exploration_{n_scenarios}"
+                file_name = 'results_open_exploration_{n_scenarios}'
 
             target_directory = os.path.join(os.getcwd(), 'data', file_name)
 
             save_results(results=results, file_name=target_directory)
+
+    return results
+
+
+def load_exploration_data(file_name='results_open_exploration_new_30000'):
+
+    target_directory = os.path.join(os.getcwd(), 'data')
+
+    # Load Results
+    results = load_results(file_name=os.path.join(target_directory, file_name))
 
     return results
 

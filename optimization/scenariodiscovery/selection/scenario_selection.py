@@ -10,7 +10,7 @@ import numpy as np
 import os
 import itertools
 import math
-# from optimization.general.timer import Timer
+import random
 
 import pandas as pd
 from scipy.spatial.distance import pdist
@@ -136,16 +136,27 @@ def _look_up_scenarios(all_scenarios, indices):
     return solutions
 
 
-def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False):
+def compute_reference_scenarios(
+        scenarios=None,
+        n_ref_scenarios=4,
+        saving=False,
+        brute_force=False,
+        max_combinations=10e6,
+        logging_frequency=2e3
+):
     """
     This function uses the diversity maximization approach to compute a number of reference scenarios.
     @param scenarios: DataFrame
     @param n_ref_scenarios: int: number of desired reference scenarios
     @param saving: Boolean: whether to save the resuls or not
+    @param brute_force: Boolean: whether to compute with brute force or with sampling
+    @param max_combinations: int
+    @param logging_frequency: int: print every x iterations how far in you are
     @return:
         solutions: list with 4 items
     """
 
+    max_combinations = int(max_combinations)
     scenarios = scenarios.to_dict('series')
 
     # Preparing outcomes
@@ -158,13 +169,17 @@ def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False)
     potential_solutions = []
     n_combinations = _n_combinations(len(indices), n_ref_scenarios)
 
-    # timer = Timer()
-
     # Iterating through the combinations
     with ProcessPoolExecutor() as executor:
-        for idx, item in enumerate(itertools.combinations(indices, n_ref_scenarios)):
 
-            print(f"iteration #{idx}/{n_combinations}") if idx % 2000 == 0 else 0
+        if brute_force:
+            combinations = itertools.combinations(indices, n_ref_scenarios)
+        else:
+            combinations = _sample_combinations(indices, n_ref_scenarios, max_combinations)
+
+        for idx, item in enumerate(combinations):
+            max_it = n_combinations if brute_force else max_combinations
+            print(f"iteration #{idx}/{max_it}") if idx % logging_frequency == 0 else 0
             combos = [item]
             solution = executor.submit(
                 _select_scenarios,
@@ -173,11 +188,6 @@ def compute_reference_scenarios(scenarios=None, n_ref_scenarios=4, saving=False)
                 outcome_names=outcome_names,
             )
             potential_solutions.extend(solution.result())
-
-            # if idx >= 50000:
-            #     timer.stop()
-            # if idx > 50010:
-            #     break
 
     # Selecting maximum diverse scenarios
     max_diversity = 0.0
@@ -242,6 +252,23 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=Fal
     return all_bad_scenarios
 
 
+def _sample_combinations(indices, n_ref_scenarios, max_combinations):
+    """
+    Compute a list with a specified number of combinations.
+    @param indices: list with integers
+    @param n_ref_scenarios: int
+    @param max_combinations: int
+    @return:
+        combs: list with int-tuples
+    """
+    combs = set()
+
+    while len(combs) < max_combinations:
+        sample = random.sample(indices, n_ref_scenarios)
+        combs.add(tuple(sorted(sample)))
+    return list(combs)
+
+
 def load_reference_scenarios():
     """
     Load reference scenarios as list of Scenario objects.
@@ -267,7 +294,13 @@ def load_reference_scenarios():
 
 if __name__ == '__main__':
 
-    all_bad_scenarios = merge_all_worst_scenarios(saving=True)  # .iloc[:200, :]
+    all_bad_scenarios = merge_all_worst_scenarios(saving=True)
 
-    ref_scenarios = compute_reference_scenarios(scenarios=all_bad_scenarios, n_ref_scenarios=4, saving=True)
+    ref_scenarios = compute_reference_scenarios(
+        scenarios=all_bad_scenarios,
+        n_ref_scenarios=4,
+        saving=True,
+        brute_force=False,
+        max_combinations=10e6
+    )
     print(f'ref_scenarios: {ref_scenarios}')

@@ -229,33 +229,33 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
     """
 
     dict_epsilons = {
-        "Utility": 0.05,  #
-        "Disutility": 0.05,  #
-        "Lowest income per capita": 0.05,  #
-        "Intratemporal consumption Gini": 0.0001,  #
-        "Highest damage per capita": 0.01,  #
-        "Intratemporal damage Gini": 0.01,  #
-        "Population below consumption threshold": 1.0,  #
-        "Distance to consumption threshold": 0.05,  #
-        "Population above damage threshold": 5.0,  #
-        "Distance to damage threshold": 0.1,  #
-        "Temperature overshoot": 0.5,
-        "Damages": 0.1,  #
-        "Industrial Emission": 0.1,  #
-        "Atmospheric Temperature": 0.1,  #
-        "Intertemporal consumption distance": 1.0,  #
-        "Intertemporal consumption population": 100.0,  #
-        "Intertemporal damage distance": 1.0,  # 137
-        "Intertemporal damage population": 100.0,  #
-        "Intertemporal lowest income p/c": 5.0,  #
-        "Intertemporal highest damage p/c": 0.2,  #
-        "Intertemporal consumption Gini": 0.01,  #
-        "Intertemporal damage Gini": 0.01,  #
-        "Total Aggregated Utility": 100,  #
-        "Total Aggregated Disutility": 100,  #
-        "Costs": 0.1,  #
-        "Total Output": 1.0,  #
-        "Total Aggregated Costs": 20,  #
+        'Utility': 0.05,
+        'Disutility': 0.05,
+        'Lowest income per capita': 0.05,
+        'Intratemporal consumption Gini': 0.0001,
+        'Highest damage per capita': 0.01,
+        'Intratemporal damage Gini': 0.01,
+        'Population below consumption threshold': 1.0,
+        'Distance to consumption threshold': 0.05,
+        'Population above damage threshold': 5.0,
+        'Distance to damage threshold': 0.1,
+        'Temperature overshoot': 0.5,
+        'Damages': 0.1,
+        'Industrial Emission': 0.1,
+        'Atmospheric Temperature': 0.1,
+        'Intertemporal consumption distance': 1.0,
+        'Intertemporal consumption population': 100.0,
+        'Intertemporal damage distance': 1.0,
+        'Intertemporal damage population': 100.0,
+        'Intertemporal lowest income p/c': 5.0,
+        'Intertemporal highest damage p/c': 0.2,
+        'Intertemporal consumption Gini': 0.01,
+        'Intertemporal damage Gini': 0.01,
+        'Total Aggregated Utility': 100,
+        'Total Aggregated Disutility': 100,
+        'Costs': 0.1,
+        'Total Output': 1.0,
+        'Total Aggregated Costs': 20
     }
 
     # Relevant years

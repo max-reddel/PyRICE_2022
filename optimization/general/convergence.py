@@ -29,7 +29,7 @@ def plot_epsilon_progress(data_folder_path, searchover, nfe=100000, saving=False
     # Create subplots
     sns.set(font_scale=1.35)
     sns.set_style("whitegrid")
-    fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(28, 14), tight_layout=True)
+    fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(36, 18), tight_layout=True)
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.5)
     fig.patch.set_facecolor("white")
 
@@ -48,6 +48,7 @@ def plot_epsilon_progress(data_folder_path, searchover, nfe=100000, saving=False
     plt.show()
 
     if saving:
+
         directory = os.path.join(os.getcwd(), 'data', 'convergence_epsilon_progress.png')
         fig.savefig(directory, dpi=200, pad_inches=0.2)
 
