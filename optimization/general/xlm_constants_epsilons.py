@@ -31,7 +31,7 @@ def get_xlc():
         IntegerParameter("scenario_cback", 0, 1),
         IntegerParameter("scenario_elasticity_of_damages", 0, 2),
         IntegerParameter("scenario_limmiu", 0, 1),
-        RealParameter("emdd", 0.001, 0.6),
+        RealParameter("emdd", 0.001, 0.6)
     ]
 
     constants = [Constant("precision", 10)]

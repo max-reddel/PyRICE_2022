@@ -278,16 +278,17 @@ def load_reference_scenarios():
     target_directory = os.path.join(
         os.path.dirname(os.getcwd()), 'scenariodiscovery', 'selection', 'data', 'reference_scenarios.csv',
     )
-    scenarios_df = pd.read_csv(target_directory, index_col='Unnamed: 0')
+    scenarios_df = pd.read_csv(target_directory)
+    scenarios_df = scenarios_df.drop(columns=['Unnamed: 0', 'index'])
 
-    scenarios = []
+    scenarios = [Scenario(f'idx', **row) for idx, row in scenarios_df.iterrows()]
 
-    for idx, row in scenarios_df.iterrows():
-
-        row = row.to_dict()
-
-        scenario = Scenario(f'{idx}', **row)
-        scenarios.append(scenario)
+    # Some uncertainties should have integer type
+    float_uncertainties = ['emdd', 'fosslim']
+    for scenario in scenarios:
+        for k, v in scenario.items():
+            if k not in float_uncertainties:
+                scenario[k] = int(v)
 
     return scenarios
 

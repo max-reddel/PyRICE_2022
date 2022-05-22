@@ -19,13 +19,12 @@ from ema_workbench import Model, MultiprocessingEvaluator, ema_logging
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def define_path_name(
-    problem_formulation, nfe, directory=None, d_type="results", searchover=None
-):
+def define_path_name(problem_formulation, nfe, ref_index, directory=None, d_type="results", searchover=None):
     """
     Define path and file name such that it can be used to save results_formatted and/or covergence outcomes.
     @param problem_formulation: ProblemFormulation
     @param nfe: integer
+    @param ref_index: int: number of current reference scenario/policy
     @param directory: String: where to save results and covergence outcomes
     @param d_type: string: {'results_formatted', 'convergence'}
     @param searchover: String
@@ -33,35 +32,35 @@ def define_path_name(
         path: string (path + file name that is used for saving_results)
     """
 
-    if d_type == "results" or d_type == "epsilon_progress":
-        file_name = f"{d_type}.csv"
-    elif d_type == "hypervolume":
-        file_name = ""
+    if d_type == 'results' or d_type == 'epsilon_progress':
+        file_name = f'{d_type}.csv'
+    elif d_type == 'hypervolume':
+        file_name = ''
     else:
         raise ValueError(
-            "You passed an unvalid d_type in order to save your resulting outcomes."
+            'You passed an unvalid d_type in order to save your resulting outcomes.'
         )
 
     if directory is None:
-        directory = get_directory(d_type, searchover, problem_formulation, nfe)
+        directory = get_directory(d_type, searchover, problem_formulation, nfe, ref_index)
 
     path = os.path.join(directory, file_name)
 
     return path
 
 
-def get_directory(d_type, searchover, problem_formulation, nfe):
+def get_directory(d_type, searchover, problem_formulation, nfe, ref_index):
     """
     Create a directory if necessary.
     @return:
         path: string
     """
-    # directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     directory = os.path.abspath(os.getcwd())
+    data_folder = 'data'
+    reference_name = 'scenario' if searchover == 'levers' else 'policy'
 
-    data_folder = "data"
-    problem_folder = f"{problem_formulation.name}_{searchover}_{nfe}"
-    if d_type == "hypervolume":
+    problem_folder = f'{reference_name}_{ref_index}_{problem_formulation.name}_{searchover}_{nfe}'
+    if d_type == 'hypervolume':
         sub_folder = d_type
         path = os.path.join(directory, data_folder, problem_folder, sub_folder)
     else:
@@ -81,7 +80,7 @@ def run_optimization(
     damage_function=DamageFunction.NORDHAUS,
     problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,
     nfe=5000,
-    searchover="levers",
+    searchover='levers',
     reference=None,
     saving_results=False,
     with_convergence=False,
@@ -92,11 +91,10 @@ def run_optimization(
     @param problem_formulation: ProblemFormulation
     @param nfe: integer
     @param searchover: String: {'levers', 'uncertainties'}
-    @param reference: list with Scenario or Policy objects
+    @param reference: tuple with (index, Scenario/Policy object)
     @param saving_results: Boolean: whether to save results_formatted or not
     @param with_convergence: Boolean: whether to save convergence outcomes or not
     """
-
     welfare_function, aggregation, _ = problem_formulation.value
 
     # Instantiate the model
@@ -111,9 +109,14 @@ def run_optimization(
     model = Model("RICE", function=model)
 
     model.uncertainties, model.levers, model.constants = get_xlc()
-    model.outcomes, epsilons = get_outcomes_and_epsilons(
-        problem_formulation=problem_formulation, searchover=searchover
-    )
+    model.outcomes, epsilons = get_outcomes_and_epsilons(problem_formulation=problem_formulation, searchover=searchover)
+
+    # look at reference
+    if reference is None:
+        ref_index = 0
+    else:
+        ref_index = reference[0]
+        reference = reference[1]
 
     # Run optimization
     if with_convergence:
@@ -121,8 +124,9 @@ def run_optimization(
         directory = define_path_name(
             problem_formulation=problem_formulation,
             nfe=nfe,
+            ref_index=ref_index,
             d_type="hypervolume",
-            searchover=searchover,
+            searchover=searchover
         )
         convergence_metrics = [
             EpsilonProgress(),
@@ -139,7 +143,7 @@ def run_optimization(
                 searchover=searchover,
                 epsilons=epsilons,
                 convergence=convergence_metrics,
-                reference=reference,
+                reference=reference
             )
 
             if saving_results:
@@ -147,6 +151,7 @@ def run_optimization(
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
+                    ref_index=ref_index,
                     d_type="results",
                     searchover=searchover,
                 )
@@ -156,6 +161,7 @@ def run_optimization(
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
+                    ref_index=ref_index,
                     d_type="epsilon_progress",
                     searchover=searchover,
                 )
@@ -165,13 +171,17 @@ def run_optimization(
 
         with MultiprocessingEvaluator(model, n_processes=50) as evaluator:
             results = evaluator.optimize(
-                nfe=nfe, searchover=searchover, epsilons=epsilons, reference=reference
+                nfe=nfe,
+                searchover=searchover,
+                epsilons=epsilons,
+                reference=reference
             )
 
             if saving_results:
                 path = define_path_name(
                     problem_formulation=problem_formulation,
                     nfe=nfe,
+                    ref_index=ref_index,
                     d_type="results",
                     searchover=searchover,
                 )
@@ -179,6 +189,7 @@ def run_optimization(
 
 
 if __name__ == "__main__":
+
     run_optimization(
         damage_function=DamageFunction.NORDHAUS,
         problem_formulation=ProblemFormulation.UTILITARIAN_AGGREGATED,

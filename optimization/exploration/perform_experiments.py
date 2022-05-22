@@ -37,6 +37,7 @@ def perform_own_experiments(
     n_scenarios=100,
     n_policies=None,
     saving_results=False,
+    folder=None,
     file_name=None,
 ):
     """
@@ -45,6 +46,7 @@ def perform_own_experiments(
     @param n_scenarios: int: number of scenarios
     @param n_policies: int: number of policies
     @param saving_results: Boolean: whether to save the outcomes or not
+    @param folder: String
     @param file_name: String: name of file to save
     @return:
         outcomes: (dataframe, dictionary): (experiments, outcomes)
@@ -77,17 +79,25 @@ def perform_own_experiments(
         if saving_results:
 
             if file_name is None:
-                file_name = 'results_open_exploration_{n_scenarios}'
+                file_name = f'results_open_exploration_{n_scenarios}'
 
-            target_directory = os.path.join(os.getcwd(), 'data', file_name)
+            if folder is None:
+                target_directory = os.path.join(os.getcwd(), 'data', file_name)
+            else:
+                target_directory = os.path.join(folder, file_name)
 
             save_results(results=results, file_name=target_directory)
 
     return results
 
 
-def load_exploration_data(file_name='results_open_exploration_new_30000'):
-
+def load_exploration_data(file_name='results_open_exploration_30000'):
+    """
+    Load specific data.
+    @param file_name: String
+    @return:
+        results: (experiments: DataFrame, outcomes: dictionary)
+    """
     target_directory = os.path.join(os.getcwd(), 'data')
 
     # Load Results
@@ -104,7 +114,7 @@ if __name__ == "__main__":
     results = perform_own_experiments(
         n_scenarios=n,
         saving_results=True,
-        file_name=f"results_open_exploration_new_{n}"
+        file_name=f'results_open_exploration{n}'
     )
 
     if printing:
