@@ -156,6 +156,10 @@ def compute_reference_scenarios(
         solutions: list with 4 items
     """
 
+    # Keeping the original in order to look up the scenarios by the indices
+    original_scenarios = scenarios.copy()
+    original_scenarios = original_scenarios.to_dict('series')
+
     max_combinations = int(max_combinations)
     scenarios = scenarios.to_dict('series')
 
@@ -202,7 +206,7 @@ def compute_reference_scenarios(
     solutions = list(solutions[0][0])
 
     if saving:
-        scenarios_df = _look_up_scenarios(scenarios, solutions)
+        scenarios_df = _look_up_scenarios(original_scenarios, solutions)
         directory = os.path.join(os.getcwd(), 'data', 'reference_scenarios.csv')
         scenarios_df.to_csv(directory)
 
@@ -234,7 +238,8 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=Fal
         folder = f'{problem_formulation.name}_{searchover}_{nfe}'
         current_directory = os.path.join(target_directory, folder, 'results.csv')
 
-        new_scenarios = pd.read_csv(current_directory, index_col='Unnamed: 0').iloc[:, :nr_of_uncertainties]
+        new_scenarios = pd.read_csv(current_directory).iloc[:, :nr_of_uncertainties]
+        new_scenarios = new_scenarios.drop(columns=['Unnamed: 0'])
         if idx == 0:
             scenarios_dss = new_scenarios
         else:
@@ -279,7 +284,7 @@ def load_reference_scenarios():
         os.path.dirname(os.getcwd()), 'scenariodiscovery', 'selection', 'data', 'reference_scenarios.csv',
     )
     scenarios_df = pd.read_csv(target_directory)
-    scenarios_df = scenarios_df.drop(columns=['Unnamed: 0', 'index'])
+    scenarios_df = scenarios_df.drop(columns=['Unnamed: 0'])
 
     scenarios = [Scenario(f'idx', **row) for idx, row in scenarios_df.iterrows()]
 
@@ -295,7 +300,7 @@ def load_reference_scenarios():
 
 if __name__ == '__main__':
 
-    all_bad_scenarios = merge_all_worst_scenarios(saving=True)
+    all_bad_scenarios = merge_all_worst_scenarios(saving=True).iloc[:, 1:]
 
     ref_scenarios = compute_reference_scenarios(
         scenarios=all_bad_scenarios,
