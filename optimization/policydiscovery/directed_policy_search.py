@@ -71,7 +71,6 @@ if __name__ == "__main__":
                 )
     else:
         problem_formulation = ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
-        # reference_scenarios = load_reference_scenarios()
 
         run_optimization(
             problem_formulation=problem_formulation,
