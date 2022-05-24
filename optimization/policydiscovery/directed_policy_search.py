@@ -48,21 +48,35 @@ def load_optimal_policies(target_directory, searchover='levers', nfe=200000, n_r
 
 if __name__ == "__main__":
 
-    problem_formulations = ProblemFormulation.get_8_problem_formulations()
-    reference_scenarios = load_reference_scenarios()
+    fully_fledged = False
 
-    for idx, problem_formulation in enumerate(problem_formulations):
+    if fully_fledged:
+        problem_formulations = ProblemFormulation.get_8_problem_formulations()
+        reference_scenarios = load_reference_scenarios()
 
-        print(f'Running problem formulation {idx + 1}/{len(problem_formulations)} ({problem_formulation.name})')
+        for idx, problem_formulation in enumerate(problem_formulations):
 
-        # Running the optimization for each reference scenario
-        for ref_idx, reference_scenario in enumerate(reference_scenarios):
+            print(f'Running problem formulation {idx + 1}/{len(problem_formulations)} ({problem_formulation.name})')
 
-            run_optimization(
-                problem_formulation=problem_formulation,
-                nfe=200000,
-                searchover='levers',
-                reference=(ref_idx, reference_scenario),
-                saving_results=True,
-                with_convergence=True,
-            )
+            # Running the optimization for each reference scenario
+            for ref_idx, reference_scenario in enumerate(reference_scenarios):
+
+                run_optimization(
+                    problem_formulation=problem_formulation,
+                    nfe=200000,
+                    searchover='levers',
+                    reference=(ref_idx, reference_scenario),
+                    saving_results=True,
+                    with_convergence=True,
+                )
+    else:
+        problem_formulation = ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
+        # reference_scenarios = load_reference_scenarios()
+
+        run_optimization(
+            problem_formulation=problem_formulation,
+            nfe=250000,
+            searchover='levers',
+            saving_results=True,
+            with_convergence=True,
+        )
