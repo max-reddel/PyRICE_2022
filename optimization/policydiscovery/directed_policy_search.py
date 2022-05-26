@@ -55,7 +55,7 @@ def load_optimal_policies(target_directory, problem_formulations=None, searchove
 
 if __name__ == "__main__":
 
-    fully_fledged = False
+    fully_fledged = True
 
     if fully_fledged:
         problem_formulations = ProblemFormulation.get_util_and_prio_problem_formulations()
@@ -77,21 +77,12 @@ if __name__ == "__main__":
                     with_convergence=True,
                 )
     else:
-        problem_formulation = ProblemFormulation.SUFFICIENTARIAN_AGGREGATED
-
-        run_optimization(
-            problem_formulation=problem_formulation,
-            nfe=10,
-            searchover='levers',
-            saving_results=True,
-            with_convergence=True,
-        )
 
         problem_formulation = ProblemFormulation.UTILITARIAN_DISAGGREGATED
 
         run_optimization(
             problem_formulation=problem_formulation,
-            nfe=10,
+            nfe=250000,
             searchover='levers',
             saving_results=True,
             with_convergence=True,
