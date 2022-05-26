@@ -79,7 +79,6 @@ if __name__ == "__main__":
     else:
 
         problem_formulation = ProblemFormulation.UTILITARIAN_DISAGGREGATED
-
         run_optimization(
             problem_formulation=problem_formulation,
             nfe=250000,
