@@ -11,12 +11,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def plot_epsilon_progress(data_folder_path, searchover, nfe=100000, saving=False):
+def plot_epsilon_progress(data_folder_path, searchover, nfe=100000, n_references=1, saving=False):
     """
     Plot the epsilon progress of all eight problem formulations.
     @param data_folder_path: String: path to the data folder in which all relevant data is saved
     @param searchover: String: {'levers', 'uncertainties'}
     @param nfe: int: this indicates what the desired nfe is (has to exist in the results)
+    @param n_references: int: how many reference scenarios or policies have been used
     @param saving: Boolean: whether to save image
     """
 
@@ -33,10 +34,12 @@ def plot_epsilon_progress(data_folder_path, searchover, nfe=100000, saving=False
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.5)
     fig.patch.set_facecolor("white")
 
+    reference_name = 'scenario' if searchover == 'levers' else 'policy'
+
     # Load epsilon values for each problem formulation
     for idx, ax in enumerate(axes.flat):
         problem_formulation = problem_formulations[idx]
-        directory = os.path.join(data_folder_path, f'{problem_formulation}_{searchover}_{nfe}')
+        directory = os.path.join(data_folder_path, f'{reference_name}_0_{problem_formulation}_{searchover}_{nfe}')
         df = pd.read_csv(os.path.join(directory, 'epsilon_progress.csv'))
 
         ax.plot(df.nfe, df.epsilon_progress)

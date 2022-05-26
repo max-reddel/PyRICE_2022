@@ -269,9 +269,10 @@ def get_experiments_with_clusters(
     """
 
     # Loading outcomes
-    target_directory = (
-        os.path.dirname(os.path.dirname(os.getcwd())) + "/exploration/data/"
-    )
+    target_directory = (os.path.join(
+        os.path.dirname(os.path.dirname(os.getcwd())),
+        'exploration',
+        'data'))
     results = load_results(file_name=target_directory + results_name)
 
     experiments, outcomes = results
@@ -335,9 +336,7 @@ def merge_clustered_scenarios(mapping, saving=False):
     for idx, (outcome_name, (cluster, worst_cluster)) in enumerate(mapping.items()):
 
         # Load experiments with corresponding clusters
-        experiments = get_experiments_with_clusters(
-            objective=outcome_name, cluster_number=cluster
-        )
+        experiments = get_experiments_with_clusters(objective=outcome_name, cluster_number=cluster)
 
         # Choose 'worst' cluster
         relevant_x = experiments[experiments['clusters'] == worst_cluster]

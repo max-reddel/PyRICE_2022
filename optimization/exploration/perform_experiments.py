@@ -49,7 +49,7 @@ def perform_own_experiments(
     @param folder: String
     @param file_name: String: name of file to save
     @return:
-        outcomes: (dataframe, dictionary): (experiments, outcomes)
+        results: (dataframe, dictionary): (experiments, outcomes)
     """
 
     model = PyRICE(

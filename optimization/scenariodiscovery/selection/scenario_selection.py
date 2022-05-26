@@ -213,11 +213,12 @@ def compute_reference_scenarios(
     return solutions
 
 
-def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=False):
+def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, n_references=1, saving=False):
     """
     Merge all worst scenarios resulting from time series clustering and from directed scenario search.
     @param searchover: String: {'uncertainties', 'levers'}
     @param nfe: int: number of function evaluations
+    @param n_references: int: how many reference policies have been used
     @param saving: Boolean: whether to save the scenarios or not
     @return:
         all_bad_scenarios: DataFrame
@@ -231,19 +232,22 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, saving=Fal
 
     # Load scenarios from directed scenario search (dss)
     target_directory = os.path.join(os.path.dirname(os.getcwd()), 'search', 'data')
-    scenarios_dss = pd.DataFrame()
+    scenarios_dss = None
+
+    reference_name = 'scenario' if searchover == 'levers' else 'policy'
 
     for idx, problem_formulation in enumerate(ProblemFormulation.get_8_problem_formulations()):
 
-        folder = f'{problem_formulation.name}_{searchover}_{nfe}'
-        current_directory = os.path.join(target_directory, folder, 'results.csv')
+        for n in range(n_references):
+            folder = f'{reference_name}_{n}_{problem_formulation.name}_{searchover}_{nfe}'
+            current_directory = os.path.join(target_directory, folder, 'results.csv')
 
-        new_scenarios = pd.read_csv(current_directory).iloc[:, :nr_of_uncertainties]
-        new_scenarios = new_scenarios.drop(columns=['Unnamed: 0'])
-        if idx == 0:
-            scenarios_dss = new_scenarios
-        else:
-            scenarios_dss.append(new_scenarios)
+            new_scenarios = pd.read_csv(current_directory).iloc[:, :nr_of_uncertainties]
+            new_scenarios = new_scenarios.drop(columns=['Unnamed: 0'])
+            if scenarios_dss is None:
+                scenarios_dss = new_scenarios
+            else:
+                scenarios_dss.append(new_scenarios)
 
     # Merging all scenarios
     all_bad_scenarios = scenarios_tsc.append(scenarios_dss)
@@ -300,8 +304,7 @@ def load_reference_scenarios():
 
 if __name__ == '__main__':
 
-    all_bad_scenarios = merge_all_worst_scenarios(saving=True).iloc[:, 1:]
-
+    all_bad_scenarios = merge_all_worst_scenarios(saving=False).iloc[:, 1:]
     ref_scenarios = compute_reference_scenarios(
         scenarios=all_bad_scenarios,
         n_ref_scenarios=4,

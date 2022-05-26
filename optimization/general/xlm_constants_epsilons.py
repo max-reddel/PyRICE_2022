@@ -59,9 +59,7 @@ def _get_outcomes_for_years(outcome_name, years_list, direction):
     return outcomes
 
 
-def _get_outcomes_to_optimize(
-    outcomes_maximize_names, outcomes_minimize_names, years_optimize
-):
+def _get_outcomes_to_optimize(outcomes_maximize_names, outcomes_minimize_names, years_optimize):
     """
     Return all the outcomes that should be optimized.
     @param outcomes_maximize_names: list of outcome names (without years)
@@ -85,9 +83,7 @@ def _get_outcomes_to_optimize(
     return outcomes_optimize
 
 
-def _get_outcomes_to_info(
-    outcomes_info_names, outcomes_optimize_names, years_optimize, years_info
-):
+def _get_outcomes_to_info(outcomes_info_names, outcomes_optimize_names, years_optimize, years_info):
     """
     Return all the outcomes that should not be optimized but just presented as info.
     @param outcomes_info_names: list of outcome names (without years)
@@ -438,6 +434,23 @@ def get_all_outcome_names():
     ]
 
     return outcomes_all_names
+
+
+def get_lever_names():
+    """
+    Return the lever variable names.
+    @return:
+        lever_names: list with Strings
+    """
+
+    lever_names = [
+        "sr",
+        "miu",
+        "irstp_consumption",
+        "irstp_damage"
+    ]
+
+    return lever_names
 
 
 if __name__ == "__main__":
