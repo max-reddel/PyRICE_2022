@@ -12,7 +12,14 @@ from dmdu.general.xlm_constants_epsilons import get_lever_names
 from ema_workbench import Policy
 
 
-def load_optimal_policies(target_directory, problem_formulations=None, searchover='levers', nfe=200000, n_references=4):
+def load_optimal_policies(
+        target_directory,
+        problem_formulations=None,
+        searchover='levers',
+        nfe=200000,
+        n_references=4,
+        n_seeds=1,
+):
     """
     Loads Pareto-optimal policies
     @param target_directory: String
@@ -20,6 +27,7 @@ def load_optimal_policies(target_directory, problem_formulations=None, searchove
     @param searchover: String: {'uncertainties', 'levers'}
     @param nfe: int
     @param n_references: int: number of used reference scenarios
+    @param n_seeds: int: how many seeds have been used
     @return:
         policies: list with Policy Objects
 
@@ -29,26 +37,32 @@ def load_optimal_policies(target_directory, problem_formulations=None, searchove
 
     policies = None
 
-    reference_name = 'scenario' if searchover == 'levers' else 'policy'
+    reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
+    policy_counter = 0
 
-    for idx, problem_formulation in enumerate(problem_formulations):
+    for problem_formulation in problem_formulations:
+        for seed_index in range(n_seeds):
+            for n_reference in range(n_references):
 
-        for n in range(n_references):
+                problem_folder = f'{problem_formulation.name}_{nfe}'
+                seed_folder = f'seed_{seed_index}'
+                reference_folder = f'{reference_name}_{n_reference}'
+                # folder = f'{reference_name}_{n_reference}_{problem_formulation.name}_{searchover}_{nfe}'
+                current_directory = os.path.join(
+                    target_directory, problem_folder, seed_folder, reference_folder, 'results.csv'
+                )
 
-            folder = f'{reference_name}_{n}_{problem_formulation.name}_{searchover}_{nfe}'
-            current_directory = os.path.join(target_directory, folder, 'results.csv')
-
-            df = pd.read_csv(current_directory, index_col='Unnamed: 0')
-            if policies is None:
-                policies = df
-            else:
-                policies = pd.concat([policies, df])
+                df = pd.read_csv(current_directory, index_col='Unnamed: 0')
+                if policies is None:
+                    policies = df
+                else:
+                    policies = pd.concat([policies, df])
 
     # Keep only lever columns
     lever_names = get_lever_names()
     policies = policies.loc[:, lever_names]
 
-    policies = [Policy('idx', **row) for idx, row in policies.iterrows()]
+    policies = [Policy(f'{idx}', **row) for idx, row in policies.iterrows()]
 
     return policies
 

@@ -56,7 +56,7 @@ def get_directory(d_type, searchover, seed_index, problem_formulation, nfe, ref_
     @return:
         path: string
     """
-    reference_name = 'referene_scenario' if searchover == 'levers' else 'reference_policy'
+    reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
 
     directory = os.path.abspath(os.getcwd())
     data_folder = 'data'
