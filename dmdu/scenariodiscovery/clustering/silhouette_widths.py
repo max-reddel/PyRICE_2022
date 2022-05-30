@@ -127,11 +127,11 @@ def compute_silhouette_widths(
     widths_df = pd.DataFrame(widths_dict, index=cluster_numbers)
     cluster_df = pd.DataFrame(cluster_dict)
 
-    target_directory = os.getcwd() + "/data/"
+    target_directory = os.path.join(os.getcwd(), 'data')
     # Save silhouette widths
     file_name = f"silhouette_widths_{len(experiments)}.csv"
     # noinspection PyTypeChecker
-    widths_df.to_csv(target_directory + file_name, index=cluster_numbers)
+    widths_df.to_csv(os.path.join(target_directory, file_name), index=cluster_numbers)
 
     # Save clusters
     file_name = f"clusters_{len(experiments)}.csv"
@@ -247,13 +247,13 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
 
     if saving:
 
-        visualization_folder = (
-            os.path.dirname(os.path.dirname(os.getcwd())) + "/outputimages/"
+        visualization_folder = (os.path.join(
+            os.path.dirname(os.path.dirname(os.getcwd())), 'outputimages')
         )
         if file_name is None:
             file_name = "scenario_discovery_time_series_clustering_silhouette_widths"
         file_name += ".png"
-        fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
+        fig.savefig(os.path.join(visualization_folder, file_name), dpi=200, pad_inches=0.2)
 
 
 def get_experiments_with_clusters(
@@ -278,9 +278,9 @@ def get_experiments_with_clusters(
     experiments, outcomes = results
 
     # Load cluster outcomes
-    target_directory = os.getcwd() + "/data/"
+    target_directory = os.path.join(os.getcwd(), 'data')
     file_name = "clusters_30000.csv"
-    clusters_df = pd.read_csv(target_directory + file_name)
+    clusters_df = pd.read_csv(os.path.join(target_directory, file_name))
 
     # Get specific clusters for objective and cluster number
     objective_name = f"{objective}_{cluster_number}"
@@ -365,11 +365,11 @@ if __name__ == "__main__":
     n_scenarios = 1000
 
     # Loading outcomes
-    target_directory = (
-        os.path.dirname(os.path.dirname(os.getcwd())) + "/exploration/data/"
+    target_directory = os.path.join(
+        os.path.dirname(os.path.dirname(os.getcwd())), 'exploration', 'data'
     )
     file_name = f"results_open_exploration_{n_scenarios}"
-    results = load_results(file_name=target_directory + file_name)
+    results = load_results(file_name=os.path.join(target_directory, file_name))
 
     # Computing silhouette widths
     print("\n############ Computing silhouette widths... ############")

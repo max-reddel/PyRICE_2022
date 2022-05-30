@@ -1,6 +1,7 @@
 """
 This module is used for the pathways of optimized policies.
 """
+import os.path
 
 from ema_workbench import Policy
 import matplotlib.pyplot as plt
@@ -23,9 +24,9 @@ def load_policies_of_one_problem_formulation(
     """
 
     directory = os.path.dirname(os.getcwd())
-    folder = "/results_formatted/"
+    folder = 'results_formatted'
 
-    df_policies = pd.read_csv(directory + folder + file).iloc[:, 1:4]
+    df_policies = pd.read_csv(os.path.join(directory, folder, file)).iloc[:, 1:4]
 
     policies = [
         Policy(f"Nordhaus_Sufficientarian_{index}", **row)
@@ -269,8 +270,8 @@ def visualize(
     if saving:
         directory = os.getcwd()
         root_directory = os.path.dirname(directory)
-        visualization_folder = root_directory + "/dmdu/outputimages/"
-        fig.savefig(visualization_folder + "pathways.png", dpi=200, pad_inches=0.2)
+        visualization_folder = os.path.join(root_directory, 'dmdu', 'outputimages')
+        fig.savefig(os.path.join(visualization_folder, 'pathways.png'), dpi=200, pad_inches=0.2)
 
 
 if __name__ == "__main__":

@@ -345,7 +345,7 @@ class PyRICE(object):
 
         directory = os.path.dirname(os.path.realpath(__file__))
 
-        with open(directory + "/outputdata/ecs_dist_v5.json") as f:
+        with open(os.path.join(directory, 'outputdata', 'ecs_dist_v5.json')) as f:
             d = json.load(f)
 
         np.random.seed(10)

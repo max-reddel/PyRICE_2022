@@ -102,9 +102,9 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
 
     if saving:
 
-        visualization_folder = (
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-            + "/outputimages/"
+        visualization_folder = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+            'outputimages'
         )
         if file_name is None:
             file_name = "open_exploration_pathways"
@@ -138,9 +138,9 @@ def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_nam
 
     if saving:
 
-        visualization_folder = (
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-            + "/outputimages/"
+        visualization_folder = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+            'outputimages'
         )
         if file_name is None:
             file_name = "open_exploration_pathways"
@@ -271,11 +271,11 @@ def get_y_labels_dict():
 
 
 if __name__ == "__main__":
-    directory = (
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        + "/exploration/data/"
+    directory = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        'exploration', 'data'
     )
-    results = load_results(file_name=directory + "results_open_exploration_10")
+    results = load_results(file_name=os.path.join(directory, "results_open_exploration_10"))
     experiments, outcomes = results
     outcomes = pd.DataFrame(outcomes)
 

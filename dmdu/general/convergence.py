@@ -308,5 +308,5 @@ def plot_hypervolumes(data_folder_path, searchover, nfe, saving=False):
     if saving:
         directory = os.getcwd()
         root_directory = os.path.dirname(directory)
-        visualization_folder = root_directory + "/dmdu/outputimages/"
-        fig.savefig(visualization_folder + "hypervolume.png", dpi=200, pad_inches=0.2)
+        visualization_folder = os.path.join(root_directory, 'dmdu', 'outputimages')
+        fig.savefig(os.path.join(visualization_folder, "hypervolume.png"), dpi=200, pad_inches=0.2)

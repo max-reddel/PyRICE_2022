@@ -66,8 +66,10 @@ def create_a_reference_set(
         ref_set: list
     """
     data = pd.read_csv(
-        directory_optimization
-        + f"/results/hypervolume/{problem_formulation}/archive_{id}.csv",
+        os.path.join(
+            directory_optimization,
+            'results', 'hypervolume', f'{problem_formulation}', f'archive_{id}.csv'
+        ),
         index_col=0,
     ).iloc[:, : n_decision_vars + n_objs]
 
@@ -195,5 +197,5 @@ def plot_hypervolumes(hypervolume_dict, saving=False):
     if saving:
         directory = os.getcwd()
         root_directory = os.path.dirname(directory)
-        visualization_folder = root_directory + "/dmdu/outputimages/"
+        visualization_folder = os.path.join(root_directory, 'dmdu', 'outputimages')
         fig.savefig(visualization_folder + "hypervolume.png", dpi=200, pad_inches=0.2)
