@@ -73,3 +73,18 @@ class ProblemFormulation(Enum):
         ]
 
         return pfs
+
+    @staticmethod
+    def get_util_and_prio_problem_formulations():
+        """
+        Get four problem formulations that are needed for my analysis.
+        """
+
+        pfs = [
+            ProblemFormulation.UTILITARIAN_AGGREGATED,
+            ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+            ProblemFormulation.PRIORITARIAN_AGGREGATED,
+            ProblemFormulation.PRIORITARIAN_DISAGGREGATED
+        ]
+
+        return pfs
