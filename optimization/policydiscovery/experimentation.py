@@ -9,12 +9,12 @@ import os
 if __name__ == '__main__':
 
     target_directory = os.path.join(os.getcwd(), 'data')
-    policies = load_optimal_policies(target_directory=target_directory)
+    policies = load_optimal_policies(target_directory=target_directory, nfe=10, n_references=1)
 
     perform_own_experiments(
-        n_scenarios=1000,
+        n_scenarios=100,
         n_policies=policies,
         saving_results=True,
-        folder='',  # TODO: fill in proper folder
-        file_name='exploration_with_optimal_policies.png',
+        folder=target_directory,
+        file_name='exploration_with_optimal_policies',
     )

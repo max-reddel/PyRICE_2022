@@ -66,9 +66,7 @@ def perform_own_experiments(
         # Use specific reference policies instead of a number of policies
         n_policies = get_reference_policies()
 
-    model.outcomes, _ = get_outcomes_and_epsilons(
-        problem_formulation=ProblemFormulation.ALL_OBJECTIVES
-    )
+    model.outcomes, _ = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES)
 
     with MultiprocessingEvaluator(model) as evaluator:
 
@@ -110,11 +108,14 @@ if __name__ == "__main__":
 
     printing = False
 
-    n = 30000
+    ns = 100
+    np = 100
+
     results = perform_own_experiments(
-        n_scenarios=n,
+        n_scenarios=ns,
+        n_policies=np,
         saving_results=True,
-        file_name=f'results_open_exploration{n}'
+        file_name=f'open_exploration_100x100'
     )
 
     if printing:
