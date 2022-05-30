@@ -288,6 +288,25 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         years_optimize = []
         years_info = list(range(2005, 2310, 10))
 
+    elif problem_formulation == ProblemFormulation.ALL_KPIS:
+        outcomes_maximize_names = [
+            'Utility',
+            'Total Output',
+        ]
+        outcomes_minimize_names = [
+            'Damages',
+            'Atmospheric Temperature',
+            'Industrial Emission',
+            'Temperature overshoot'
+        ]
+        outcomes_maximize_aggregated = []
+        outcomes_minimize_aggregated = []
+        outcomes_info_aggregated = []
+
+        # Need all time steps for running experiments
+        years_optimize = []
+        years_info = list(range(2005, 2310, 10))
+
     elif problem_formulation == ProblemFormulation.UTILITARIAN_COSTS:
         outcomes_maximize_names = []
         outcomes_minimize_names = ["Costs", "Temperature overshoot"]

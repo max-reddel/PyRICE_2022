@@ -51,6 +51,7 @@ class ProblemFormulation(Enum):
     SUFFICIENTARIAN_DISAGGREGATED = WelfareFunction.SUFFICIENTARIAN, False, 7
     PRIORITARIAN_AGGREGATED = WelfareFunction.PRIORITARIAN, True, 8
     PRIORITARIAN_DISAGGREGATED = WelfareFunction.PRIORITARIAN, False, 9
+    ALL_KPIS = WelfareFunction.UTILITARIAN, True, 10
 
     @staticmethod
     def get_8_problem_formulations():

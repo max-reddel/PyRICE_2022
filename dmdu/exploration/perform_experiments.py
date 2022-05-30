@@ -34,6 +34,7 @@ def get_reference_policies():
 
 def perform_own_experiments(
     damage_function=DamageFunction.NORDHAUS,
+    problem_formulation=ProblemFormulation.ALL_OBJECTIVES,
     n_scenarios=100,
     n_policies=None,
     saving_results=False,
@@ -43,6 +44,7 @@ def perform_own_experiments(
     """
     Perform a bunch of experiments and return the outcomes.
     @param damage_function: DamageFunction
+    @param problem_formulation: ProblemFormulation
     @param n_scenarios: int: number of scenarios
     @param n_policies: int: number of policies
     @param saving_results: Boolean: whether to save the outcomes or not
@@ -66,7 +68,7 @@ def perform_own_experiments(
         # Use specific reference policies instead of a number of policies
         n_policies = get_reference_policies()
 
-    model.outcomes, _ = get_outcomes_and_epsilons(problem_formulation=ProblemFormulation.ALL_OBJECTIVES)
+    model.outcomes, _ = get_outcomes_and_epsilons(problem_formulation=problem_formulation)
 
     with MultiprocessingEvaluator(model) as evaluator:
 

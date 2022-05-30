@@ -83,8 +83,7 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         name = outcome_names[i]
         df = outcomes_df.filter(regex=name, axis=1)  # Filter columns to include "name"
         for idx, row in df.iterrows():
-            # print(f'len(years): {len(years)}')
-            # print(f'len(row): {len(row.iloc[:])}')
+
             ax.plot(
                 years,
                 row.iloc[:],
@@ -97,7 +96,8 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         ax.set_xlabel("Time in years")
         ax.set_ylabel(name)
 
-    axes[-1, -1].axis("off")
+    if len(outcome_names) > 6:
+        axes[-1, -1].axis("off")
     plt.show()
 
     if saving:
@@ -110,6 +110,76 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
             file_name = "open_exploration_pathways"
         file_name += ".png"
         fig.savefig(visualization_folder + file_name, dpi=200, pad_inches=0.2)
+
+
+def plot_kpi_pathways(problem_formulations_dict, outcome_names, saving=False, file_name=None):
+    """
+    Plots pathways given an outcome DataFrame and outcomes-names.
+
+    Remark: Currently not super stable. Might break because of length of args.
+
+    @param problem_formulations_dict: dictionary with
+                                      {ProblemFormulation: (experiments: DataFrame, outcomes: DataFrame)}
+    @param outcome_names: list
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    nrows = 3
+    ncols = 2
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(36, 24), tight_layout=True)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
+
+    years = list(range(2005, 2310, 10))
+
+    # Problem formulations and colors
+    color_mapping = {}
+    for _, (problem_formulation, color) in enumerate(zip(problem_formulations_dict, sns.color_palette())):
+        color_mapping[problem_formulation] = color
+
+    # Figures
+    for i, ax in enumerate(axes.flat):
+
+        name = outcome_names[i]
+
+        for problem_formulation, (experiments, outcomes) in problem_formulations_dict.items():
+
+            df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"
+
+            for idx, row in df.iterrows():
+
+                ax.plot(
+                    years,
+                    row.iloc[:],
+                    linewidth=1.5,
+                    alpha=1.0,
+                    color=color_mapping[problem_formulation],
+                    label=problem_formulation
+                )
+
+        ax.set_title(name)
+        ax.set_xlabel("Time in years")
+        ax.set_ylabel(name)
+
+    handles, labels = fig.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    plt.show()
+
+    if saving:
+
+        visualization_folder = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+            'outputimages'
+        )
+        if file_name is None:
+            file_name = "open_exploration_pathways"
+        file_name += ".png"
+        fig.savefig(os.path.join(visualization_folder, file_name), dpi=200, pad_inches=0.2)
 
 
 def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_name=None):

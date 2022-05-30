@@ -31,12 +31,13 @@ def load_optimal_policies(
     @param n_references: int: number of used reference scenarios
     @param n_seeds: int: how many seeds have been used
     @return:
-        policies: list with Policy Objects
+        optimal_policies: dictionary with {ProblemFormulation: list with Policy objects}
 
     """
     if problem_formulations is None:
         problem_formulations = ProblemFormulation.get_util_and_suff_problem_formulations()
 
+    optimal_policies = {}
     policies = None
 
     reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
@@ -59,13 +60,16 @@ def load_optimal_policies(
                 else:
                     policies = pd.concat([policies, df])
 
-    # Keep only lever columns
-    lever_names = get_lever_names()
-    policies = policies.loc[:, lever_names]
+        # Keep only lever columns
+        lever_names = get_lever_names()
+        policies = policies.loc[:, lever_names]
 
-    policies = [Policy(f'{idx}', **row) for idx, row in policies.iterrows()]
+        policies = [Policy(f'{idx}', **row) for idx, row in policies.iterrows()]
 
-    return policies
+        optimal_policies[problem_formulation] = policies
+        policies = None
+
+    return optimal_policies
 
 
 if __name__ == "__main__":
