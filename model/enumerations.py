@@ -60,7 +60,7 @@ class ProblemFormulation(Enum):
         return list(ProblemFormulation)[2:]
 
     @staticmethod
-    def get_util_and_prio_problem_formulations():
+    def get_util_and_suff_problem_formulations():
         """
         Get four problem formulations that are needed for my analysis.
         """
