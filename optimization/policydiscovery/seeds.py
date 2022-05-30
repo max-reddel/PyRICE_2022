@@ -12,8 +12,8 @@ import numpy as np
 if __name__ == "__main__":
 
     seeds = [9845531, 1644652]
-    problem_formulations = [ProblemFormulation.PRIORITARIAN_AGGREGATED, ProblemFormulation.EGALITARIAN_DISAGGREGATED]
-    reference_scenarios = load_reference_scenarios()[:2]
+    problem_formulations = ProblemFormulation.get_util_and_suff_problem_formulations()
+    reference_scenarios = load_reference_scenarios()
 
     for problem_formulation in problem_formulations:
         for seed_index, seed in enumerate(seeds):
