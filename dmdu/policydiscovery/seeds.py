@@ -9,6 +9,7 @@ from model.enumerations import *
 import random
 import numpy as np
 
+
 if __name__ == "__main__":
 
     seeds = [9845531, 1644652]

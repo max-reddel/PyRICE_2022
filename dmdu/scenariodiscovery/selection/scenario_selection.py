@@ -213,12 +213,13 @@ def compute_reference_scenarios(
     return solutions
 
 
-def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, n_references=1, saving=False):
+def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, n_references=1, n_seeds=1, saving=False):
     """
     Merge all worst scenarios resulting from time series clustering and from directed scenario search.
     @param searchover: String: {'uncertainties', 'levers'}
     @param nfe: int: number of function evaluations
     @param n_references: int: how many reference policies have been used
+    @param n_seeds: int: how many seeds have been used
     @param saving: Boolean: whether to save the scenarios or not
     @return:
         all_bad_scenarios: DataFrame
@@ -234,20 +235,26 @@ def merge_all_worst_scenarios(searchover='uncertainties', nfe=200000, n_referenc
     target_directory = os.path.join(os.path.dirname(os.getcwd()), 'search', 'data')
     scenarios_dss = None
 
-    reference_name = 'scenario' if searchover == 'levers' else 'policy'
+    reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
 
-    for idx, problem_formulation in enumerate(ProblemFormulation.get_8_problem_formulations()):
+    for problem_formulation in ProblemFormulation.get_8_problem_formulations():
+        for seed_index in range(n_seeds):
+            for n_reference in range(n_references):
 
-        for n in range(n_references):
-            folder = f'{reference_name}_{n}_{problem_formulation.name}_{searchover}_{nfe}'
-            current_directory = os.path.join(target_directory, folder, 'results.csv')
+                problem_folder = f'{problem_formulation.name}_{nfe}'
+                seed_folder = f'seed_{seed_index}'
+                reference_folder = f'{reference_name}_{n_reference}'
 
-            new_scenarios = pd.read_csv(current_directory).iloc[:, :nr_of_uncertainties]
-            new_scenarios = new_scenarios.drop(columns=['Unnamed: 0'])
-            if scenarios_dss is None:
-                scenarios_dss = new_scenarios
-            else:
-                scenarios_dss.append(new_scenarios)
+                current_directory = os.path.join(
+                    target_directory, problem_folder, seed_folder, reference_folder, 'results.csv'
+                )
+
+                new_scenarios = pd.read_csv(current_directory).iloc[:, :nr_of_uncertainties]
+                new_scenarios = new_scenarios.drop(columns=['Unnamed: 0'])
+                if scenarios_dss is None:
+                    scenarios_dss = new_scenarios
+                else:
+                    scenarios_dss.append(new_scenarios)
 
     # Merging all scenarios
     all_bad_scenarios = scenarios_tsc.append(scenarios_dss)
@@ -290,7 +297,7 @@ def load_reference_scenarios():
     scenarios_df = pd.read_csv(target_directory)
     scenarios_df = scenarios_df.drop(columns=['Unnamed: 0'])
 
-    scenarios = [Scenario(f'idx', **row) for idx, row in scenarios_df.iterrows()]
+    scenarios = [Scenario(f'{idx}', **row) for idx, row in scenarios_df.iterrows()]
 
     # Some uncertainties should have integer type
     float_uncertainties = ['emdd', 'fosslim']
@@ -305,6 +312,7 @@ def load_reference_scenarios():
 if __name__ == '__main__':
 
     all_bad_scenarios = merge_all_worst_scenarios(saving=False).iloc[:, 1:]
+    print('hi')
     ref_scenarios = compute_reference_scenarios(
         scenarios=all_bad_scenarios,
         n_ref_scenarios=4,

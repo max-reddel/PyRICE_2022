@@ -1,6 +1,6 @@
 """
 This module contains functions to specify uncertainties, outcomes, levers, constants, and to compute epsilon values for
-the dmdu process.
+the optimization process.
 """
 
 from ema_workbench import ScalarOutcome, RealParameter, IntegerParameter, Constant
@@ -41,7 +41,7 @@ def get_xlc():
 
 def _get_outcomes_for_years(outcome_name, years_list, direction):
     """
-    Return a list of outcomes with their proper names (including years) and their direction of dmdu.
+    Return a list of outcomes with their proper names (including years) and their direction of optimizaiton.
     @param outcome_name: stirng
     @param years_list: list
     @param direction: ScalarOutcome.kind
@@ -401,7 +401,7 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         outcomes_info_aggregated,
     )
 
-    # Inverting dmdu direction (for scenario search only)
+    # Inverting optimization direction (for scenario search only)
     if searchover == "uncertainties":
         for o in outcomes:
             if o.kind == o.MINIMIZE:
@@ -468,7 +468,7 @@ if __name__ == "__main__":
             for out in outcomes_list:
                 if out.kind != ScalarOutcome.INFO:
                     print(
-                        f"Outcome name: {out.name},\t dmdu direction: {out.kind}"
+                        f"Outcome name: {out.name},\t optimization direction: {out.kind}"
                     )
             print()
 
@@ -480,7 +480,7 @@ if __name__ == "__main__":
 
         print("Outcomes:")
         for out in outcomes_list:
-            print(f"Outcome name: {out.name},\t dmdu direction: {out.kind}")
+            print(f"Outcome name: {out.name},\t optimization direction: {out.kind}")
 
         print("\nEpsilons:")
         for e in eps:

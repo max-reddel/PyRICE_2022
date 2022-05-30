@@ -1,5 +1,5 @@
 """
-This module contains functions that support the run of an dmdu.
+This module contains functions that support the run of an optimization.
 """
 
 # Imports
@@ -63,7 +63,6 @@ def get_directory(d_type, searchover, seed_index, problem_formulation, nfe, ref_
     problem_folder = f'{problem_formulation.name}_{nfe}'
     seed_folder = f'seed_{seed_index}'
     scenario_folder = f'{reference_name}_{ref_index}'
-    # problem_folder = f'{reference_name}_{ref_index}_{problem_formulation.name}_{searchover}_{nfe}'
 
     if d_type == 'hypervolume':
         sub_folder = d_type
@@ -92,7 +91,7 @@ def run_optimization(
     with_convergence=False,
 ):
     """
-    This function runs an dmdu with the PyRICE model.
+    This function runs an optimization with the PyRICE model.
     @param damage_function: DamageFunction
     @param problem_formulation: ProblemFormulation
     @param nfe: integer
@@ -125,7 +124,7 @@ def run_optimization(
         ref_index = reference[0]
         reference = reference[1]
 
-    # Run dmdu
+    # Run optimization
     if with_convergence:
 
         directory = define_path_name(
