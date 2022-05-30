@@ -4,27 +4,32 @@ This module is used to run directed policy search with several seeds.
 
 
 from optimization.general.directed_search import run_optimization
+from optimization.scenariodiscovery.selection.scenario_selection import load_reference_scenarios
 from model.enumerations import *
 import random
 import numpy as np
 
-
 if __name__ == "__main__":
 
     seeds = [9845531, 1644652]
+    problem_formulations = [ProblemFormulation.PRIORITARIAN_AGGREGATED, ProblemFormulation.EGALITARIAN_DISAGGREGATED]
+    reference_scenarios = load_reference_scenarios()[:2]
 
-    problem_formulation = ProblemFormulation.PRIORITARIAN_AGGREGATED
+    for problem_formulation in problem_formulations:
+        for seed_index, seed in enumerate(seeds):
+            for reference_index, reference_scenario in enumerate(reference_scenarios):
 
-    for seed in seeds:
+                # Setting seeds
+                random.seed(seed)
+                np.random.seed(seed)
 
-        # Setting seeds
-        random.seed(seed)
-        np.random.seed(seed)
-
-        run_optimization(
-            problem_formulation=problem_formulation,
-            nfe=250000,
-            searchover='levers',
-            saving_results=True,
-            with_convergence=True,
-        )
+                # Run optimizations
+                run_optimization(
+                    problem_formulation=problem_formulation,
+                    nfe=10,
+                    searchover='levers',
+                    seed_index=seed_index,
+                    reference=(reference_index, reference_scenario),
+                    saving_results=True,
+                    with_convergence=True,
+                )
