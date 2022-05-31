@@ -4,12 +4,13 @@ This module contains functions to visualize outcomes, hypervolume, etc.
 
 import plotly.graph_objects as go
 from ema_workbench.util.utilities import load_results
-from ema_workbench.analysis import plotting, Density
+from ema_workbench.analysis import plotting, Density, parcoords
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import os
 
+from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
 
 
@@ -338,6 +339,36 @@ def get_y_labels_dict():
     }
 
     return info_dict
+
+
+def plot_policies_per_problem_formulation(problem_formulations_dict):
+    """
+    Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
+    @param problem_formulations_dict: dictionary with
+                                      {ProblemFormulation: (experiments: DataFrame, outcomes: DataFrame)}
+    """
+    lever_names = get_lever_names()
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+    sns.set(rc={'figure.figsize': (12, 8)})
+
+    # Problem formulations and colors
+    color_mapping = {}
+    for _, (problem_formulation, color) in enumerate(zip(problem_formulations_dict, sns.color_palette())):
+        color_mapping[problem_formulation] = color
+
+    axes = None
+
+    for problem_formulation, (experiments, outcomes) in problem_formulations_dict.items():
+        levers = experiments.loc[:, lever_names]
+        limits = parcoords.get_limits(levers)
+
+        if axes is None:
+            axes = parcoords.ParallelAxes(limits)
+        axes.plot(levers, color=color_mapping[problem_formulation], label=problem_formulation)
+
+    axes.legend()
+    plt.show()
 
 
 if __name__ == "__main__":

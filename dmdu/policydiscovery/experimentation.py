@@ -7,6 +7,7 @@ from dmdu.policydiscovery.directed_policy_search import load_optimal_policies
 from model.enumerations import ProblemFormulation
 import os
 
+
 if __name__ == '__main__':
 
     target_directory = os.path.join(os.getcwd(), 'data')
