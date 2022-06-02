@@ -7,13 +7,14 @@ import numpy as np
 import pandas as pd
 
 
-def get_robustness_dataframe(experiments, outcomes):
+def get_robustness_dataframe(experiments, outcomes, problem_formulation):
     """
     Returns a dataframe that contains the robustness values for each outcome and each policy.
     Each outcome variable has an individual robustness metric assigned to it.
 
     @param experiments: DataFrame: contains all experimental data
     @param outcomes: DataFrame: contains all outcome values for all scenarios and policies
+    @param problem_formulation: ProblemFormulation
 
     @return robust: DataFrame: contains all robustness values for each outcome and each policy
     """
@@ -27,22 +28,22 @@ def get_robustness_dataframe(experiments, outcomes):
         # Calculate Starr's domain criterion
         if outcome_name in ['Temperature overshoot 2105', 'Atmospheric Temperature 2105', 'Industrial Emission 2105']:
             robustness_value = starr(experiments, outcomes_dict, outcome_name, threshold=4, higher_is_better=False)
-            robust[f'starr({outcome_name})'] = robustness_value
+            robust[f'starr({get_name_without_year(outcome_name)})'] = robustness_value
 
         # Calculate maximax
         elif outcome_name in ['Total Output 2105']:
             robustness_value = max_regret(experiments, outcomes_dict, outcome_name)
-            robust[f'minimax({outcome_name})'] = robustness_value
+            robust[f'minimax({get_name_without_year(outcome_name)})'] = robustness_value
 
         # Calculate Hurwicz criterion
         elif outcome_name in ['Utility 2105']:
             robustness_value = hurwicz_criterion(experiments, outcomes_dict, outcome_name)
-            robust[f'hurwicz({outcome_name})'] = robustness_value
+            robust[f'hurwicz({get_name_without_year(outcome_name)})'] = robustness_value
 
         # Calculate 90th percentile minimax regret
         elif outcome_name in ['Damages 2105']:
             robustness_value = percentile_90_minimax_regret(experiments, outcomes_dict, outcome_name)
-            robust[f'90minimax({outcome_name})'] = robustness_value
+            robust[f'90minimax({get_name_without_year(outcome_name)})'] = robustness_value
 
         # # Calculate maximin
         # elif outcome_name in []:
@@ -89,7 +90,27 @@ def get_robustness_dataframe(experiments, outcomes):
     col_names = col_names[-1:] + col_names[:-1]
     robust = robust[col_names]
 
+    robust['Problem Formulation'] = problem_formulation
+
     return robust
+
+
+def get_name_without_year(name):
+    """
+    Return objective name without year-suffix.
+    @param name: string
+    @return:
+        shortened: string
+    """
+    words = name.split(' ')
+
+    shortened = ''
+    for word in words[:-1]:
+        shortened += word + ' '
+
+    shortened = shortened[:-1]
+
+    return shortened
 
 
 def restructure_data(experiments, outcomes, outcome_name):
@@ -142,9 +163,9 @@ def max_regret(experiments, outcomes, outcome_name, maximize=False):
 
     # Calculate regret values
     if maximize:
-        regrets = (data.max(axis=1)[:, np.newaxis] - data).abs()
+        regrets = (np.max(data.to_numpy(), axis=1)[:, np.newaxis] - data).abs()
     else:
-        regrets = (data.min(axis=1)[:, np.newaxis] - data).abs()
+        regrets = (np.min(data.to_numpy(), axis=1)[:, np.newaxis] - data).abs()
 
     # series
     max_regrets = regrets.max(axis=0)
