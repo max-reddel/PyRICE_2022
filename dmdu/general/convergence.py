@@ -18,7 +18,8 @@ def plot_epsilon_progress(
         nfe=100000,
         n_references=4,
         n_seeds=4,
-        saving=False
+        saving=False,
+        file_name=None
 ):
     """
     Plot the epsilon progress of all eight problem formulations.
@@ -29,6 +30,7 @@ def plot_epsilon_progress(
     @param n_references: int: how many reference scenarios or policies have been used
     @param n_seeds: int: how many seeds have been used
     @param saving: Boolean: whether to save image
+    @param file_name: String
     """
 
     if problem_formulations is None:
@@ -46,7 +48,7 @@ def plot_epsilon_progress(
     fig, axes = plt.subplots(
         nrows=len(problem_formulations),
         ncols=n_references,
-        figsize=(36, 18),
+        figsize=(36, 8*len(problem_formulations)),
         tight_layout=True
     )
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.5)
@@ -114,7 +116,10 @@ def plot_epsilon_progress(
     plt.show()
 
     if saving:
-        directory = os.path.join(os.getcwd(), 'data', 'convergence_epsilon_progress.png')
+        if file_name is None:
+            file_name = 'convergence_epsilon_progress'
+        file_name += '.png'
+        directory = os.path.join(os.getcwd(), 'data', file_name)
         fig.savefig(directory, dpi=200, pad_inches=0.2)
 
 
@@ -280,7 +285,7 @@ def _compute_hypervolumes(ref_set, archives_dict):
     return nfes, hvs
 
 
-def _wrapper_hypervolume(folder_path, problem_formulation, searchover, nfe):
+def _wrapper_hypervolume(hypervolume_path, problem_formulation):
     """
     Compute hypervolume for one problem formulation
     @param problem_formulation: ProblemFormulation
@@ -290,12 +295,10 @@ def _wrapper_hypervolume(folder_path, problem_formulation, searchover, nfe):
     """
     problem, n_objs, n_decision_vars = _define_problem(problem_formulation)
 
-    hypervolume_folder = os.path.join(folder_path, f'{problem_formulation.name}_{searchover}_{nfe}', 'hypervolume')
+    id = _find_highest_archive_id(hypervolume_path)
 
-    id = _find_highest_archive_id(hypervolume_folder)
-
-    ref_set = _create_a_reference_set(problem, n_decision_vars, n_objs, hypervolume_folder, id)
-    archives = _load_and_merge_archives(problem, n_decision_vars, n_objs, hypervolume_folder, id)
+    ref_set = _create_a_reference_set(problem, n_decision_vars, n_objs, hypervolume_path, id)
+    archives = _load_and_merge_archives(problem, n_decision_vars, n_objs, hypervolume_path, id)
 
     nfes, hvs = _compute_hypervolumes(ref_set, archives)
 
@@ -332,38 +335,100 @@ def _get_2d_coords(col, idx):
     return coord
 
 
-def plot_hypervolumes(data_folder_path, searchover, nfe, saving=False, file_name=None):
+def plot_hypervolumes(
+        data_folder_path,
+        searchover,
+        nfe,
+        problem_formulations=None,
+        n_seeds=1,
+        n_references=1,
+        saving=False,
+        file_name=None
+):
     """
     Plot Hypervolume for all eight problem formulations.
     @param data_folder_path: String: path to the data folder in which all relevant data is saved
     @param searchover: String
     @param nfe: int: this indicates what the desired nfe is (has to exist in the results)
+    @param problem_formulations: list with ProblemFormulation objects
+    @param n_seeds: int: how many seeds have been used
+    @param n_references: int: how many reference scenarios have been used
     @param saving: Boolean: whether to save image
     @param file_name: String
     """
 
+    if problem_formulations is None:
+        problem_formulations = ProblemFormulation.get_util_and_suff_problem_formulations()
+
     # Preparing the plot
     sns.set(font_scale=1.35)
     sns.set_style("whitegrid")
-    nrows = 2
-    ncols = 4
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(28, 14), tight_layout=True)
+
+    fig, axes = plt.subplots(
+        nrows=len(problem_formulations),
+        ncols=n_references,
+        figsize=(36, 8*len(problem_formulations)),
+        tight_layout=True
+    )
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
+    fig.suptitle('Convergence with Hypervolume', y=1.05, fontsize=25)
 
-    # Computing Hypervolume for each problem formulation
-    hypervolume_dict = {}
-    for pf in ProblemFormulation.get_8_problem_formulations():
-        hypervolume_dict[pf.name] = _wrapper_hypervolume(data_folder_path, pf, searchover, nfe)
+    # Splitting strings for better readability
+    clean_problem_formulations = ['\n'.join(pf.name.split('_')) for pf in problem_formulations]
 
-    # Plotting
-    for idx, (problem_formulation, values) in enumerate(hypervolume_dict.items()):
+    # Annotation with row names
+    for ax, row in zip(axes[:, 0], clean_problem_formulations):
+        ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0),
+                    xycoords=ax.yaxis.label, textcoords='offset points',
+                    size='large', ha='right', va='center')
 
-        coords = _get_2d_coords(ncols, idx)
+    reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
 
-        axes[coords].plot(*values)
-        axes[coords].set_xlabel("nfe")
-        axes[coords].set_ylabel("hypervolume")
-        axes[coords].set_title(problem_formulation, fontsize=22)
+    # Seeds and colors
+    color_mapping = {}
+    unique_seeds = list(set(list(range(n_seeds))))
+    for _, (seed, color) in enumerate(zip(unique_seeds, sns.color_palette())):
+        color_mapping[seed] = color
+
+    # Load epsilon values for each problem formulation, seed, and reference
+    for pf_idx, problem_formulation in enumerate(problem_formulations):
+        for seed_idx in range(n_seeds):
+            for reference_idx in range(n_references):
+
+                # Define path name
+                directory = os.path.join(
+                    data_folder_path,
+                    f'{problem_formulation.name}_{nfe}',
+                    f'seed_{seed_idx}',
+                    f'{reference_name}_{reference_idx}',
+                    'hypervolume'
+                )
+
+                # Compute single hypervolume
+                values = _wrapper_hypervolume(directory, problem_formulation)
+
+                # Plotting
+                axes[pf_idx, reference_idx].plot(
+                    *values,
+                    color=color_mapping[seed_idx],
+                    label=f'seed {seed_idx}'
+                )
+                axes[pf_idx, reference_idx].set_xlabel('nfe')
+                axes[pf_idx, reference_idx].set_ylabel('hypervolume')
+                clean_reference_name = ' '.join(reference_name.split('_'))
+                fig_title = f'{clean_reference_name} {reference_idx}'
+                axes[pf_idx, reference_idx].set_title(fig_title, fontsize=22)
+
+    # Legend
+    handles, labels = fig.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        bbox_to_anchor=(0.5, 1.0),
+        loc='upper center',
+        ncol=len(color_mapping)
+    )
 
     plt.show()
 
@@ -373,5 +438,6 @@ def plot_hypervolumes(data_folder_path, searchover, nfe, saving=False, file_name
         root_directory = os.path.dirname(directory)
         visualization_folder = os.path.join(root_directory, 'dmdu', 'outputimages')
         if file_name is None:
-            file_name = "hypervolume.png"
+            file_name = 'hypervolume'
+        file_name += '.png'
         fig.savefig(os.path.join(visualization_folder, file_name), dpi=200, pad_inches=0.2)
