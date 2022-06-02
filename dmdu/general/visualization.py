@@ -119,14 +119,14 @@ def save_own_figure(fig, file_name):
     fig.savefig(path, dpi=200, pad_inches=0.2, bbox_inches='tight')
 
 
-def plot_kpi_pathways(problem_formulations_dict, outcome_names, saving=False, file_name=None):
+def plot_kpi_pathways(problem_formulations_dict, outcome_names=None, saving=False, file_name=None):
     """
     Plots pathways given an outcome DataFrame and outcomes-names.
 
     Remark: Currently not super stable. Might break because of length of args.
 
     @param problem_formulations_dict: dictionary with
-                                      {ProblemFormulation: (experiments: DataFrame, outcomes: DataFrame)}
+                                      {ProblemFormulation.name: (experiments: DataFrame, outcomes: DataFrame)}
     @param outcome_names: list
     @param saving: Booelean
     @param file_name: String: file name for saving
@@ -142,6 +142,15 @@ def plot_kpi_pathways(problem_formulations_dict, outcome_names, saving=False, fi
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
 
     years = list(range(2005, 2310, 10))
+    if outcome_names is None:
+        outcome_names = [
+            'Utility',
+            'Total Output',
+            'Damages',
+            'Atmospheric Temperature',
+            'Industrial Emission',
+            'Temperature overshoot'
+        ]
 
     # Problem formulations and colors
     color_mapping = {}
@@ -174,6 +183,88 @@ def plot_kpi_pathways(problem_formulations_dict, outcome_names, saving=False, fi
 
     handles, labels = fig.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = "open_exploration_pathways"
+        save_own_figure(fig, file_name)
+
+
+def plot_kpi_pathways_with_seeds(
+        seeds_dict,
+        outcome_names=None,
+        problem_formulation='',
+        saving=False,
+        file_name=None
+):
+    """
+    Plots pathways given one problem formulation and several seeds.
+
+    Remark: Currently not super stable. Might break because of length of args.
+
+    @param seeds_dict: dictionary with
+                      {seed_idx: (experiments: DataFrame, outcomes: DataFrame)}
+    @param outcome_names: list
+    @param problem_formulation: String
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    nrows = 3
+    ncols = 2
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(36, 24), tight_layout=True)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
+
+    years = list(range(2005, 2310, 10))
+    if outcome_names is None:
+        outcome_names = [
+            'Utility',
+            'Total Output',
+            'Damages',
+            'Atmospheric Temperature',
+            'Industrial Emission',
+            'Temperature overshoot'
+        ]
+
+    # Seeds and colors
+    color_mapping = {}
+    unique_seeds = list(set([k for k in seeds_dict.keys()]))
+    for _, (seed, color) in enumerate(zip(unique_seeds, sns.color_palette())):
+        color_mapping[seed] = color
+
+    # Figures
+    for i, ax in enumerate(axes.flat):
+
+        name = outcome_names[i]
+
+        for seed_idx, (experiments, outcomes) in seeds_dict.items():
+
+            df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"
+
+            for idx, row in df.iterrows():
+
+                ax.plot(
+                    years,
+                    row.iloc[:],
+                    linewidth=1.5,
+                    alpha=1.0,
+                    color=color_mapping[seed_idx],
+                    label=f'seed {seed_idx}'
+                )
+
+        ax.set_title(name)
+        ax.set_xlabel("Time in years")
+        ax.set_ylabel(name)
+
+    handles, labels = fig.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    fig.suptitle(problem_formulation)
     plt.legend(by_label.values(), by_label.keys())
     plt.show()
 
