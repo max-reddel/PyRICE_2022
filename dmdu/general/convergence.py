@@ -11,47 +11,109 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def plot_epsilon_progress(data_folder_path, searchover, nfe=100000, n_references=1, saving=False):
+def plot_epsilon_progress(
+        data_folder_path,
+        searchover,
+        problem_formulations=None,
+        nfe=100000,
+        n_references=4,
+        n_seeds=4,
+        saving=False
+):
     """
     Plot the epsilon progress of all eight problem formulations.
     @param data_folder_path: String: path to the data folder in which all relevant data is saved
     @param searchover: String: {'levers', 'uncertainties'}
+    @param problem_formulations: list with ProblemFormulation.name strings
     @param nfe: int: this indicates what the desired nfe is (has to exist in the results)
     @param n_references: int: how many reference scenarios or policies have been used
+    @param n_seeds: int: how many seeds have been used
     @param saving: Boolean: whether to save image
     """
 
-    problem_formulations = [pf.name for pf in ProblemFormulation.get_8_problem_formulations()]
+    if problem_formulations is None:
+        problem_formulations = [pf.name for pf in ProblemFormulation.get_util_and_suff_problem_formulations()]
+    else:
+        problem_formulations = [pf.name for pf in problem_formulations]
 
     # Set parameters
-    x_label = "$\epsilon$-progress"
-    y_label = "nfe"
+    y_label = "$\epsilon$-progress"
+    x_label = "nfe"
 
     # Create subplots
     sns.set(font_scale=1.35)
     sns.set_style("whitegrid")
-    fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(36, 18), tight_layout=True)
+    fig, axes = plt.subplots(
+        nrows=len(problem_formulations),
+        ncols=n_references,
+        figsize=(36, 18),
+        tight_layout=True
+    )
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.5)
     fig.patch.set_facecolor("white")
 
-    reference_name = 'scenario' if searchover == 'levers' else 'policy'
+    reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
 
-    # Load epsilon values for each problem formulation
-    for idx, ax in enumerate(axes.flat):
-        problem_formulation = problem_formulations[idx]
-        directory = os.path.join(data_folder_path, f'{reference_name}_0_{problem_formulation}_{searchover}_{nfe}')
-        df = pd.read_csv(os.path.join(directory, 'epsilon_progress.csv'))
+    # Seeds and colors
+    color_mapping = {}
+    unique_seeds = list(set(list(range(n_seeds))))
+    for _, (seed, color) in enumerate(zip(unique_seeds, sns.color_palette())):
+        color_mapping[seed] = color
 
-        ax.plot(df.nfe, df.epsilon_progress)
-        ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
-        ax.set_ylabel(x_label)
-        ax.set_title(problem_formulation, fontsize=22)
-        ax.set_xlabel(y_label)
+    # Load epsilon values for each problem formulation, seed, and reference
+    for pf_idx, problem_formulation in enumerate(problem_formulations):
+        for seed_idx in range(n_seeds):
+            for reference_idx in range(n_references):
+
+                # Define path name
+                directory = os.path.join(
+                    data_folder_path,
+                    f'{problem_formulation}_{nfe}',
+                    f'seed_{seed_idx}',
+                    f'{reference_name}_{reference_idx}',
+                    'epsilon_progress.csv'
+                )
+
+                # load dataframe
+                df = pd.read_csv(directory)
+
+                # Plotting
+                axes[pf_idx, reference_idx].plot(
+                    df.nfe,
+                    df.epsilon_progress,
+                    color=color_mapping[seed_idx],
+                    label=f'seed {seed_idx}'
+                )
+                axes[pf_idx, reference_idx].yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+                axes[pf_idx, reference_idx].set_ylabel(y_label)
+                clean_reference_name = ' '.join(reference_name.split('_'))
+                fig_title = f'{clean_reference_name} {reference_idx}'
+                axes[pf_idx, reference_idx].set_title(fig_title, fontsize=22)
+                axes[pf_idx, reference_idx].set_xlabel(x_label)
+
+    # Splitting strings for better readability
+    problem_formulations = ['\n'.join(pf.split('_')) for pf in problem_formulations]
+
+    # Annotation with row names
+    for ax, row in zip(axes[:, 0], problem_formulations):
+        ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0),
+                    xycoords=ax.yaxis.label, textcoords='offset points',
+                    size='large', ha='right', va='center')
+
+    handles, labels = fig.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    fig.suptitle(f'Convergence with {y_label}', y=1.05, fontsize=25)
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        bbox_to_anchor=(0.5, 1.0),
+        loc='upper center',
+        ncol=len(color_mapping)
+    )
 
     plt.show()
 
     if saving:
-
         directory = os.path.join(os.getcwd(), 'data', 'convergence_epsilon_progress.png')
         fig.savefig(directory, dpi=200, pad_inches=0.2)
 
@@ -270,13 +332,14 @@ def _get_2d_coords(col, idx):
     return coord
 
 
-def plot_hypervolumes(data_folder_path, searchover, nfe, saving=False):
+def plot_hypervolumes(data_folder_path, searchover, nfe, saving=False, file_name=None):
     """
     Plot Hypervolume for all eight problem formulations.
     @param data_folder_path: String: path to the data folder in which all relevant data is saved
     @param searchover: String
     @param nfe: int: this indicates what the desired nfe is (has to exist in the results)
     @param saving: Boolean: whether to save image
+    @param file_name: String
     """
 
     # Preparing the plot
@@ -309,4 +372,6 @@ def plot_hypervolumes(data_folder_path, searchover, nfe, saving=False):
         directory = os.getcwd()
         root_directory = os.path.dirname(directory)
         visualization_folder = os.path.join(root_directory, 'dmdu', 'outputimages')
-        fig.savefig(os.path.join(visualization_folder, "hypervolume.png"), dpi=200, pad_inches=0.2)
+        if file_name is None:
+            file_name = "hypervolume.png"
+        fig.savefig(os.path.join(visualization_folder, file_name), dpi=200, pad_inches=0.2)

@@ -183,7 +183,14 @@ def plot_kpi_pathways(problem_formulations_dict, outcome_names=None, saving=Fals
 
     handles, labels = fig.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys())
+    fig.suptitle('KPI Pathways', y=1.05)
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        bbox_to_anchor=(0.5, 1.0),
+        loc='upper center',
+        ncol=len(color_mapping)
+    )
     plt.show()
 
     if saving:
@@ -264,8 +271,14 @@ def plot_kpi_pathways_with_seeds(
 
     handles, labels = fig.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    fig.suptitle(problem_formulation)
-    plt.legend(by_label.values(), by_label.keys())
+    fig.suptitle('KPI Pathways for ' + problem_formulation, y=1.05)
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        bbox_to_anchor=(0.5, 1.0),
+        loc='upper center',
+        ncol=len(color_mapping)
+    )
     plt.show()
 
     if saving:
