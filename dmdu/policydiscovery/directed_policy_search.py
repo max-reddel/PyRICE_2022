@@ -14,6 +14,25 @@ from dmdu.general.xlm_constants_epsilons import get_lever_names
 from ema_workbench import Policy
 
 
+class PolicyCounter(object):
+    """
+    A helper object
+    """
+
+    def __init__(self):
+        self.counter = 0
+
+    def next(self):
+        """
+        Increment and return next policy id.
+        @return:
+            next_id: int
+        """
+        next_id = self.counter
+        self.counter += 1
+        return next_id
+
+
 def load_optimal_policies(
         target_directory,
         problem_formulations=None,
@@ -39,6 +58,7 @@ def load_optimal_policies(
 
     optimal_policies = {}
     policies = None
+    counter = PolicyCounter()
 
     reference_name = 'reference_scenario' if searchover == 'levers' else 'reference_policy'
 
@@ -64,7 +84,7 @@ def load_optimal_policies(
         lever_names = get_lever_names()
         policies = policies.loc[:, lever_names]
 
-        policies = [Policy(f'{idx}', **row) for idx, row in policies.iterrows()]
+        policies = [Policy(f'{counter.next()}', **row) for _, row in policies.iterrows()]
 
         optimal_policies[problem_formulation] = policies
         policies = None
