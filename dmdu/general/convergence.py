@@ -15,7 +15,7 @@ def plot_epsilon_progress(
         data_folder_path,
         searchover,
         problem_formulations=None,
-        nfe=100000,
+        nfe=200000,
         n_references=4,
         n_seeds=4,
         saving=False,
@@ -48,7 +48,7 @@ def plot_epsilon_progress(
     fig, axes = plt.subplots(
         nrows=len(problem_formulations),
         ncols=n_references,
-        figsize=(36, 8*len(problem_formulations)),
+        figsize=(24, 4*len(problem_formulations)),
         tight_layout=True
     )
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.5)
@@ -61,6 +61,8 @@ def plot_epsilon_progress(
     unique_seeds = list(set(list(range(n_seeds))))
     for _, (seed, color) in enumerate(zip(unique_seeds, sns.color_palette())):
         color_mapping[seed] = color
+
+    axes_font_size = 20
 
     # Load epsilon values for each problem formulation, seed, and reference
     for pf_idx, problem_formulation in enumerate(problem_formulations):
@@ -87,11 +89,13 @@ def plot_epsilon_progress(
                     label=f'seed {seed_idx}'
                 )
                 axes[pf_idx, reference_idx].yaxis.set_major_locator(plt.MaxNLocator(integer=True))
-                axes[pf_idx, reference_idx].set_ylabel(y_label)
+                axes[pf_idx, reference_idx].set_ylabel(y_label, fontsize=axes_font_size)
                 clean_reference_name = ' '.join(reference_name.split('_'))
                 fig_title = f'{clean_reference_name} {reference_idx}'
                 axes[pf_idx, reference_idx].set_title(fig_title, fontsize=22)
-                axes[pf_idx, reference_idx].set_xlabel(x_label)
+                axes[pf_idx, reference_idx].set_xlabel(x_label, fontsize=axes_font_size)
+
+                axes[pf_idx, reference_idx].tick_params(axis='both', which='minor', labelsize=8)
 
     # Splitting strings for better readability
     problem_formulations = ['\n'.join(pf.split('_')) for pf in problem_formulations]
@@ -119,7 +123,7 @@ def plot_epsilon_progress(
         if file_name is None:
             file_name = 'convergence_epsilon_progress'
         file_name += '.png'
-        directory = os.path.join(os.getcwd(), 'data', file_name)
+        directory = os.path.join(os.path.dirname(os.getcwd()), 'outputimages', file_name)
         fig.savefig(directory, dpi=200, pad_inches=0.2)
 
 
@@ -367,7 +371,7 @@ def plot_hypervolumes(
     fig, axes = plt.subplots(
         nrows=len(problem_formulations),
         ncols=n_references,
-        figsize=(36, 8*len(problem_formulations)),
+        figsize=(24, 4*len(problem_formulations)),
         tight_layout=True
     )
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)

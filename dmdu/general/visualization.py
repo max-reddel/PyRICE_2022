@@ -1,6 +1,7 @@
 """
 This module contains functions to visualize outcomes, hypervolume, etc.
 """
+from enum import Enum
 
 import plotly.graph_objects as go
 from ema_workbench.util.utilities import load_results
@@ -12,6 +13,17 @@ import os
 
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
+
+
+class Orientation(Enum):
+    """
+    This enumeration is used to determine whether the figure should be
+        - horizontolly longer (for slides) or
+        - vertically longer (for report)
+    """
+
+    HORIZONTAL = 0,
+    VERTICAL = 1
 
 
 def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
@@ -203,6 +215,7 @@ def plot_kpi_pathways_with_seeds(
         seeds_dict,
         outcome_names=None,
         problem_formulation='',
+        plot_orientation=Orientation.HORIZONTAL,
         saving=False,
         file_name=None
 ):
@@ -215,6 +228,7 @@ def plot_kpi_pathways_with_seeds(
                       {seed_idx: (experiments: DataFrame, outcomes: DataFrame)}
     @param outcome_names: list
     @param problem_formulation: String
+    @param plot_orientation: Orientation
     @param saving: Booelean
     @param file_name: String: file name for saving
     """
@@ -222,10 +236,21 @@ def plot_kpi_pathways_with_seeds(
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
 
-    nrows = 3
-    ncols = 2
+    # Size of plot dimensions
+    long = 24
+    short = 16
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(36, 24), tight_layout=True)
+    # Adjusting orientation
+    if plot_orientation == Orientation.VERTICAL:
+        nrows = 3
+        ncols = 2
+        fig_size = (long, short)
+    else:
+        nrows = 2
+        ncols = 3
+        fig_size = (long, short)
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=fig_size, tight_layout=True)
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
 
     years = list(range(2005, 2310, 10))
@@ -244,6 +269,8 @@ def plot_kpi_pathways_with_seeds(
     unique_seeds = list(set([k for k in seeds_dict.keys()]))
     for _, (seed, color) in enumerate(zip(unique_seeds, sns.color_palette())):
         color_mapping[seed] = color
+
+    axes_font_size = 20
 
     # Figures
     for i, ax in enumerate(axes.flat):
@@ -266,8 +293,8 @@ def plot_kpi_pathways_with_seeds(
                 )
 
         ax.set_title(name)
-        ax.set_xlabel("Time in years")
-        ax.set_ylabel(name)
+        ax.set_xlabel('Time in years', fontsize=axes_font_size)
+        ax.set_ylabel(name, fontsize=axes_font_size)
 
     handles, labels = fig.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
