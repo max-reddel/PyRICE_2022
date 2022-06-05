@@ -314,6 +314,112 @@ def plot_kpi_pathways_with_seeds(
         save_own_figure(fig, file_name)
 
 
+def plot_simple_kpi_pathways_with_seeds(
+        seeds_dict,
+        outcome_names=None,
+        problem_formulation='',
+        plot_orientation=Orientation.HORIZONTAL,
+        saving=False,
+        file_name=None
+):
+    """
+    Plots pathways given one problem formulation and several seeds. This function considers the results from the
+    reference scenarios.
+
+    Remark: Currently not super stable. Might break because of length of args.
+
+    @param seeds_dict: dictionary with
+                      {seed_idx: (outcomes: DataFrame)}
+    @param outcome_names: list
+    @param problem_formulation: String
+    @param plot_orientation: Orientation
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    # Size of plot dimensions
+    long = 24
+    short = 16
+
+    # Adjusting orientation
+    if plot_orientation == Orientation.VERTICAL:
+        nrows = 3
+        ncols = 2
+        fig_size = (long, short)
+    else:
+        nrows = 2
+        ncols = 3
+        fig_size = (long, short)
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=fig_size, tight_layout=True)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8)
+
+    years = list(range(2005, 2310, 10))
+    if outcome_names is None:
+        outcome_names = [
+            'Utility',
+            'Total Output',
+            'Damages',
+            'Atmospheric Temperature',
+            'Industrial Emission',
+            'Temperature overshoot'
+        ]
+
+    # Seeds and colors
+    color_mapping = {}
+    unique_seeds = list(set([k for k in seeds_dict.keys()]))
+    for _, (seed, color) in enumerate(zip(unique_seeds, sns.color_palette('pastel'))):
+        color_mapping[seed] = color
+
+    axes_font_size = 20
+
+    # Figures
+    for i, ax in enumerate(axes.flat):
+
+        name = outcome_names[i]
+
+        # for seed_idx, outcomes in reversed(seeds_dict.items()):
+        for seed_idx, outcomes in seeds_dict.items():
+
+            df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"
+
+            for idx, row in df.iterrows():
+
+                ax.plot(
+                    years,
+                    row.iloc[:],
+                    linewidth=1.0,
+                    alpha=0.2,
+                    linestyle='-',
+                    color=color_mapping[seed_idx],
+                    label=f'seed {seed_idx}'
+                )
+
+        ax.set_title(name)
+        ax.set_xlabel('Time in years', fontsize=axes_font_size)
+        ax.set_ylabel(name, fontsize=axes_font_size)
+
+    handles, labels = fig.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    fig.suptitle('KPI Pathways for ' + problem_formulation, y=1.05)
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        bbox_to_anchor=(0.5, 1.0),
+        loc='upper center',
+        ncol=len(color_mapping)
+    )
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = "open_exploration_pathways"
+        save_own_figure(fig, file_name)
+
+
 def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_name=None):
     """
     Plot the pathways of a specific objective grouped by their clusters.
@@ -398,9 +504,7 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
             range_boundaries = [lower_bound, upper_bound]
 
         # Create dict for objectives (i.e., dimensions)
-        objective = dict(
-            range=range_boundaries, label=obj_name, values=outcomes.loc[:, obj_name]
-        )
+        objective = dict(range=range_boundaries, label=obj_name, values=outcomes.loc[:, obj_name])
 
         # Add dict
         dimensions_list.append(objective)
@@ -411,6 +515,7 @@ def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=
             # line=dict(color=experiments['policy'], showscale=True),
             # line=dict(color=((34, 139, 34), alpha)),
             # line=dict(color='forestgreen', showscale=True),
+            line=dict(color='forestgreen'),
             # Outcomes
             dimensions=list(dimensions_list),
             # Formatting
@@ -470,9 +575,10 @@ def plot_policies_per_problem_formulation(problem_formulations_dict, saving=Fals
     """
     Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
     @param problem_formulations_dict: dictionary with
+                                      {ProblemFormulation: (experiments: DataFrame, outcomes: DataFrame)}
     @param saving: Boolean: whether to save the figure
     @param file_name: String
-                                      {ProblemFormulation: (experiments: DataFrame, outcomes: DataFrame)}
+
     """
     lever_names = get_lever_names()
     sns.set(font_scale=1.8)
@@ -509,6 +615,37 @@ def plot_policies_per_problem_formulation(problem_formulations_dict, saving=Fals
     if saving:
         if file_name is None:
             file_name = 'optimal_policies'
+        save_own_figure(axes.fig, file_name)
+
+
+def plot_optimal_policies(policies, saving=False, file_name=None):
+    """
+    Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
+    @param policies: DataFrame
+    @param saving: Boolean: whether to save the figure
+    @param file_name: String
+
+    """
+    lever_names = get_lever_names()
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+    sns.set(rc={'figure.figsize': (12, 8)})
+
+    axes = None
+
+    limits = parcoords.get_limits(policies)
+
+    if axes is None:
+        axes = parcoords.ParallelAxes(limits)
+    axes.plot(policies, color='forestgreen')
+
+    # axes.legend()
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = 'optimal_policies'
+        file_name += '.png'
         save_own_figure(axes.fig, file_name)
 
 

@@ -292,8 +292,14 @@ def load_reference_scenarios():
         scenarios: list with Scenario objects
     """
     target_directory = os.path.join(
-        os.path.dirname(os.getcwd()), 'scenariodiscovery', 'selection', 'data', 'reference_scenarios.csv',
+        # os.path.dirname(os.getcwd()),
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'scenariodiscovery',
+        'selection',
+        'data',
+        'reference_scenarios.csv',
     )
+
     scenarios_df = pd.read_csv(target_directory)
     scenarios_df = scenarios_df.drop(columns=['Unnamed: 0'])
 
