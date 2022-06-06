@@ -626,7 +626,6 @@ def plot_optimal_policies(policies, saving=False, file_name=None):
     @param file_name: String
 
     """
-    lever_names = get_lever_names()
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
     sns.set(rc={'figure.figsize': (12, 8)})
@@ -640,6 +639,55 @@ def plot_optimal_policies(policies, saving=False, file_name=None):
     axes.plot(policies, color='forestgreen')
 
     # axes.legend()
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = 'optimal_policies'
+        # file_name += '.png'
+        save_own_figure(axes.fig, file_name)
+
+
+def plot_optimal_policies_dict(policies_dict, saving=False, file_name=None):
+    """
+    Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
+    @param policies_dict: {ProblemFormulation: DataFrame}
+    @param saving: Boolean: whether to save the figure
+    @param file_name: String
+
+    """
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+    # sns.set(rc={'figure.figsize': (12, 8)})
+    sns.set(rc={'figure.figsize': (18, 12)})
+
+    # Problem formulations and colors
+    color_mapping = {}
+    for _, (problem_formulation, color) in enumerate(zip(policies_dict, sns.color_palette('Paired'))):
+        color_mapping[problem_formulation] = color
+
+    # Handling limits (such that all limits are considered)
+    all_policies = None
+    for problem_formulation, policies in policies_dict.items():
+
+        if all_policies is None:
+            all_policies = policies
+        else:
+            all_policies = pd.concat([all_policies, policies])
+
+    limits = parcoords.get_limits(all_policies)
+    axes = parcoords.ParallelAxes(limits)
+
+    for problem_formulation, policies in policies_dict.items():
+        axes.plot(
+            policies,
+            color=color_mapping[problem_formulation],
+            label=problem_formulation,
+            linewidth=1,
+            alpha=0.5
+        )
+
+    axes.legend()
     plt.show()
 
     if saving:

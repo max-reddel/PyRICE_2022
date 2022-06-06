@@ -1,16 +1,19 @@
 """
 This module contains functionality to run experiments with discovered policies.
 """
+from ema_workbench import Policy
 
 from dmdu.exploration.perform_experiments import perform_own_experiments
-from dmdu.policydiscovery.directed_policy_search import load_optimal_policies
+from dmdu.general.xlm_constants_epsilons import get_lever_names
 from model.enumerations import ProblemFormulation
 import os
+import pandas as pd
 
 
 if __name__ == '__main__':
 
-    target_directory = os.path.join(os.getcwd(), 'data')
+    lever_names = get_lever_names()
+
     problem_formulations = [
         ProblemFormulation.UTILITARIAN_AGGREGATED,
         ProblemFormulation.UTILITARIAN_DISAGGREGATED,
@@ -18,23 +21,30 @@ if __name__ == '__main__':
         ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
     ]
 
-    policy_dict = load_optimal_policies(
-        target_directory=target_directory,
-        problem_formulations=problem_formulations,
-        searchover='levers',
-        nfe=200000,
-        n_references=4,
-        n_seeds=2)
+    for problem_formulation in problem_formulations:
+        target_directory = os.path.join(
+            os.getcwd(),
+            'data',
+            'optimalpolicies',
+            f'optimal_policies_{problem_formulation.name}.csv'
+        )
 
-    [print(pf, len(policies)) for pf, policies in policy_dict.items()]
+        # Load policies
+        policies_df = pd.read_csv(target_directory, index_col='Unnamed: 0')
+        policies_df = policies_df.loc[:, lever_names]
+        policy_list = [Policy(f'{idx}', **row) for idx, row in policies_df.iterrows()]
 
-    # for problem_formulation, policies in policy_dict.items():
-    #
-    #     perform_own_experiments(
-    #         problem_formulation=ProblemFormulation.ALL_KPIS,
-    #         n_scenarios=5000,
-    #         n_policies=policies,
-    #         saving_results=True,
-    #         folder=target_directory,
-    #         file_name=f'optimal_policies_{problem_formulation.name}',
-    #     )
+        saving_directory = os.path.join(
+            os.getcwd(),
+            'data',
+            'experimentsextensive'
+        )
+
+        perform_own_experiments(
+            problem_formulation=ProblemFormulation.ALL_KPIS,
+            n_scenarios=400,
+            n_policies=policy_list,
+            saving_results=True,
+            folder=saving_directory,
+            file_name=f'results_{problem_formulation.name}'
+        )
