@@ -5,6 +5,7 @@ from ema_workbench import Policy
 
 from dmdu.exploration.perform_experiments import perform_own_experiments
 from dmdu.general.xlm_constants_epsilons import get_lever_names
+from dmdu.policydiscovery.directed_policy_search import PolicyCounter
 from model.enumerations import ProblemFormulation
 import os
 import pandas as pd
@@ -13,6 +14,7 @@ import pandas as pd
 if __name__ == '__main__':
 
     lever_names = get_lever_names()
+    counter = PolicyCounter()
 
     problem_formulations = [
         ProblemFormulation.UTILITARIAN_AGGREGATED,
@@ -32,7 +34,7 @@ if __name__ == '__main__':
         # Load policies
         policies_df = pd.read_csv(target_directory, index_col='Unnamed: 0')
         policies_df = policies_df.loc[:, lever_names]
-        policy_list = [Policy(f'{idx}', **row) for idx, row in policies_df.iterrows()]
+        policy_list = [Policy(f'{counter.next()}', **row) for _, row in policies_df.iterrows()]
 
         saving_directory = os.path.join(
             os.getcwd(),

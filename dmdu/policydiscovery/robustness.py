@@ -118,6 +118,8 @@ def restructure_data(experiments, outcomes, outcome_name):
     Filters and restructures the provided data to only contain what is needed.
     I.e., a dataframe for the passed outcome.
 
+    Policies and Scenarios have to be properly numerated, i.e., all combinations of policy-scenario can only occur once.
+
     @param experiments: DataFrame: experiments from the model run
     @param outcomes: dictionary: outcomes from the model run
     @param outcome_name: str: outcome name

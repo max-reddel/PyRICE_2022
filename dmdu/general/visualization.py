@@ -712,25 +712,28 @@ def plot_robustness(robustness_dataframe, saving=False, file_name=None):
     # Colors
     unique_problem_formulations = robustness_dataframe.loc[:, 'Problem Formulation'].unique()
     color_mapping = {}
-    for _, (problem_formulation, color) in enumerate(zip(unique_problem_formulations, sns.color_palette())):
+    for _, (problem_formulation, color) in enumerate(zip(unique_problem_formulations, sns.color_palette('Paired'))):
         color_mapping[problem_formulation] = color
 
-    axes = None
-
+    # Handling limits (such that all limits are considered)
     all_policies = None
-
     for problem_formulation in unique_problem_formulations:
 
         relevant_policies = robustness_dataframe[robustness_dataframe['Problem Formulation'] == problem_formulation]
         relevant_policies = relevant_policies.drop(columns=['Problem Formulation', 'Policy'])
 
-        # Adjust limits
         if all_policies is None:
             all_policies = relevant_policies
-            limits = parcoords.get_limits(relevant_policies)
         else:
             all_policies = pd.concat([all_policies, relevant_policies])
-            limits = parcoords.get_limits(relevant_policies)
+
+    limits = parcoords.get_limits(all_policies)
+    axes = parcoords.ParallelAxes(limits)
+
+    for problem_formulation in unique_problem_formulations:
+
+        relevant_policies = robustness_dataframe[robustness_dataframe['Problem Formulation'] == problem_formulation]
+        relevant_policies = relevant_policies.drop(columns=['Problem Formulation', 'Policy'])
 
         if axes is None:
             axes = parcoords.ParallelAxes(limits)
