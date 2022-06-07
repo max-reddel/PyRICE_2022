@@ -116,26 +116,26 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
     if saving:
         if file_name is None:
             file_name = 'open_exploration_pathways'
-        save_own_figure(fig, file_name)
+        sub_folder = 'exploration'
+        save_own_figure(fig, file_name, sub_folder)
 
 
-def save_own_figure(fig, file_name):
+def save_own_figure(fig, file_name, sub_folder):
     """
     Save a figure with given file name in outputimages.
     @param fig: Figure
     @param file_name: string
+    @param sub_folder: string
     """
     visualization_folder = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'outputimages')
     file_name += '.png'
-    path = os.path.join(visualization_folder, file_name)
+    path = os.path.join(visualization_folder, sub_folder, file_name)
     fig.savefig(path, dpi=200, pad_inches=0.2, bbox_inches='tight')
 
 
 def plot_kpi_pathways(problem_formulations_dict, outcome_names=None, saving=False, file_name=None):
     """
     Plots pathways given an outcome DataFrame and outcomes-names.
-
-    Remark: Currently not super stable. Might break because of length of args.
 
     @param problem_formulations_dict: dictionary with
                                       {ProblemFormulation.name: (experiments: DataFrame, outcomes: DataFrame)}
@@ -208,7 +208,8 @@ def plot_kpi_pathways(problem_formulations_dict, outcome_names=None, saving=Fals
     if saving:
         if file_name is None:
             file_name = "open_exploration_pathways"
-        save_own_figure(fig, file_name)
+        sub_folder = 'optimalpolicies'
+        save_own_figure(fig, file_name, sub_folder)
 
 
 def plot_kpi_pathways_with_seeds(
@@ -311,7 +312,8 @@ def plot_kpi_pathways_with_seeds(
     if saving:
         if file_name is None:
             file_name = "open_exploration_pathways"
-        save_own_figure(fig, file_name)
+        sub_folder = 'seeds'
+        save_own_figure(fig, file_name, sub_folder)
 
 
 def plot_simple_kpi_pathways_with_seeds(
@@ -417,7 +419,8 @@ def plot_simple_kpi_pathways_with_seeds(
     if saving:
         if file_name is None:
             file_name = "open_exploration_pathways"
-        save_own_figure(fig, file_name)
+        sub_folder = 'seeds'
+        save_own_figure(fig, file_name, sub_folder)
 
 
 def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_name=None):
@@ -447,7 +450,8 @@ def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_nam
     if saving:
         if file_name is None:
             file_name = 'open_exploration_pathways'
-        save_own_figure(fig, file_name)
+        sub_folder = 'exploration'
+        save_own_figure(fig, file_name, sub_folder)
 
 
 def parallel_axis_plot(experiments, outcomes, limits, axis_width=120, font_size=14):
@@ -615,7 +619,8 @@ def plot_policies_per_problem_formulation(problem_formulations_dict, saving=Fals
     if saving:
         if file_name is None:
             file_name = 'optimal_policies'
-        save_own_figure(axes.fig, file_name)
+        sub_folder = 'optimalpolicies'
+        save_own_figure(axes.fig, file_name, sub_folder)
 
 
 def plot_optimal_policies(policies, saving=False, file_name=None):
@@ -644,8 +649,10 @@ def plot_optimal_policies(policies, saving=False, file_name=None):
     if saving:
         if file_name is None:
             file_name = 'optimal_policies'
-        # file_name += '.png'
-        save_own_figure(axes.fig, file_name)
+        file_name += '.png'
+        sub_folder = 'optimalpolicies'
+
+        save_own_figure(axes.fig, file_name, sub_folder)
 
 
 def plot_optimal_policies_dict(policies_dict, saving=False, file_name=None):
@@ -694,7 +701,8 @@ def plot_optimal_policies_dict(policies_dict, saving=False, file_name=None):
         if file_name is None:
             file_name = 'optimal_policies'
         file_name += '.png'
-        save_own_figure(axes.fig, file_name)
+        sub_folder = 'optimalpolicies'
+        save_own_figure(axes.fig, file_name, sub_folder)
 
 
 def plot_robustness(robustness_dataframe, saving=False, file_name=None):
@@ -745,25 +753,5 @@ def plot_robustness(robustness_dataframe, saving=False, file_name=None):
     if saving:
         if file_name is None:
             file_name = 'robustness'
-        save_own_figure(axes.fig, file_name)
-
-
-if __name__ == "__main__":
-    directory = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-        'exploration', 'data'
-    )
-    results = load_results(file_name=os.path.join(directory, "results_open_exploration_10"))
-    experiments, outcomes = results
-    outcomes = pd.DataFrame(outcomes)
-
-    outcome_names = [
-        "Distance to consumption threshold",
-        "Distance to damage threshold",
-        "Population below consumption threshold",
-        "Population above damage threshold",
-        "Utility",
-        "Disutility",
-    ]
-
-    plot_pathways(outcomes, outcome_names, saving=True, file_name="results_testing")
+        sub_folder = 'optimalpolicies'
+        save_own_figure(axes.fig, file_name, sub_folder)
