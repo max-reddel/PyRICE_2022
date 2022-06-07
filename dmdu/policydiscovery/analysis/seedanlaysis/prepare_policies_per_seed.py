@@ -25,7 +25,7 @@ if __name__ == '__main__':
         ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
     ]
 
-    target_directory = os.path.join(os.path.dirname(os.getcwd()), 'data')
+    target_directory = os.path.join(os.path.join(os.path.dirname(os.getcwd()), 'data'))
 
     n_seeds = 2
     n_references = 4
@@ -65,7 +65,11 @@ if __name__ == '__main__':
 
                 policy_list = [Policy(f'{counter.next()}', **row) for _, row in policies.iterrows()]
 
-                saving_directory = os.path.join(os.path.dirname(os.getcwd()), 'data', 'experiments')
+                saving_directory = os.path.join(
+                    os.path.dirname(os.path.dirname(os.getcwd())),
+                    'data',
+                    'experiments'
+                )
 
                 reference_scneario = reference_scnearios[n_reference]
 

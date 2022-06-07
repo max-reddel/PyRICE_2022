@@ -4,7 +4,6 @@ This module contains functions to visualize outcomes, hypervolume, etc.
 from enum import Enum
 
 import plotly.graph_objects as go
-from ema_workbench.util.utilities import load_results
 from ema_workbench.analysis import plotting, Density, parcoords
 import matplotlib.pyplot as plt
 import pandas as pd
