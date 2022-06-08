@@ -149,7 +149,12 @@ def load_optimal_policy_dataframes(
 if __name__ == "__main__":
 
     seeds = [9845531, 1644652]
-    problem_formulations = ProblemFormulation.get_util_and_suff_problem_formulations()
+    problem_formulations = [
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED
+    ]
     reference_scenarios = load_reference_scenarios()
 
     for problem_formulation in problem_formulations:
@@ -168,5 +173,5 @@ if __name__ == "__main__":
                     seed_index=seed_index,
                     reference=(reference_index, reference_scenario),
                     saving_results=True,
-                    with_convergence=True,
+                    with_convergence=True
                 )
