@@ -2,13 +2,16 @@
 This module contains functions to visualize outcomes, hypervolume, etc.
 """
 from enum import Enum
-
+import math
 import plotly.graph_objects as go
 from ema_workbench.analysis import plotting, Density, parcoords
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pandas as pd
 import seaborn as sns
 import os
+
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
@@ -419,6 +422,102 @@ def plot_simple_kpi_pathways_with_seeds(
         if file_name is None:
             file_name = "open_exploration_pathways"
         sub_folder = 'seeds'
+        save_own_figure(fig, file_name, sub_folder)
+
+
+def plot_conference_pathways(
+        problem_formulations_dict,
+        shaded_outcome_name=None,
+        outcome_names=None,
+        saving=False,
+        file_name=None
+):
+    """
+    Plots pathways given one problem formulation and several seeds. This function considers the results from the
+    reference scenarios.
+
+    Remark: Currently not super stable. Might break because of length of args.
+
+    @param problem_formulations_dict: DataFrame
+    @param shaded_outcome_name: String: which variable should be related to color
+    @param outcome_names: list
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(30, 20), tight_layout=False, sharey='row')
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.3)
+
+    years = list(range(2005, 2310, 10))
+    if outcome_names is None:
+        outcome_names = [
+            'Damages',
+            'Atmospheric Temperature'
+        ]
+
+    axes_font_size = 20
+    color_variable_min = math.inf
+    color_variable_max = math.inf
+
+    for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
+        for name_idx, name in enumerate(outcome_names):
+
+            # outcomes = outcomes.iloc[:100, :]
+
+            outcomes.index = list(range(len(outcomes)))
+
+            df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"
+
+            # Colors
+            color_mapping = {}
+            shaded_outcome_values = sorted(list(outcomes.loc[:, shaded_outcome_name]))
+            color_palette = sns.color_palette('rocket', len(shaded_outcome_values))
+            for _, (val, color) in enumerate(zip(shaded_outcome_values, color_palette)):
+                color_mapping[val] = color
+
+            # adjusting for colorbar
+            color_variable_min = shaded_outcome_values[0]
+            color_variable_max = shaded_outcome_values[-1]
+
+            for row_idx, row in df.iterrows():
+
+                color_key = outcomes.loc[row_idx, shaded_outcome_name]
+                axes[name_idx, pf_idx].plot(
+                    years,
+                    row.iloc[:],
+                    linewidth=1.0,
+                    alpha=1.0,  # 0.2
+                    linestyle='-',
+                    color=color_mapping[color_key],
+                )
+
+                axes[name_idx, pf_idx].set_facecolor('white')
+
+                short_name = (problem_formulation.lower()).split('_')[0]
+                axes[name_idx, pf_idx].set_title(short_name)
+                axes[name_idx, pf_idx].set_xlabel('Time in years', fontsize=axes_font_size)
+                axes[name_idx, pf_idx].set_ylabel(name, fontsize=axes_font_size)
+
+    # Color bar
+    cmap = sns.color_palette('rocket', as_cmap=True)
+    # Normalizer
+    norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max)
+    # creating ScalarMappable
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+
+    cbar = fig.colorbar(sm, ax=axes, shrink=0.7)
+    cbar.set_label('Total Output in 2105 (trillion $)')
+
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = "pathways"
+        sub_folder = 'iEMSs'
         save_own_figure(fig, file_name, sub_folder)
 
 
