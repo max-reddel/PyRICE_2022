@@ -2,7 +2,6 @@
 This module contains functions to visualize outcomes, hypervolume, etc.
 """
 from enum import Enum
-import math
 import plotly.graph_objects as go
 from ema_workbench.analysis import plotting, Density, parcoords
 import matplotlib.pyplot as plt
@@ -10,9 +9,7 @@ import matplotlib as mpl
 import pandas as pd
 import seaborn as sns
 import os
-
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import matplotlib.cm as cm
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
 
@@ -447,7 +444,7 @@ def plot_conference_pathways(
 
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
-
+    #
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(30, 20), tight_layout=False, sharey='row')
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.3)
 
@@ -458,59 +455,73 @@ def plot_conference_pathways(
             'Atmospheric Temperature'
         ]
 
-    axes_font_size = 20
-    color_variable_min = math.inf
-    color_variable_max = math.inf
+    y_labels = get_y_labels_dict()
 
+    axes_font_size = 20
+
+    # Collecting all outcomes
+    all_outcomes = None
+    for _, outcomes in problem_formulations_dict.items():
+        outcomes.index = list(range(len(outcomes)))
+        if all_outcomes is None:
+            all_outcomes = outcomes
+        else:
+            all_outcomes = pd.concat([all_outcomes, outcomes])
+
+    # Getting minimum and maximum for specific hue-related variable
+    hue_column = all_outcomes.loc[:, shaded_outcome_name]
+    color_variable_min = min(hue_column)
+    color_variable_max = max(hue_column)
+
+    # Setting up a color mapper
+    norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max, clip=True)
+    cmap = sns.color_palette('rocket', as_cmap=True)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+    mapper_list = [mapper.to_rgba(x) for x in hue_column]
+
+    # Splitting mapper into separate problem-formulations-specific lists
+    lengths_of_outcomes = {pf: len(outcomes) for pf, outcomes in problem_formulations_dict.items()}
+    mapper_dict = {}  # for use of color mapping
+    checked_lengths = 0
+    for pf, length in lengths_of_outcomes.items():
+        mapper_dict[pf] = mapper_list[checked_lengths: checked_lengths+length]
+        checked_lengths += length
+
+    # Actual plotting
     for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
         for name_idx, name in enumerate(outcome_names):
 
-            # outcomes = outcomes.iloc[:100, :]
-
             outcomes.index = list(range(len(outcomes)))
-
             df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"
-
-            # Colors
-            color_mapping = {}
-            shaded_outcome_values = sorted(list(outcomes.loc[:, shaded_outcome_name]))
-            color_palette = sns.color_palette('rocket', len(shaded_outcome_values))
-            for _, (val, color) in enumerate(zip(shaded_outcome_values, color_palette)):
-                color_mapping[val] = color
-
-            # adjusting for colorbar
-            color_variable_min = shaded_outcome_values[0]
-            color_variable_max = shaded_outcome_values[-1]
 
             for row_idx, row in df.iterrows():
 
-                color_key = outcomes.loc[row_idx, shaded_outcome_name]
+                color = mapper_dict[problem_formulation][row_idx]
+
                 axes[name_idx, pf_idx].plot(
                     years,
                     row.iloc[:],
                     linewidth=1.0,
-                    alpha=1.0,  # 0.2
+                    alpha=1.0,
                     linestyle='-',
-                    color=color_mapping[color_key],
+                    color=color,
                 )
 
-                axes[name_idx, pf_idx].set_facecolor('white')
-
-                short_name = (problem_formulation.lower()).split('_')[0]
+                # Annotations
+                short_name = (problem_formulation.lower()).split('_')[0] + ' problem formulation'
                 axes[name_idx, pf_idx].set_title(short_name)
-                axes[name_idx, pf_idx].set_xlabel('Time in years', fontsize=axes_font_size)
-                axes[name_idx, pf_idx].set_ylabel(name, fontsize=axes_font_size)
+                axes[name_idx, pf_idx].set_xlabel('time in years', fontsize=axes_font_size)
+                y_label = y_labels[name]
+                axes[name_idx, pf_idx].set_ylabel(y_label, fontsize=axes_font_size)
+
+    # Show labels although sharing y-axis
+    for ax in axes.flatten():
+        # ax.xaxis.set_tick_params(labelbottom=True)
+        ax.yaxis.set_tick_params(labelleft=True)
 
     # Color bar
-    cmap = sns.color_palette('rocket', as_cmap=True)
-    # Normalizer
-    norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max)
-    # creating ScalarMappable
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-
-    cbar = fig.colorbar(sm, ax=axes, shrink=0.7)
-    cbar.set_label('Total Output in 2105 (trillion $)')
+    cbar = fig.colorbar(mapper, ax=axes, shrink=0.7)
+    cbar.set_label('GWP in 2105 (trillion $)')
 
     plt.show()
 
@@ -654,20 +665,20 @@ def get_y_labels_dict():
     """
 
     info_dict = {
-        'Utility': 'Welfare of Utility',
-        'Disutility': 'Welfare of Disutility',
-        'Lowest income per capita': 'Lowest income per capita ($1000)',
-        'Intratemporal consumption Gini': 'Intratemporal consumption Gini',
-        'Highest damage per capita': 'Highest damage per capita',
-        'Intratemporal damage Gini': 'Intratemporal damage Gini',
-        'Population below consumption threshold': 'Population below consumption threshold (million)',
-        'Distance to consumption threshold': 'Distance to consumption threshold',
-        'Population above damage threshold': 'Population above damage threshold (million)',
-        'Distance to damage threshold': 'Distance to damage threshold (trillion $)',
+        'Utility': 'welfare',
+        'Disutility': 'welfare loss',
+        'Lowest income per capita': 'lowest income per capita ($1000)',
+        'Intratemporal consumption Gini': 'intratemporal consumption Gini',
+        'Highest damage per capita': 'highest damage per capita',
+        'Intratemporal damage Gini': 'intratemporal damage Gini',
+        'Population below consumption threshold': 'population below consumption threshold (million)',
+        'Distance to consumption threshold': 'distance to consumption threshold',
+        'Population above damage threshold': 'population above damage threshold (million)',
+        'Distance to damage threshold': 'distance to damage threshold (trillion $)',
         'Temperature overshoot': '# of temperature overshoot time steps',
-        'Damages': 'Economic damages (trillion $)',
-        'Industrial Emission': 'Global emissions (GTon CO2)',
-        'Atmospheric Temperature': 'Increase in ATM temperature (Celsius)',
+        'Damages': 'economic damages (trillion $)',
+        'Industrial Emission': 'global emissions (GTon CO2)',
+        'Atmospheric Temperature': 'increase in\natmospheric temperature (°C)',
     }
 
     return info_dict
