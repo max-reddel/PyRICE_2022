@@ -1,7 +1,7 @@
 """
 This module is used to prepare optimal policies in a way that we get them in (experiments, outcomes) format per
 problem formulation per seed. This can be used for seed analysis. Without extensive experiments (e.g., 200 scenarios
-per policy).
+per policy). It's just one (reference) scenario per policy.
 """
 from ema_workbench import Policy
 
@@ -19,13 +19,16 @@ if __name__ == '__main__':
     reference_scnearios = load_reference_scenarios()
 
     problem_formulations = [
-        ProblemFormulation.UTILITARIAN_AGGREGATED,
+        # ProblemFormulation.UTILITARIAN_AGGREGATED,
         ProblemFormulation.UTILITARIAN_DISAGGREGATED,
-        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
         ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
     ]
 
-    target_directory = os.path.join(os.path.join(os.path.dirname(os.getcwd()), 'data'))
+    target_directory = os.path.join(
+        os.path.dirname(os.getcwd()),
+        'data'
+    )
 
     n_seeds = 2
     n_references = 4

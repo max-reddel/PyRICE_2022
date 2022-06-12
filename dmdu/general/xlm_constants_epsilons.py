@@ -251,7 +251,9 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         'Total Aggregated Disutility': 100,
         'Costs': 0.1,
         'Total Output': 1.0,
-        'Total Aggregated Costs': 20
+        'Total Aggregated Costs': 20,
+        'Number of regions below consumption threshold': 1.0,
+        'Number of regions above damage threshold': 1.0
     }
 
     # Relevant years
@@ -297,7 +299,13 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
             'Damages',
             'Atmospheric Temperature',
             'Industrial Emission',
-            'Temperature overshoot'
+            'Temperature overshoot',
+            "Distance to consumption threshold",
+            "Population below consumption threshold",
+            "Distance to damage threshold",
+            "Population above damage threshold",
+            'Number of regions below consumption threshold',
+            'Number of regions above damage threshold'
         ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []

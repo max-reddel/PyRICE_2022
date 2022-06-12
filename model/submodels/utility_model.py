@@ -746,6 +746,14 @@ class UtilityModel:
 
         temperature_overhoots = self.compute_overshoots(temp_atm)
 
+        # Regions counts
+        nr_of_regions_below_consumption_threshold = []
+        for value in self.regions_below_consumption_threshold:
+            nr_of_regions_below_consumption_threshold.append(len(value))
+        nr_of_regions_above_damage_threshold = []
+        for value in self.regions_above_damage_threshold:
+            nr_of_regions_above_damage_threshold.append(len(value))
+
         objectives_list_timeseries = [
             self.global_damages,
             self.global_per_util_ww,
@@ -763,6 +771,8 @@ class UtilityModel:
             E_worldwilde_per_year,
             self.global_ouput,
             costs,
+            nr_of_regions_below_consumption_threshold,
+            nr_of_regions_above_damage_threshold
         ]
 
         # Extra aggregated variables
@@ -837,6 +847,8 @@ class UtilityModel:
             "Industrial Emission",
             "Total Output",
             "Costs",
+            "Number of regions below consumption threshold",
+            "Number of regions above damage threshold"
         ]
 
         # Adding space after each timeseries objective
@@ -1248,9 +1260,7 @@ class UtilityModel:
                 list_timestep.append(self.regions_list[region])
 
         self.regions_above_damage_threshold.append(list_timestep)
-        self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[
-            :, t
-        ].max()
+        self.max_disutility_distance_threshold[t] = self.disutility_distance_threshold[:, t].max()
 
     @staticmethod
     def compute_overshoots(temp_atm):
@@ -1289,35 +1299,19 @@ class Results:
         disutility = self.get_values_for_specific_prefix("Disutility 2")
         lowest = self.get_values_for_specific_prefix("Lowest income per capita")
         highest = self.get_values_for_specific_prefix("Highest damage per capita")
-        distance_consumption = self.get_values_for_specific_prefix(
-            "Distance to consumption threshold"
-        )
-        population_consumption = self.get_values_for_specific_prefix(
-            "Population below consumption threshold"
-        )
-        distance_damage = self.get_values_for_specific_prefix(
-            "Distance to damage threshold"
-        )
-        population_damage = self.get_values_for_specific_prefix(
-            "Population above damage threshold"
-        )
-        consumption_gini = self.get_values_for_specific_prefix(
-            "Intratemporal consumption Gini"
-        )
+        distance_consumption = self.get_values_for_specific_prefix("Distance to consumption threshold")
+        population_consumption = self.get_values_for_specific_prefix("Population below consumption threshold")
+        distance_damage = self.get_values_for_specific_prefix("Distance to damage threshold")
+        population_damage = self.get_values_for_specific_prefix("Population above damage threshold")
+        consumption_gini = self.get_values_for_specific_prefix("Intratemporal consumption Gini")
         damage_gini = self.get_values_for_specific_prefix("Intratemporal damage Gini")
         temp = self.get_values_for_specific_prefix("Atmospheric Temperature")
         emission = self.get_values_for_specific_prefix("Industrial Emission")
         output = self.get_values_for_specific_prefix("Total Output")
-        regions_below_consumption_threshold = self.data_dict[
-            "Regions below consumption threshold"
-        ]
-        regions_above_damage_threshold = self.data_dict[
-            "Regions above damage threshold"
-        ]
+        regions_below_consumption_threshold = self.data_dict["Regions below consumption threshold"]
+        regions_above_damage_threshold = self.data_dict["Regions above damage threshold"]
         costs = self.get_values_for_specific_prefix("Costs 2")
-        above_2_degree_timesteps = self.get_values_for_specific_prefix(
-            "Temperature overshoot"
-        )
+        above_2_degree_timesteps = self.get_values_for_specific_prefix("Temperature overshoot")
 
         columns = [
             "Damages",

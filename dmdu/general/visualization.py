@@ -10,6 +10,8 @@ import pandas as pd
 import seaborn as sns
 import os
 import matplotlib.cm as cm
+from matplotlib.colors import to_rgb
+
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
 
@@ -426,6 +428,7 @@ def plot_conference_pathways(
         problem_formulations_dict,
         shaded_outcome_name=None,
         outcome_names=None,
+        uni_color=False,
         saving=False,
         file_name=None
 ):
@@ -438,6 +441,7 @@ def plot_conference_pathways(
     @param problem_formulations_dict: DataFrame
     @param shaded_outcome_name: String: which variable should be related to color
     @param outcome_names: list
+    @param uni_color: Boolean: using only one color instead of a color palette
     @param saving: Booelean
     @param file_name: String: file name for saving
     """
@@ -446,7 +450,7 @@ def plot_conference_pathways(
     sns.set_style("whitegrid")
     #
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(30, 20), tight_layout=False, sharey='row')
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.3)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.2)
 
     years = list(range(2005, 2310, 10))
     if outcome_names is None:
@@ -487,6 +491,9 @@ def plot_conference_pathways(
         mapper_dict[pf] = mapper_list[checked_lengths: checked_lengths+length]
         checked_lengths += length
 
+    delft_blue = (0/256, 166/256, 214/256)  # TU Deflt Blue
+    delft_green = (0/256, 155/256, 119/256)  # TU Deflt Green
+
     # Actual plotting
     for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
         for name_idx, name in enumerate(outcome_names):
@@ -496,7 +503,13 @@ def plot_conference_pathways(
 
             for row_idx, row in df.iterrows():
 
-                color = mapper_dict[problem_formulation][row_idx]
+                if uni_color:
+                    if pf_idx == 0:
+                        color = to_rgb(delft_blue)
+                    else:
+                        color = to_rgb(delft_green)
+                else:
+                    color = mapper_dict[problem_formulation][row_idx]
 
                 axes[name_idx, pf_idx].plot(
                     years,
@@ -508,8 +521,9 @@ def plot_conference_pathways(
                 )
 
                 # Annotations
-                short_name = (problem_formulation.lower()).split('_')[0] + ' problem formulation'
-                axes[name_idx, pf_idx].set_title(short_name)
+                if name_idx == 0:
+                    short_name = (problem_formulation.lower()).split('_')[0]
+                    axes[name_idx, pf_idx].set_title(short_name, fontsize=30, pad=20)
                 axes[name_idx, pf_idx].set_xlabel('time in years', fontsize=axes_font_size)
                 y_label = y_labels[name]
                 axes[name_idx, pf_idx].set_ylabel(y_label, fontsize=axes_font_size)
@@ -521,7 +535,16 @@ def plot_conference_pathways(
 
     # Color bar
     cbar = fig.colorbar(mapper, ax=axes, shrink=0.7)
-    cbar.set_label('GWP in 2105 (trillion $)')
+
+    if shaded_outcome_name == 'Total Output 2105':
+        bar_label = 'GWP in 2105 (trillion $)'
+    elif shaded_outcome_name == 'Utility 2105':
+        bar_label = 'Welfare'
+    elif shaded_outcome_name == 'Temperature overshoot 2105':
+        bar_label = 'Number of years with a 2°C temperature overshoot'
+    else:
+        bar_label = ''
+    cbar.set_label(bar_label, labelpad=15)
 
     plt.show()
 
