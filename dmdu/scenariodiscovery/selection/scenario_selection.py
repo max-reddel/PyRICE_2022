@@ -318,7 +318,7 @@ def load_reference_scenarios():
 if __name__ == '__main__':
 
     all_bad_scenarios = merge_all_worst_scenarios(saving=False).iloc[:, 1:]
-    print('hi')
+
     ref_scenarios = compute_reference_scenarios(
         scenarios=all_bad_scenarios,
         n_ref_scenarios=4,
