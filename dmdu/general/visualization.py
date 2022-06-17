@@ -479,7 +479,10 @@ def plot_conference_pathways(
 
     # Setting up a color mapper
     norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max, clip=True)
-    cmap = sns.color_palette('rocket', as_cmap=True)
+    palette = 'rocket'
+    # palette = 'flare'
+    cmap = sns.color_palette(palette, as_cmap=True)
+
     mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
     mapper_list = [mapper.to_rgba(x) for x in hue_column]
 
@@ -543,7 +546,7 @@ def plot_conference_pathways(
     elif shaded_outcome_name == 'Temperature overshoot 2105':
         bar_label = 'Number of years with a 2°C temperature overshoot'
     else:
-        bar_label = ''
+        bar_label = shaded_outcome_name
     cbar.set_label(bar_label, labelpad=15)
 
     plt.show()

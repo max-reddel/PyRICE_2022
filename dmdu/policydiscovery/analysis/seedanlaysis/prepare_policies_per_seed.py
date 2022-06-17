@@ -57,7 +57,7 @@ if __name__ == '__main__':
                     'results.csv'
                 )
 
-                # Remove outcomes
+                # Remove outcome columns
                 df = pd.read_csv(current_directory, index_col='Unnamed: 0')
                 df = df.loc[:, lever_names]
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                 policy_list = [Policy(f'{counter.next()}', **row) for _, row in policies.iterrows()]
 
                 saving_directory = os.path.join(
-                    os.path.dirname(os.path.dirname(os.getcwd())),
+                    os.path.dirname(os.getcwd()),
                     'data',
                     'experiments'
                 )

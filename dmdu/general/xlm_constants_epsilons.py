@@ -294,9 +294,11 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         outcomes_maximize_names = [
             'Utility',
             'Total Output',
+            'Lowest income per capita'
         ]
         outcomes_minimize_names = [
             'Damages',
+            'Disutility'
             'Atmospheric Temperature',
             'Industrial Emission',
             'Temperature overshoot',
@@ -305,7 +307,10 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
             "Distance to damage threshold",
             "Population above damage threshold",
             'Number of regions below consumption threshold',
-            'Number of regions above damage threshold'
+            'Number of regions above damage threshold',
+            'Highest damage per capita',
+            "Intratemporal consumption Gini",
+            "Intratemporal damage Gini",
         ]
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []

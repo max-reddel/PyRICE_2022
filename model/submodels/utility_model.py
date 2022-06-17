@@ -749,10 +749,10 @@ class UtilityModel:
         # Regions counts
         nr_of_regions_below_consumption_threshold = []
         for value in self.regions_below_consumption_threshold:
-            nr_of_regions_below_consumption_threshold.append(len(value))
+            nr_of_regions_below_consumption_threshold.append(float(len(value)))
         nr_of_regions_above_damage_threshold = []
         for value in self.regions_above_damage_threshold:
-            nr_of_regions_above_damage_threshold.append(len(value))
+            nr_of_regions_above_damage_threshold.append(float(len(value)))
 
         objectives_list_timeseries = [
             self.global_damages,
@@ -1126,10 +1126,7 @@ class UtilityModel:
 
         for quintile in range(0, 5):
             for region in range(0, self.n_regions):
-                if (
-                    utility_per_income_share[quintile, region]
-                    < self.inst_util_thres_ww[region, t]
-                ):
+                if utility_per_income_share[quintile, region] < self.inst_util_thres_ww[region, t]:
                     self.population_below_consumption_threshold[t] = (
                         self.population_below_consumption_threshold[t]
                         + self.region_pop[region, t] * 1 / 5
@@ -1245,9 +1242,8 @@ class UtilityModel:
 
         list_timestep = []
 
-        relative_damage = np.divide(
-            damages, CPC, out=np.zeros_like(damages), where=(CPC != 0)
-        )
+        relative_damage = np.divide(damages, CPC, out=np.zeros_like(damages), where=(CPC != 0))
+
         for region in range(self.n_regions):
             if relative_damage[region, t] > self.relative_damage_threshold:
                 self.population_above_damage_threshold[t] = (
