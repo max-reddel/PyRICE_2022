@@ -2,10 +2,10 @@
 This module contains functionality to run experiments with discovered policies.
 """
 from ema_workbench import Policy
-
 from dmdu.exploration.perform_experiments import perform_own_experiments
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.policydiscovery.directed_policy_search import PolicyCounter
+from dmdu.scenariodiscovery.selection.scenario_selection import load_reference_scenarios
 from model.enumerations import ProblemFormulation
 import os
 import pandas as pd
@@ -14,6 +14,7 @@ import pandas as pd
 if __name__ == '__main__':
 
     lever_names = get_lever_names()
+    reference_scenarios = load_reference_scenarios()
     counter = PolicyCounter()
 
     problem_formulations = [
@@ -26,9 +27,10 @@ if __name__ == '__main__':
     for problem_formulation in problem_formulations:
         target_directory = os.path.join(
             os.getcwd(),
+            'paretosorting',
             'data',
-            'optimalpolicies',
-            f'optimal_policies_{problem_formulation.name}.csv'
+            'final',
+            f'sorted_{problem_formulation.name}.csv'
         )
 
         # Load policies
@@ -44,7 +46,7 @@ if __name__ == '__main__':
 
         perform_own_experiments(
             problem_formulation=ProblemFormulation.ALL_KPIS,
-            n_scenarios=400,
+            n_scenarios=50,
             n_policies=policy_list,
             saving_results=True,
             folder=saving_directory,

@@ -558,6 +558,139 @@ def plot_conference_pathways(
         save_own_figure(fig, file_name, sub_folder)
 
 
+def plot_kpi_pathways_with_color(
+        problem_formulations_dict,
+        shaded_outcome_name=None,
+        outcome_names=None,
+        uni_color=False,
+        saving=False,
+        file_name=None
+):
+    """
+    Plots pathways given one problem formulation. This function considers the results from the
+    reference scenarios.
+
+    Remark: Currently not super stable. Might break because of length of args.
+
+    @param problem_formulations_dict: DataFrame
+    @param shaded_outcome_name: String: which variable should be related to color
+    @param outcome_names: list
+    @param uni_color: Boolean: using only one color instead of a color palette
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    if outcome_names is None:
+        outcome_names = [
+            'Damages',
+            'Atmospheric Temperature'
+        ]
+
+    fig, axes = plt.subplots(nrows=len(outcome_names), ncols=4, figsize=(40, 25), tight_layout=False, sharey='row')
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.2)
+
+    years = list(range(2005, 2310, 10))
+
+    y_labels = get_y_labels_dict()
+
+    axes_font_size = 20
+
+    # Collecting all outcomes
+    all_outcomes = None
+    for _, outcomes in problem_formulations_dict.items():
+        outcomes.index = list(range(len(outcomes)))
+        if all_outcomes is None:
+            all_outcomes = outcomes
+        else:
+            all_outcomes = pd.concat([all_outcomes, outcomes])
+
+    if shaded_outcome_name is not None:
+        # Getting minimum and maximum for specific hue-related variable
+        hue_column = all_outcomes.loc[:, shaded_outcome_name]
+        color_variable_min = min(hue_column)
+        color_variable_max = max(hue_column)
+
+        # Setting up a color mapper
+        norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max, clip=True)
+        palette = 'rocket'
+        # palette = 'flare'
+        cmap = sns.color_palette(palette, as_cmap=True)
+        mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+        mapper_list = [mapper.to_rgba(x) for x in hue_column]
+
+        # Splitting mapper into separate problem-formulations-specific lists
+        lengths_of_outcomes = {pf: len(outcomes) for pf, outcomes in problem_formulations_dict.items()}
+        mapper_dict = {}  # for use of color mapping
+        checked_lengths = 0
+        for pf, length in lengths_of_outcomes.items():
+            mapper_dict[pf] = mapper_list[checked_lengths: checked_lengths+length]
+            checked_lengths += length
+
+    discrete_colors = sns.color_palette('Paired', 4)
+
+    # Actual plotting
+    for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
+        for name_idx, name in enumerate(outcome_names):
+
+            outcomes.index = list(range(len(outcomes)))
+            df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"
+
+            for row_idx, row in df.iterrows():
+
+                if uni_color:
+                    color = discrete_colors[pf_idx]
+                else:
+                    color = mapper_dict[problem_formulation][row_idx]
+
+                axes[name_idx, pf_idx].plot(
+                    years,
+                    row.iloc[:],
+                    linewidth=1.0,
+                    alpha=1.0,
+                    linestyle='-',
+                    color=color,
+                )
+
+                # Annotations
+                if name_idx == 0:
+                    terms = (problem_formulation.lower()).split('_')
+                    short_name = f'{terms[0]}_{terms[1]}'
+                    axes[name_idx, pf_idx].set_title(short_name, fontsize=30, pad=20)
+                axes[name_idx, pf_idx].set_xlabel('time in years', fontsize=axes_font_size)
+                y_label = y_labels[name]
+                axes[name_idx, pf_idx].set_ylabel(y_label, fontsize=axes_font_size)
+
+    # Show labels although sharing y-axis
+    for ax in axes.flatten():
+        # ax.xaxis.set_tick_params(labelbottom=True)
+        ax.yaxis.set_tick_params(labelleft=True)
+
+    # Color bar
+    if shaded_outcome_name is not None:
+        cbar = fig.colorbar(mapper, ax=axes, shrink=0.7)
+
+        if shaded_outcome_name == 'Total Output 2105':
+            bar_label = 'GWP in 2105 (trillion $)'
+        elif shaded_outcome_name == 'Utility 2105':
+            bar_label = 'Welfare'
+        elif shaded_outcome_name == 'Temperature overshoot 2105':
+            bar_label = 'Number of years with a 2°C temperature overshoot'
+        else:
+            bar_label = shaded_outcome_name
+        cbar.set_label(bar_label, labelpad=15)
+
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = "pathways"
+        sub_folder = 'iEMSs'
+        save_own_figure(fig, file_name, sub_folder)
+
+
 def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_name=None):
     """
     Plot the pathways of a specific objective grouped by their clusters.
@@ -697,14 +830,17 @@ def get_y_labels_dict():
         'Intratemporal consumption Gini': 'intratemporal consumption Gini',
         'Highest damage per capita': 'highest damage per capita',
         'Intratemporal damage Gini': 'intratemporal damage Gini',
-        'Population below consumption threshold': 'population below consumption threshold (million)',
-        'Distance to consumption threshold': 'distance to consumption threshold',
-        'Population above damage threshold': 'population above damage threshold (million)',
-        'Distance to damage threshold': 'distance to damage threshold (trillion $)',
-        'Temperature overshoot': '# of temperature overshoot time steps',
+        'Population below consumption threshold': 'population below\nconsumption threshold (million)',
+        'Distance to consumption threshold': 'distance to\nconsumption threshold',
+        'Population above damage threshold': 'population above\ndamage threshold (million)',
+        'Distance to damage threshold': 'distance to\ndamage threshold (trillion $)',
+        'Temperature overshoot': '# of time steps\n with 2°C temperature overshoots',
         'Damages': 'economic damages (trillion $)',
         'Industrial Emission': 'global emissions (GTon CO2)',
         'Atmospheric Temperature': 'increase in\natmospheric temperature (°C)',
+        'Total Output': 'GWP (trillion $)',
+        'Number of regions above damage threshold': 'Number of regions\nabove damage threshold',
+        'Number of regions below consumption threshold': 'Number of regions quintiles\nbelow consumption threshold'
     }
 
     return info_dict
@@ -800,7 +936,6 @@ def plot_optimal_policies_dict(policies_dict, saving=False, file_name=None):
     """
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
-    # sns.set(rc={'figure.figsize': (12, 8)})
     sns.set(rc={'figure.figsize': (18, 12)})
 
     # Problem formulations and colors
@@ -825,8 +960,8 @@ def plot_optimal_policies_dict(policies_dict, saving=False, file_name=None):
             policies,
             color=color_mapping[problem_formulation],
             label=problem_formulation,
-            linewidth=1,
-            alpha=0.5
+            linewidth=1.5,
+            alpha=1.0
         )
 
     axes.legend()

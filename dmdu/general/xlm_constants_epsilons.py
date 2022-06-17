@@ -298,7 +298,7 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         ]
         outcomes_minimize_names = [
             'Damages',
-            'Disutility'
+            'Disutility',
             'Atmospheric Temperature',
             'Industrial Emission',
             'Temperature overshoot',
