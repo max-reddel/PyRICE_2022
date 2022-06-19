@@ -14,6 +14,7 @@ from matplotlib.colors import to_rgb
 
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
+from model.enumerations import ProblemFormulation
 
 
 class Orientation(Enum):
@@ -567,12 +568,11 @@ def plot_kpi_pathways_with_color(
         file_name=None
 ):
     """
+    Main functino for KPIs
     Plots pathways given one problem formulation. This function considers the results from the
     reference scenarios.
 
-    Remark: Currently not super stable. Might break because of length of args.
-
-    @param problem_formulations_dict: DataFrame
+    @param problem_formulations_dict: dictionary
     @param shaded_outcome_name: String: which variable should be related to color
     @param outcome_names: list
     @param uni_color: Boolean: using only one color instead of a color palette
@@ -589,8 +589,28 @@ def plot_kpi_pathways_with_color(
             'Atmospheric Temperature'
         ]
 
-    fig, axes = plt.subplots(nrows=len(outcome_names), ncols=4, figsize=(40, 25), tight_layout=False, sharey='row')
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.2)
+    # Size of figure
+    figsize_x = len(problem_formulations_dict) * 10
+    if shaded_outcome_name is not None:
+        figsize_x += 5
+
+    figsize_y = len(outcome_names) * 6
+
+    fig, axes = plt.subplots(
+        nrows=len(outcome_names),
+        ncols=len(problem_formulations_dict),
+        figsize=(figsize_x, figsize_y),  # Ealier: (40, 25)
+        tight_layout=False,
+        sharey='row'
+    )
+    plt.subplots_adjust(
+        left=None,
+        bottom=None,
+        right=None,
+        top=None,
+        wspace=0.2,
+        hspace=0.2
+    )
 
     years = list(range(2005, 2310, 10))
 
@@ -687,7 +707,7 @@ def plot_kpi_pathways_with_color(
     if saving:
         if file_name is None:
             file_name = "pathways"
-        sub_folder = 'iEMSs'
+        sub_folder = 'pathways'
         save_own_figure(fig, file_name, sub_folder)
 
 
@@ -700,6 +720,7 @@ def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_nam
     @param saving: Boolean
     @param file_name: String
     """
+    sns.set_style("whitegrid")
 
     reshaphed_outcomes = get_outcomes_reshaped(
         outcomes_df=outcomes, objective_names=[outcome_name]
@@ -713,6 +734,68 @@ def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_nam
         density=Density.BOXPLOT,
     )
     fig.set_size_inches(15, 8)
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = 'open_exploration_pathways'
+        sub_folder = 'exploration'
+        save_own_figure(fig, file_name, sub_folder)
+
+
+def get_short_problem_formulation_names():
+    """
+    Return dictionary with short names for problem formulations.
+    E.g., 'UTILITARIAN_AGGREGATED' will become 'UA'
+    """
+    pfs = list(ProblemFormulation)
+    d = {}
+    for pf in pfs:
+        terms = pf.name.split('_')
+        new_name = terms[0][0] + terms[1][0]
+        d[pf.name] = new_name
+    return d
+
+
+def plot_one_pathway_attempt(problem_formulation_dict, outcome_name, saving=False, file_name=None):
+    """
+    Plot the pathways of a specific objective grouped by their clusters.
+    @param problem_formulation_dict: dictionary {ProblemFormulation.name: experiments, outcomes}
+    @param outcome_name: String
+    @param saving: Boolean
+    @param file_name: String
+    """
+    sns.set_style("whitegrid")
+
+    name_dict = get_short_problem_formulation_names()
+
+    all_experiments = None
+    all_outcomes = None
+    for problem_formulation, (experiments, outcomes) in problem_formulation_dict.items():
+
+        experiments['Problem Formulation'] = name_dict[problem_formulation]
+        if all_experiments is None:
+            all_experiments = experiments
+        else:
+            all_experiments = pd.concat([all_experiments, experiments])
+
+        if all_outcomes is None:
+            all_outcomes = outcomes
+        else:
+            all_outcomes = pd.concat([all_outcomes, outcomes])
+
+    reshaphed_outcomes = get_outcomes_reshaped(
+        outcomes_df=all_outcomes, objective_names=[outcome_name]
+    )
+
+    fig, axes = plotting.lines(
+        experiments=all_experiments,
+        outcomes=reshaphed_outcomes,
+        outcomes_to_show=outcome_name,
+        group_by='Problem Formulation',
+        density=Density.BOXPLOT,
+    )
+    fig.set_size_inches(12, 8)
     plt.show()
 
     if saving:
