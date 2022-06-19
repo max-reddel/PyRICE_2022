@@ -1,9 +1,9 @@
 """
 This module contains functionality to run experiments with discovered policies.
 """
-from ema_workbench import Policy
+from ema_workbench import Policy, Scenario
 from dmdu.exploration.perform_experiments import perform_own_experiments
-from dmdu.general.xlm_constants_epsilons import get_lever_names
+from dmdu.general.xlm_constants_epsilons import get_lever_names, get_uncertainty_names, adjust_integers_in_uncertainties
 from dmdu.policydiscovery.directed_policy_search import PolicyCounter
 from dmdu.scenariodiscovery.selection.scenario_selection import load_reference_scenarios
 from model.enumerations import ProblemFormulation
@@ -23,6 +23,13 @@ if __name__ == '__main__':
         ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
         ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
     ]
+
+    # Starting with 50 random scenarios
+    init_scenarios = 50
+    scenarios = init_scenarios
+
+    # Do I want to reuse scenarios?
+    reuse_scenarios = True
 
     for problem_formulation in problem_formulations:
         target_directory = os.path.join(
@@ -44,11 +51,23 @@ if __name__ == '__main__':
             'experimentsextensive'
         )
 
-        perform_own_experiments(
+        results = perform_own_experiments(
             problem_formulation=ProblemFormulation.ALL_KPIS,
-            n_scenarios=50,
+            n_scenarios=scenarios,
             n_policies=policy_list,
             saving_results=True,
             folder=saving_directory,
             file_name=f'results_{problem_formulation.name}'
         )
+
+        # Overwrite scenarios to the specific set of scenarios that have been used in first iteration
+        if reuse_scenarios and (scenarios == init_scenarios):
+            experiments, outcomes = results
+            x_names = get_uncertainty_names()
+
+            uncertainty_df = experiments.loc[:, x_names]
+            scenario_df = uncertainty_df.drop_duplicates()
+            scenario_df = adjust_integers_in_uncertainties(scenario_df)
+
+            scenarios_list = [Scenario(f"{index}", **row) for index, row in scenario_df.iterrows()]
+            scenarios = scenarios_list

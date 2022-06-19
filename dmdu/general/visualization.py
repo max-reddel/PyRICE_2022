@@ -652,8 +652,8 @@ def plot_kpi_pathways_with_color(
     discrete_colors = sns.color_palette('Paired', 4)
 
     # Actual plotting
-    for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
-        for name_idx, name in enumerate(outcome_names):
+    for name_idx, name in enumerate(outcome_names):
+        for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
 
             outcomes.index = list(range(len(outcomes)))
             df = outcomes.filter(regex=name, axis=1)  # Filter columns to include "name"

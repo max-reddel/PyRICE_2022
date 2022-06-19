@@ -2,7 +2,7 @@
 This module contains functions to specify uncertainties, outcomes, levers, constants, and to compute epsilon values for
 the optimization process.
 """
-
+import pandas as pd
 from ema_workbench import ScalarOutcome, RealParameter, IntegerParameter, Constant
 from model.enumerations import *
 
@@ -483,6 +483,57 @@ def get_lever_names():
     ]
 
     return lever_names
+
+
+def get_uncertainty_names():
+    """
+    Return the uncertainty variable names.
+    @return:
+        uncertainties: list with Strings
+    """
+
+    uncertainties = [
+        "t2xco2_index",
+        "t2xco2_dist",
+        "fosslim",
+        "scenario_pop_gdp",
+        "scenario_sigma",
+        "scenario_cback",
+        "scenario_elasticity_of_damages",
+        "scenario_limmiu",
+        "emdd"
+    ]
+
+    return uncertainties
+
+
+def adjust_integers_in_uncertainties(df):
+    """
+    Go through the uncertainty variables and adjust the values where they should be integers.
+    @param df: DataFrame
+    @return new_df: DataFrame
+    """
+
+    new_df = df.copy()
+
+    # This is necessary when going through rows later to make it a Scenario list
+    for c in new_df.columns:
+        new_df[c] = new_df[c].astype(object)
+
+    integer_columns = [
+        "t2xco2_index",
+        "t2xco2_dist",
+        "scenario_pop_gdp",
+        "scenario_sigma",
+        "scenario_cback",
+        "scenario_elasticity_of_damages",
+        "scenario_limmiu",
+    ]
+
+    for c in integer_columns:
+        new_df[c] = new_df[c].astype(int)
+
+    return new_df
 
 
 if __name__ == "__main__":
