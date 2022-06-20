@@ -58,7 +58,17 @@ class ProblemFormulation(Enum):
         """
         Get all problem formulations but ALL_OBJECTIVES and UTILITARIAN_COSTS
         """
-        return list(ProblemFormulation)[2:]
+        problem_formulations = [
+            ProblemFormulation.UTILITARIAN_AGGREGATED,
+            ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+            ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+            ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+            ProblemFormulation.PRIORITARIAN_AGGREGATED,
+            ProblemFormulation.PRIORITARIAN_DISAGGREGATED,
+            ProblemFormulation.EGALITARIAN_AGGREGATED,
+            ProblemFormulation.EGALITARIAN_DISAGGREGATED
+        ]
+        return problem_formulations
 
     @staticmethod
     def get_util_and_suff_problem_formulations():

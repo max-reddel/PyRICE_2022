@@ -47,7 +47,7 @@ def load_scenario_search_results(
         for seed_index in range(n_seeds):
             for n_reference in range(n_references):
 
-                problem_folder = f'{problem_formulation.name}_{nfe}'
+                problem_folder = f'{problem_formulation}_{nfe}'
                 seed_folder = f'seed_{seed_index}'
                 reference_folder = f'{reference_name}_{n_reference}'
 

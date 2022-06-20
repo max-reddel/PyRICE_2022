@@ -493,15 +493,15 @@ def get_uncertainty_names():
     """
 
     uncertainties = [
+        "emdd",
+        "fosslim",
         "t2xco2_index",
         "t2xco2_dist",
-        "fosslim",
         "scenario_pop_gdp",
         "scenario_sigma",
         "scenario_cback",
         "scenario_elasticity_of_damages",
         "scenario_limmiu",
-        "emdd"
     ]
 
     return uncertainties

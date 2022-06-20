@@ -923,7 +923,7 @@ def get_y_labels_dict():
         'Atmospheric Temperature': 'increase in\natmospheric temperature (°C)',
         'Total Output': 'GWP (trillion $)',
         'Number of regions above damage threshold': 'Number of regions\nabove damage threshold',
-        'Number of regions below consumption threshold': 'Number of regions quintiles\nbelow consumption threshold'
+        'Number of regions below consumption threshold': 'Number of region-quintiles\nbelow consumption threshold'
     }
 
     return info_dict
@@ -1058,6 +1058,185 @@ def plot_optimal_policies_dict(policies_dict, saving=False, file_name=None):
         save_own_figure(axes.fig, file_name, sub_folder)
 
 
+def plot_parallel_axis_plot_objectives(problem_formulations_dict, saving=False, file_name=None):
+    """
+    Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
+    @param problem_formulations_dict: {ProblemFormulation: DataFrame}
+    @param saving: Boolean: whether to save the figure
+    @param file_name: String
+
+    """
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+    sns.set(rc={'figure.figsize': (18, 12)})
+
+    # Problem formulations and colors
+    color_mapping = {}
+    for _, (problem_formulation, color) in enumerate(zip(problem_formulations_dict, sns.color_palette('Paired'))):
+        color_mapping[problem_formulation] = color
+
+    # Handling limits (such that all limits are considered)
+    all_outcomes = None
+    for problem_formulation, outcomes in problem_formulations_dict.items():
+
+        if all_outcomes is None:
+            all_outcomes = outcomes
+        else:
+            all_outcomes = pd.concat([all_outcomes, outcomes])
+
+    limits = parcoords.get_limits(all_outcomes)
+    axes = parcoords.ParallelAxes(limits)
+
+    for problem_formulation, outcomes in problem_formulations_dict.items():
+        axes.plot(
+            outcomes,
+            color=color_mapping[problem_formulation],
+            label=problem_formulation,
+            linewidth=1.5,
+            alpha=1.0
+        )
+
+    axes.legend()
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = 'optimal_policies'
+        file_name += '.png'
+        sub_folder = 'optimalpolicies'
+        save_own_figure(axes.fig, file_name, sub_folder)
+
+
+def plot_single_parallel_axis_plot(outcomes, limits=None, problem_formulation=None, saving=False, file_name=None):
+    """
+    Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
+    @param outcomes: DataFrame
+    @param limits: DataFrame
+    @param problem_formulation: ProblemFormulation
+    @param saving: Boolean: whether to save the figure
+    @param file_name: String
+
+    """
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+    # sns.set(rc={'figure.figsize': (18, 12)})
+    sns.set(rc={'figure.figsize': (12, 8)})
+
+    minimize_list = [
+        'damages',
+        'welfare\nloss',
+        'atmospheric\ntemperature',
+        'industrial\nemission',
+        'temperature\novershoots',
+        "distance to\nconsumption\nthreshold",
+        "population below\nconsumption\nthreshold",
+        "distance to\ndamage\nthreshold",
+        "population above\ndamage\nthreshold",
+        'highest damage\nper capita',
+        "consumption gini",
+        "damage gini",
+    ]
+
+    problem_formulations = [
+        ProblemFormulation.UTILITARIAN_AGGREGATED.name,
+        ProblemFormulation.UTILITARIAN_DISAGGREGATED.name,
+        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED.name,
+        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name,
+    ]
+
+    outcomes = get_formatted_outcomes_names(outcomes)
+
+    if problem_formulation is None:
+        problem_formulation = ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name
+    if limits is None:
+        limits = parcoords.get_limits(outcomes)
+
+    limits = get_formatted_outcomes_names(limits)
+    axes = parcoords.ParallelAxes(limits)
+
+    # Problem formulations and colors
+    color_mapping = {}
+    for _, (pf, color) in enumerate(zip(problem_formulations, sns.color_palette('Paired'))):
+        color_mapping[pf] = color
+
+    axes.plot(
+        outcomes,
+        color=color_mapping[problem_formulation],
+        label=problem_formulation,
+        linewidth=2,
+        alpha=1.0
+    )
+
+    # Invert axes where necessary
+    for o in minimize_list:
+        if o in outcomes.columns:
+            axes.invert_axis(o)
+
+    # axes.legend()
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = f'trade-off_{problem_formulation}'
+        # file_name += '.png'
+        sub_folder = 'tradeoffs'
+        save_own_figure(axes.fig, file_name, sub_folder)
+
+
+def get_formatted_outcomes_names(df):
+    """
+    Reformat names of objectives to shorter names.
+    @param df: DataFrame
+    @return new_df: DataFrame
+    """
+    new_df = df.rename(columns={
+        'Damages 2105': 'damages',
+        'Disutility 2105': 'welfare\nloss',
+        'Atmospheric Temperature 2105': 'atmospheric\ntemperature',
+        'Industrial Emission 2105': 'industrial\nemission',
+        'Temperature overshoot 2105': 'temperature\novershoots',
+        "Distance to consumption threshold 2105": "distance to\nconsumption\nthreshold",
+        "Population below consumption threshold 2105": "population below\nconsumption\nthreshold",
+        "Distance to damage threshold 2105": "distance to\ndamage\nthreshold",
+        "Population above damage threshold 2105": "population above\ndamage\nthreshold",
+        'Number of regions below consumption threshold 2105': 'number of regions\nbelow consumptionthreshold',
+        'Number of regions above damage threshold 2105': 'number of regions\nabove damage threshold',
+        'Highest damage per capita 2105': 'highest damage\nper capita',
+        "Intratemporal consumption Gini 2105": "consumption gini",
+        "Intratemporal damage Gini 2105": "damage gini",
+        'Utility 2105': 'welfare',
+        'Lowest income per capita 2105': 'lowest income\nper capita',
+        'Total Output 2105': 'total output',
+    })
+
+    return new_df
+
+
+def get_limits_from_several_sources(input_variable):
+    """
+    Compute the limits for the parallel axis plot (ema workbench) from several dataframes, such that the limits can be
+    used to better compare the plots.
+    @param input_variable: list or dict with DataFrames
+    @return limits: DataFrame
+    """
+    if isinstance(input_variable, list):
+        all_dfs = pd.concat(input_variable)
+        limits = parcoords.get_limits(all_dfs)
+    elif isinstance(input_variable, dict):
+        # Handling limits (such that all limits are considered)
+        all_dfs = None
+        for _, df in input_variable.items():
+
+            if all_dfs is None:
+                all_dfs = df
+            else:
+                all_dfs = pd.concat([all_dfs, df])
+        limits = parcoords.get_limits(all_dfs)
+    else:
+        raise ValueError('The input has to be of type dict or list with DataFrames!')
+    return limits
+
+
 def plot_robustness(robustness_dataframe, saving=False, file_name=None):
     """
     Plot the robustness of some KPIs on a parallel axis plot.
@@ -1108,3 +1287,86 @@ def plot_robustness(robustness_dataframe, saving=False, file_name=None):
             file_name = 'robustness'
         sub_folder = 'optimalpolicies'
         save_own_figure(axes.fig, file_name, sub_folder)
+
+
+def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=None):
+    """
+    Takes in a number of dictionaries with experimental data, and creates box plots.
+    Each row represents one metric and consists of 3 subplots.
+    Each subplot contains a boxplot for each problem formulation.
+    @param outcome_names: list of Strings
+    @param dict_list: list with dictionary
+    @param year: int (anything in [2005, 2305] with steps of 10)
+    @param saving: Boolean
+    @param file_name: String
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    nrows = len(outcome_names)
+    ncols = 3
+
+    fig, axes = plt.subplots(
+        nrows=nrows,
+        ncols=ncols,
+        figsize=(ncols * 9, nrows * 6),
+        tight_layout=True,
+        sharey='row',
+        sharex='col'
+    )
+    plt.subplots_adjust(
+        left=None,
+        bottom=None,
+        right=None,
+        top=None,
+        wspace=0.5,
+        hspace=0.8
+    )
+
+    mapping = {
+        0: '4 reference scenarios',
+        1: '50 bad scenarios',
+        2: '50 random scenarios',
+    }
+
+    y_labels = get_y_labels_dict()
+
+    for outcome_idx, outcome_name in enumerate(outcome_names):
+        for dict_idx, problem_formulations in enumerate(dict_list):
+            all_outcomes = None
+            for problem_formulation, outcomes in problem_formulations.items():
+                terms = problem_formulation.split('_')
+                outcomes['problem formulation'] = terms[0][0] + terms[1][0]
+                if all_outcomes is None:
+                    all_outcomes = outcomes
+                else:
+                    all_outcomes = pd.concat([all_outcomes, outcomes])
+
+            # Boxplots
+            sns.boxplot(
+                x='problem formulation',
+                y=f'{outcome_name} {year}',
+                data=all_outcomes,
+                ax=axes[outcome_idx, dict_idx],
+                palette=sns.color_palette('Paired')
+            )
+
+            if outcome_idx == 0:
+                axes[outcome_idx, dict_idx].set_title(mapping[dict_idx], pad=30, fontsize=24)
+            axes[outcome_idx, dict_idx].set_ylabel(y_labels[outcome_name])
+            # axes[outcome_idx, dict_idx] .set_xlabel('Time in years', fontsize=axes_font_size)
+            # axes[outcome_idx, dict_idx] .set_ylabel(name, fontsize=axes_font_size)
+
+    # Show labels although sharing axes
+    for ax in axes.flatten():
+        ax.xaxis.set_tick_params(labelbottom=True)
+        ax.yaxis.set_tick_params(labelleft=True)
+
+    if saving:
+        if file_name is None:
+            file_name = 'boxplots_3_ways'
+        sub_folder = 'boxplots'
+        save_own_figure(fig, file_name, sub_folder)
+
+    plt.show()

@@ -315,6 +315,40 @@ def load_reference_scenarios():
     return scenarios
 
 
+def load_n_bad_scenarios(n_samples=50):
+    """
+    Load 50 bad scenarios as list of Scenario objects.
+    @param n_samples: int: how many scenarios to sample (max = 4351)
+    @return
+        scenarios: list with Scenario objects
+    """
+    target_directory = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'scenariodiscovery',
+        'selection',
+        'data',
+        'all_worst_scenarios.csv',
+    )
+
+    scenarios_df = pd.read_csv(target_directory)
+    scenarios_df = scenarios_df.drop(columns=['Unnamed: 0'])
+
+    # Sample random
+    scenarios_df = scenarios_df.sample(n=n_samples, replace=False, random_state=1)
+
+    # Transform to list of Scenario objects
+    scenarios = [Scenario(f'{idx}', **row) for idx, row in scenarios_df.iterrows()]
+
+    # Some uncertainties should have integer type
+    float_uncertainties = ['emdd', 'fosslim']
+    for scenario in scenarios:
+        for k, v in scenario.items():
+            if k not in float_uncertainties:
+                scenario[k] = int(v)
+
+    return scenarios
+
+
 if __name__ == '__main__':
 
     all_bad_scenarios = merge_all_worst_scenarios(saving=False).iloc[:, 1:]

@@ -1,11 +1,17 @@
 """
 This module contains functionality to run experiments with discovered policies.
+There are four ways to run experiments with different kind of scenarios.
+
+    - 'reference_scenarios': Load and use 4 reference scenarios
+    - 'bad': Load random 50 scenarios that we have identified in all worst scenarios (from scenario discovery process)
+    - 'random_reused': Sample 50 random scenarios but reuse them for each problem formulation (better comparability)
+    - 'random_not_reused': Sample 50 random scenarios without reusing them.
 """
 from ema_workbench import Policy, Scenario
 from dmdu.exploration.perform_experiments import perform_own_experiments
 from dmdu.general.xlm_constants_epsilons import get_lever_names, get_uncertainty_names, adjust_integers_in_uncertainties
 from dmdu.policydiscovery.directed_policy_search import PolicyCounter
-from dmdu.scenariodiscovery.selection.scenario_selection import load_reference_scenarios
+from dmdu.scenariodiscovery.selection.scenario_selection import load_reference_scenarios, load_n_bad_scenarios
 from model.enumerations import ProblemFormulation
 import os
 import pandas as pd
@@ -13,8 +19,10 @@ import pandas as pd
 
 if __name__ == '__main__':
 
+    scenario_types = ['reference_scenarios', 'bad', 'random_reused', 'random_not_reused']
+    scenario_type = scenario_types[1]  # Change index here
+
     lever_names = get_lever_names()
-    reference_scenarios = load_reference_scenarios()
     counter = PolicyCounter()
 
     problem_formulations = [
@@ -24,14 +32,8 @@ if __name__ == '__main__':
         ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
     ]
 
-    # Starting with 50 random scenarios
-    init_scenarios = 50
-    scenarios = init_scenarios
-
-    # Do I want to reuse scenarios?
-    reuse_scenarios = True
-
     for problem_formulation in problem_formulations:
+
         target_directory = os.path.join(
             os.getcwd(),
             'paretosorting',
@@ -48,9 +50,22 @@ if __name__ == '__main__':
         saving_directory = os.path.join(
             os.getcwd(),
             'data',
-            'experimentsextensive'
+            f'experiments_{scenario_type}'
         )
 
+        init_scenarios = 50
+
+        # Settle on what scenarios should be used
+        if scenario_type == 'reference_scenarios':
+            scenarios = load_reference_scenarios()
+        elif scenario_type == 'bad':
+            scenarios = load_n_bad_scenarios(n_samples=50)
+        elif scenario_type == 'random_reused' or scenario_type == 'random_not_reused':
+            scenarios = init_scenarios
+        else:
+            raise ValueError('Use a valid way of choosing your scenarios.')
+
+        # Experiments
         results = perform_own_experiments(
             problem_formulation=ProblemFormulation.ALL_KPIS,
             n_scenarios=scenarios,
@@ -61,7 +76,7 @@ if __name__ == '__main__':
         )
 
         # Overwrite scenarios to the specific set of scenarios that have been used in first iteration
-        if reuse_scenarios and (scenarios == init_scenarios):
+        if (scenario_type == 'random_reused') and (scenarios == init_scenarios):
             experiments, outcomes = results
             x_names = get_uncertainty_names()
 
