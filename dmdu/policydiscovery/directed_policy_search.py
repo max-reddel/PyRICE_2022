@@ -134,6 +134,7 @@ def load_optimal_policy_dataframes(
                 )
 
                 df = pd.read_csv(current_directory, index_col='Unnamed: 0')
+                df = df.loc[:, get_lever_names()]
 
                 if policies is None:
                     policies = df

@@ -1107,19 +1107,28 @@ def plot_parallel_axis_plot_objectives(problem_formulations_dict, saving=False, 
         save_own_figure(axes.fig, file_name, sub_folder)
 
 
-def plot_single_parallel_axis_plot(outcomes, limits=None, problem_formulation=None, saving=False, file_name=None):
+def plot_single_parallel_axis_plot(
+        df,
+        gray_df=None,
+        limits=None,
+        problem_formulation=None,
+        sub_folder=None,
+        saving=False,
+        file_name=None
+):
     """
     Plots a parallel axis plots with all levers as axes and color-coded by problem formulation.
-    @param outcomes: DataFrame
+    @param df: DataFrame
+    @param gray_df: DataFrame
     @param limits: DataFrame
     @param problem_formulation: ProblemFormulation
+    @param sub_folder: String
     @param saving: Boolean: whether to save the figure
     @param file_name: String
 
     """
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
-    # sns.set(rc={'figure.figsize': (18, 12)})
     sns.set(rc={'figure.figsize': (12, 8)})
 
     minimize_list = [
@@ -1144,14 +1153,20 @@ def plot_single_parallel_axis_plot(outcomes, limits=None, problem_formulation=No
         ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name,
     ]
 
-    outcomes = get_formatted_outcomes_names(outcomes)
-
     if problem_formulation is None:
         problem_formulation = ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name
-    if limits is None:
-        limits = parcoords.get_limits(outcomes)
 
-    limits = get_formatted_outcomes_names(limits)
+    df = get_formatted_column_names(df)
+    if gray_df is not None:
+        gray_df = get_formatted_column_names(gray_df)
+
+    if limits is None:
+        if gray_df is not None:
+            limits = parcoords.get_limits(gray_df)
+        else:
+            limits = parcoords.get_limits(df)
+
+    limits = get_formatted_column_names(limits)
     axes = parcoords.ParallelAxes(limits)
 
     # Problem formulations and colors
@@ -1159,8 +1174,16 @@ def plot_single_parallel_axis_plot(outcomes, limits=None, problem_formulation=No
     for _, (pf, color) in enumerate(zip(problem_formulations, sns.color_palette('Paired'))):
         color_mapping[pf] = color
 
+    if gray_df is not None:
+        axes.plot(
+            gray_df,
+            color=to_rgb((230/256, 230/256, 230/256)),
+            linewidth=1,
+            alpha=1.0
+        )
+
     axes.plot(
-        outcomes,
+        df,
         color=color_mapping[problem_formulation],
         label=problem_formulation,
         linewidth=2,
@@ -1169,7 +1192,7 @@ def plot_single_parallel_axis_plot(outcomes, limits=None, problem_formulation=No
 
     # Invert axes where necessary
     for o in minimize_list:
-        if o in outcomes.columns:
+        if o in df.columns:
             axes.invert_axis(o)
 
     # axes.legend()
@@ -1178,12 +1201,13 @@ def plot_single_parallel_axis_plot(outcomes, limits=None, problem_formulation=No
     if saving:
         if file_name is None:
             file_name = f'trade-off_{problem_formulation}'
-        # file_name += '.png'
-        sub_folder = 'tradeoffs'
+
+        if sub_folder is None:
+            sub_folder = 'tradeoffs'
         save_own_figure(axes.fig, file_name, sub_folder)
 
 
-def get_formatted_outcomes_names(df):
+def get_formatted_column_names(df):
     """
     Reformat names of objectives to shorter names.
     @param df: DataFrame
@@ -1207,6 +1231,12 @@ def get_formatted_outcomes_names(df):
         'Utility 2105': 'welfare',
         'Lowest income per capita 2105': 'lowest income\nper capita',
         'Total Output 2105': 'total output',
+
+        'sr': 'savings rate (%)',
+        'miu': 'net-zero\nemission target\n(year)',
+        'irstp_consumption': 'initial rate of social\ntime preference\nfor consumption',
+        'irstp_damage': 'initial rate of social\ntime preference\nfor damage',
+
     })
 
     return new_df
@@ -1221,6 +1251,7 @@ def get_limits_from_several_sources(input_variable):
     """
     if isinstance(input_variable, list):
         all_dfs = pd.concat(input_variable)
+        all_dfs = get_formatted_column_names(all_dfs)
         limits = parcoords.get_limits(all_dfs)
     elif isinstance(input_variable, dict):
         # Handling limits (such that all limits are considered)
@@ -1231,6 +1262,7 @@ def get_limits_from_several_sources(input_variable):
                 all_dfs = df
             else:
                 all_dfs = pd.concat([all_dfs, df])
+        all_dfs = get_formatted_column_names(all_dfs)
         limits = parcoords.get_limits(all_dfs)
     else:
         raise ValueError('The input has to be of type dict or list with DataFrames!')
