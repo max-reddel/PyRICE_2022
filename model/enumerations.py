@@ -99,3 +99,25 @@ class ProblemFormulation(Enum):
         ]
 
         return pfs
+
+    @staticmethod
+    def get_pf_from_name(name):
+        """
+        Given a name String, return problem formulation.
+        @param: name: String
+        @param: pf: ProblemFormulation
+        """
+
+        pfs = {
+            'UTILITARIAN_AGGREGATED': ProblemFormulation.UTILITARIAN_AGGREGATED,
+            'UTILITARIAN_DISAGGREGATED': ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+            'SUFFICIENTARIAN_AGGREGATED': ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+            'SUFFICIENTARIAN_DISAGGREGATED': ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+            'PRIORITARIAN_AGGREGATED': ProblemFormulation.PRIORITARIAN_AGGREGATED,
+            'PRIORITARIAN_DISAGGREGATED': ProblemFormulation.PRIORITARIAN_DISAGGREGATED,
+            'EGALITARIAN_AGGREGATED': ProblemFormulation.EGALITARIAN_AGGREGATED,
+        }
+
+        pf = pfs[name]
+
+        return pf
