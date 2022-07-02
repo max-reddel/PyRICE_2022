@@ -151,8 +151,8 @@ if __name__ == "__main__":
 
     seeds = [9845531, 1644652]
     problem_formulations = [
-        ProblemFormulation.EGALITARIAN_AGGREGATED,
-        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        # ProblemFormulation.EGALITARIAN_AGGREGATED,
+        # ProblemFormulation.EGALITARIAN_DISAGGREGATED,
         ProblemFormulation.PRIORITARIAN_AGGREGATED,
         ProblemFormulation.PRIORITARIAN_DISAGGREGATED
     ]
