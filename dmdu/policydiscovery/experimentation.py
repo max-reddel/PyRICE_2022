@@ -19,17 +19,19 @@ import pandas as pd
 
 if __name__ == '__main__':
 
-    scenario_types = ['reference_scenarios', 'bad', 'random_reused', 'random_not_reused']
-    scenario_type = scenario_types[1]  # Change index here
+    scenario_types = ['references', 'bad', 'random_reused', 'random_not_reused']
+    scenario_type = scenario_types[2]  # Change index here
 
     lever_names = get_lever_names()
     counter = PolicyCounter()
 
     problem_formulations = [
-        ProblemFormulation.UTILITARIAN_AGGREGATED,
-        ProblemFormulation.UTILITARIAN_DISAGGREGATED,
-        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
-        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED
+        # ProblemFormulation.UTILITARIAN_AGGREGATED,
+        # ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+        # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED
     ]
 
     for problem_formulation in problem_formulations:
@@ -56,7 +58,7 @@ if __name__ == '__main__':
         init_scenarios = 50
 
         # Settle on what scenarios should be used
-        if scenario_type == 'reference_scenarios':
+        if scenario_type == 'references':
             scenarios = load_reference_scenarios()
         elif scenario_type == 'bad':
             scenarios = load_n_bad_scenarios(n_samples=50)

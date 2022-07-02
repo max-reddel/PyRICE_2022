@@ -25,10 +25,14 @@ if __name__ == '__main__':
     )
 
     problem_formulations = [
-        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
-        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
-        ProblemFormulation.UTILITARIAN_AGGREGATED,
-        ProblemFormulation.UTILITARIAN_DISAGGREGATED
+        # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+        # ProblemFormulation.UTILITARIAN_AGGREGATED,
+        # ProblemFormulation.UTILITARIAN_DISAGGREGATED
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        # ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        # ProblemFormulation.PRIORITARIAN_DISAGGREGATED
     ]
 
     # Parameters that refer to the optimization
@@ -44,6 +48,9 @@ if __name__ == '__main__':
             df_main = None
 
             for seed_idx in range(n_seeds):
+
+                # if reference_idx == 2 and seed_idx == 1 and problem_formulation == ProblemFormulation.EGALITARIAN_DISAGGREGATED:
+                #     raise StopIteration
 
                 problem_folder = f'{problem_formulation.name}_{nfe}'
                 seed_folder = f'seed_{seed_idx}'

@@ -1149,8 +1149,10 @@ def plot_single_parallel_axis_plot(
     problem_formulations = [
         ProblemFormulation.UTILITARIAN_AGGREGATED.name,
         ProblemFormulation.UTILITARIAN_DISAGGREGATED.name,
-        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED.name,
-        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name,
+        # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED.name,
+        # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name,
+        ProblemFormulation.EGALITARIAN_AGGREGATED.name,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED.name,
     ]
 
     if problem_formulation is None:

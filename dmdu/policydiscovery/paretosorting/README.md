@@ -105,3 +105,67 @@ Objectives:
     temperature overshoot               
 
 
+
+--------------------------------------------------
+
+## Egaliatrian Aggregated
+
+```
+python pareto.py \
+   EGALITARIAN_AGGREGATED_2.csv \
+   -o 5-7 \
+   -e 1.0  0.001 1.0 \
+   -m 5 \
+   --output sorted_EGALITARIAN_AGGREGATED_2.csv \
+   --delimiter=',' \
+   --header=1 \
+   --blank
+```
+
+Higher epsilons needed for #3:
+
+```
+python pareto.py \
+   EGALITARIAN_AGGREGATED_3.csv \
+   -o 5-7 \
+   -e 1.0  0.005 1.0 \
+   -m 5 \
+   --output sorted_EGALITARIAN_AGGREGATED_3.csv \
+   --delimiter=',' \
+   --header=1 \
+   --blank
+```
+
+
+Objectives:
+
+    utility                             
+    consumption gini                          
+    temperature overshoot    
+
+
+
+--------------------------------------------------
+
+## Egaliatrian Disaggregated
+
+```
+python pareto.py \
+   EGALITARIAN_DISAGGREGATED_2.csv \
+   -o 5-9 \
+   -e 6.0 3.0 0.03 0.025 1.0 \
+   -m 5 \
+   --output sorted_EGALITARIAN_DISAGGREGATED_2.csv \
+   --delimiter=',' \
+   --header=1 \
+   --blank
+```
+
+
+Objectives:
+
+    utility        
+    distutility
+    consumption gini      
+    damage gini
+    temperature overshoot       
