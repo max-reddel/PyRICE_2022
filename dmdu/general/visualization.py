@@ -450,7 +450,7 @@ def plot_conference_pathways(
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
     #
-    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(30, 20), tight_layout=False, sharey='row')
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(22, 12), tight_layout=False, sharey='row')
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.2)
 
     years = list(range(2005, 2310, 10))
@@ -480,7 +480,7 @@ def plot_conference_pathways(
 
     # Setting up a color mapper
     norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max, clip=True)
-    palette = 'rocket'
+    palette = 'rocket_r'
     # palette = 'flare'
     cmap = sns.color_palette(palette, as_cmap=True)
 
@@ -538,17 +538,18 @@ def plot_conference_pathways(
         ax.yaxis.set_tick_params(labelleft=True)
 
     # Color bar
-    cbar = fig.colorbar(mapper, ax=axes, shrink=0.7)
+    if not uni_color:
+        cbar = fig.colorbar(mapper, ax=axes, shrink=0.7)
 
-    if shaded_outcome_name == 'Total Output 2105':
-        bar_label = 'GWP in 2105 (trillion $)'
-    elif shaded_outcome_name == 'Utility 2105':
-        bar_label = 'Welfare'
-    elif shaded_outcome_name == 'Temperature overshoot 2105':
-        bar_label = 'Number of years with a 2°C temperature overshoot'
-    else:
-        bar_label = shaded_outcome_name
-    cbar.set_label(bar_label, labelpad=15)
+        if shaded_outcome_name == 'Total Output 2105':
+            bar_label = 'GWP in 2105 (trillion $)'
+        elif shaded_outcome_name == 'Utility 2105':
+            bar_label = 'Welfare'
+        elif shaded_outcome_name == 'Temperature overshoot 2105':
+            bar_label = 'Number of years with a 2°C temperature overshoot'
+        else:
+            bar_label = shaded_outcome_name
+        cbar.set_label(bar_label, labelpad=15)
 
     plt.show()
 
@@ -649,7 +650,7 @@ def plot_kpi_pathways_with_color(
             mapper_dict[pf] = mapper_list[checked_lengths: checked_lengths+length]
             checked_lengths += length
 
-    discrete_colors = sns.color_palette('Paired', 4)
+    discrete_colors = sns.color_palette('Paired', len(problem_formulations_dict))
 
     # Actual plotting
     for name_idx, name in enumerate(outcome_names):
@@ -910,7 +911,7 @@ def get_y_labels_dict():
         'Utility': 'welfare',
         'Disutility': 'welfare loss',
         'Lowest income per capita': 'lowest income per capita ($1000)',
-        'Intratemporal consumption Gini': 'intratemporal consumption Gini',
+        'Intratemporal consumption Gini': 'Gini index',
         'Highest damage per capita': 'highest damage per capita',
         'Intratemporal damage Gini': 'intratemporal damage Gini',
         'Population below consumption threshold': 'population below\nconsumption threshold (million)',
@@ -1341,10 +1342,13 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
     nrows = len(outcome_names)
     ncols = 3
 
+    # figsize = (ncols * 9, nrows * 6)
+    figsize = (ncols * 4, nrows * 6)
+
     fig, axes = plt.subplots(
         nrows=nrows,
         ncols=ncols,
-        figsize=(ncols * 9, nrows * 6),
+        figsize=figsize,
         tight_layout=True,
         sharey='row',
         sharex='col'
@@ -1364,6 +1368,10 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
         2: '50 random scenarios',
     }
 
+    delft_blue = (0/256, 166/256, 214/256)  # TU Deflt Blue
+    delft_green = (0/256, 155/256, 119/256)  # TU Deflt Green
+    delft_colors = (delft_blue, delft_green)
+
     y_labels = get_y_labels_dict()
 
     for outcome_idx, outcome_name in enumerate(outcome_names):
@@ -1371,19 +1379,23 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
             all_outcomes = None
             for problem_formulation, outcomes in problem_formulations.items():
                 terms = problem_formulation.split('_')
-                outcomes['problem formulation'] = terms[0][0] + terms[1][0]
+                outcomes['problem formulation'] = terms[0][0]  # + terms[1][0]  # comment in to show second letter of PF
                 if all_outcomes is None:
                     all_outcomes = outcomes
                 else:
                     all_outcomes = pd.concat([all_outcomes, outcomes])
 
+            var_min = all_outcomes[f'{outcome_name} {year}'].min()
+            var_max = all_outcomes[f'{outcome_name} {year}'].max()
             # Boxplots
             sns.boxplot(
                 x='problem formulation',
                 y=f'{outcome_name} {year}',
                 data=all_outcomes,
                 ax=axes[outcome_idx, dict_idx],
-                palette=sns.color_palette('Paired')
+                # palette=sns.color_palette('Paired'),
+                palette=delft_colors,
+
             )
 
             if outcome_idx == 0:

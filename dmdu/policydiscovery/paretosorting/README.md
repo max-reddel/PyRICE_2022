@@ -169,3 +169,65 @@ Objectives:
     consumption gini      
     damage gini
     temperature overshoot       
+
+
+--------------------------------------------------
+
+## Prioritarian Aggregated
+
+```
+python pareto.py \
+   PRIORITARIAN_AGGREGATED_3.csv \
+   -o 5-7 \
+   -e 5.0 0.05 1.0 \
+   -m 5-6 \
+   --output sorted_PRIORITARIAN_AGGREGATED_3.csv \
+   --delimiter=',' \
+   --header=1 \
+   --blank
+```
+
+
+Objectives:
+
+    utility        
+    lowest income per capita
+    temperature overshoot       
+
+
+## Prioritarian Disaggregated
+
+```
+python pareto.py \
+   PRIORITARIAN_DISAGGREGATED_0.csv \
+   -o 5-9 \
+   -e 5.0 0.05 2.0 0.005 1.0 \
+   -m 5-6 \
+   --output sorted_PRIORITARIAN_DISAGGREGATED_0.csv \
+   --delimiter=',' \
+   --header=1 \
+   --blank
+```
+
+Higher epsilons needed for #3:
+
+```
+python pareto.py \
+   PRIORITARIAN_DISAGGREGATED_3.csv \
+   -o 5-9 \
+   -e 5.0 0.2 5.0 0.2 1.0 \
+   -m 5-6 \
+   --output sorted_PRIORITARIAN_DISAGGREGATED_3.csv \
+   --delimiter=',' \
+   --header=1 \
+   --blank
+```
+
+
+Objectives:
+
+    utility        
+    lowest income per capita
+    disutility
+    highest damage per capita
+    temperature overshoot      

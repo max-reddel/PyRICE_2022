@@ -30,8 +30,10 @@ if __name__ == '__main__':
         # ProblemFormulation.UTILITARIAN_DISAGGREGATED,
         # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
         # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
-        ProblemFormulation.EGALITARIAN_AGGREGATED,
-        ProblemFormulation.EGALITARIAN_DISAGGREGATED
+        # ProblemFormulation.EGALITARIAN_AGGREGATED,
+        # ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED
     ]
 
     for problem_formulation in problem_formulations:

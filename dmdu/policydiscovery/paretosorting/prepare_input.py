@@ -29,10 +29,10 @@ if __name__ == '__main__':
         # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
         # ProblemFormulation.UTILITARIAN_AGGREGATED,
         # ProblemFormulation.UTILITARIAN_DISAGGREGATED
-        ProblemFormulation.EGALITARIAN_AGGREGATED,
-        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
-        # ProblemFormulation.PRIORITARIAN_AGGREGATED,
-        # ProblemFormulation.PRIORITARIAN_DISAGGREGATED
+        # ProblemFormulation.EGALITARIAN_AGGREGATED,
+        # ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED
     ]
 
     # Parameters that refer to the optimization
