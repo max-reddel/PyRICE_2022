@@ -127,17 +127,18 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         save_own_figure(fig, file_name, sub_folder)
 
 
-def save_own_figure(fig, file_name, sub_folder):
+def save_own_figure(fig, file_name, sub_folder, resolution=200):
     """
     Save a figure with given file name in outputimages.
     @param fig: Figure
     @param file_name: string
     @param sub_folder: string
+    @param resolution: int
     """
     visualization_folder = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'outputimages')
     file_name += '.png'
     path = os.path.join(visualization_folder, sub_folder, file_name)
-    fig.savefig(path, dpi=200, pad_inches=0.2, bbox_inches='tight')
+    fig.savefig(path, dpi=resolution, pad_inches=0.2, bbox_inches='tight')
 
 
 def plot_kpi_pathways(problem_formulations_dict, outcome_names=None, saving=False, file_name=None):
@@ -833,6 +834,133 @@ def plot_pathways_all_problem_formulations(
         save_own_figure(fig, file_name, sub_folder)
 
 
+def plot_regional_pathways(
+        problem_formulations_dict,
+        outcome_name,
+        regions_list=None,
+        saving=False,
+        file_name=None,
+        resolution=200,
+):
+    """
+    Main functino for KPIs
+    Plots pathways given one problem formulation. This function considers the results from the
+    reference scenarios.
+
+    @param problem_formulations_dict: dictionary
+    @param outcome_name: String
+    @param regions_list: list with Strings
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    @param resolution: int: quality of saved figure
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    if regions_list is None:
+        regions_list = [
+            "US",
+            "OECD-Europe",
+            "Japan",
+            "Russia",
+            "Non-Russia Eurasia",
+            "China",
+            "India",
+            "Middle East",
+            "Africa",
+            "Latin America",
+            "OHI",
+            "Other non-OECD Asia",
+        ]
+
+    fig, axes = plt.subplots(
+        nrows=len(regions_list),
+        ncols=len(problem_formulations_dict),
+        # figsize=(8*len(problem_formulations_dict), 8*len(regions_list)),
+        figsize=(8 * len(problem_formulations_dict), 6 * len(regions_list)),
+        tight_layout=True,
+        sharey='all'
+    )
+    plt.subplots_adjust(
+        left=None,
+        bottom=None,
+        right=None,
+        top=None,
+        wspace=0.6,
+        hspace=0.4
+    )
+
+    years = list(range(2005, 2310, 10))
+
+    axes_font_size = 20
+
+    # Collecting all outcomes
+    all_outcomes = None
+    for _, outcomes in problem_formulations_dict.items():
+        outcomes.index = list(range(len(outcomes)))
+        if all_outcomes is None:
+            all_outcomes = outcomes
+        else:
+            all_outcomes = pd.concat([all_outcomes, outcomes])
+
+    # Set colors
+    problem_formulations = [
+        ProblemFormulation.UTILITARIAN_AGGREGATED,
+        ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED,
+    ]
+    color_mapping = {}
+    for _, (problem_formulation, color) in enumerate(zip(problem_formulations, sns.color_palette('Paired'))):
+        color_mapping[problem_formulation.name] = color
+
+    # Actual plotting
+    for region_idx, region in enumerate(regions_list):
+        for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
+
+            outcomes.index = list(range(len(outcomes)))
+            df = outcomes.filter(regex=f'{outcome_name} {region}', axis=1)  # Filter columns to include the string outcome_name
+
+            for row_idx, row in df.iterrows():
+                color = color_mapping[problem_formulation]
+
+                axes[region_idx, pf_idx].plot(
+                    years,
+                    row.iloc[:],
+                    linewidth=0.9,
+                    alpha=0.8,
+                    linestyle='-',
+                    color=color,
+                )
+
+                # Annotations
+                terms = problem_formulation.split('_')
+                short_name = f'{terms[0][0]}{terms[1][0]}'
+                axes[region_idx, pf_idx].set_title(short_name, fontsize=30, pad=20)
+                axes[region_idx, pf_idx].set_xlabel('time in years', fontsize=axes_font_size)
+                y_label = outcome_name.split(' ')[1] + f' for \n{region}'
+                axes[region_idx, pf_idx].set_ylabel(y_label, fontsize=axes_font_size)
+                axes[region_idx, pf_idx].yaxis.set_major_locator(MaxNLocator(5))
+
+    # Show labels although sharing y-axis
+    for ax in axes.flatten():
+        # ax.xaxis.set_tick_params(labelbottom=True)
+        ax.yaxis.set_tick_params(labelleft=True)
+
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = "pathways"
+        sub_folder = 'pathways'
+        save_own_figure(fig, file_name, sub_folder, resolution)
+
+
 def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_name=None):
     """
     Plot the pathways of a specific objective grouped by their clusters.
@@ -1047,6 +1175,7 @@ def get_y_labels_dict():
         'Number of regions above damage threshold': 'Number of regions\nabove damage threshold',
         'Number of regions below consumption threshold': 'Number of region-quintiles\nbelow consumption threshold'
     }
+
 
     return info_dict
 
@@ -1335,15 +1464,17 @@ def plot_single_parallel_axis_plot(
             gray_df,
             color=to_rgb((230/256, 230/256, 230/256)),
             linewidth=0.8,
-            alpha=0.9
+            alpha=0.5
         )
 
     axes.plot(
         df,
         color=color_mapping[problem_formulation],
         label=problem_formulation,
-        linewidth=0.5,
-        alpha=0.4
+        # linewidth=0.5,
+        # alpha=0.4,
+        linewidth=2.0,
+        alpha=1.0
     )
 
     # Invert axes where necessary
@@ -1425,23 +1556,35 @@ def get_limits_from_several_sources(input_variable):
     return limits
 
 
-def plot_robustness(robustness_dataframe, saving=False, file_name=None):
+def plot_robustness(robustness_dataframe, pf, legend=False, saving=False, file_name=None):
     """
     Plot the robustness of some KPIs on a parallel axis plot.
     @param robustness_dataframe: DataFrame
+    @param pf: String (problem formulation)
+    @param legend: boolean
     @param saving: Boolean: whether to save the figure
     @param file_name: String
     """
 
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
-    sns.set(rc={'figure.figsize': (12, 8)})
+    sns.set(rc={'figure.figsize': (5, 5)})
 
     # Colors
     unique_problem_formulations = robustness_dataframe.loc[:, 'Problem Formulation'].unique()
+    problem_formulations = [
+        ProblemFormulation.UTILITARIAN_AGGREGATED,
+        ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED,
+    ]
     color_mapping = {}
-    for _, (problem_formulation, color) in enumerate(zip(unique_problem_formulations, sns.color_palette('Paired'))):
-        color_mapping[problem_formulation] = color
+    for _, (problem_formulation, color) in enumerate(zip(problem_formulations, sns.color_palette('Paired'))):
+        color_mapping[problem_formulation.name] = color
 
     # Handling limits (such that all limits are considered)
     all_policies = None
@@ -1460,14 +1603,17 @@ def plot_robustness(robustness_dataframe, saving=False, file_name=None):
 
     for problem_formulation in unique_problem_formulations:
 
-        relevant_policies = robustness_dataframe[robustness_dataframe['Problem Formulation'] == problem_formulation]
-        relevant_policies = relevant_policies.drop(columns=['Problem Formulation', 'Policy'])
+        if problem_formulation == pf:
 
-        if axes is None:
-            axes = parcoords.ParallelAxes(limits)
-        axes.plot(relevant_policies, color=color_mapping[problem_formulation], label=problem_formulation)
+            relevant_policies = robustness_dataframe[robustness_dataframe['Problem Formulation'] == problem_formulation]
+            relevant_policies = relevant_policies.drop(columns=['Problem Formulation', 'Policy'])
 
-    axes.legend()
+            if axes is None:
+                axes = parcoords.ParallelAxes(limits)
+            axes.plot(relevant_policies, color=color_mapping[problem_formulation], label=problem_formulation)
+
+    if legend:
+        axes.legend()
     plt.show()
 
     if saving:

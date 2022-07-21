@@ -116,6 +116,7 @@ class ProblemFormulation(Enum):
             'PRIORITARIAN_AGGREGATED': ProblemFormulation.PRIORITARIAN_AGGREGATED,
             'PRIORITARIAN_DISAGGREGATED': ProblemFormulation.PRIORITARIAN_DISAGGREGATED,
             'EGALITARIAN_AGGREGATED': ProblemFormulation.EGALITARIAN_AGGREGATED,
+            'EGALITARIAN_DISAGGREGATED': ProblemFormulation.EGALITARIAN_DISAGGREGATED,
         }
 
         pf = pfs[name]

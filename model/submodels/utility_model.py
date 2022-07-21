@@ -775,6 +775,12 @@ class UtilityModel:
             nr_of_regions_above_damage_threshold
         ]
 
+        # Add regional data
+        for row in CPC:
+            objectives_list_timeseries.append(row)
+        for row in self.dpc:
+            objectives_list_timeseries.append(row)
+
         # Extra aggregated variables
         self.aggregated_costs = costs.sum()
 
@@ -850,6 +856,12 @@ class UtilityModel:
             "Number of regions below consumption threshold",
             "Number of regions above damage threshold"
         ]
+
+        # Add names of regions for regional data
+        for region in self.regions_list:
+            objectives_list_timeseries_name.append(f'Regional CPC {region}')
+        for region in self.regions_list:
+            objectives_list_timeseries_name.append(f'Regional DPC {region}')
 
         # Adding space after each timeseries objective
         objectives_list_timeseries_name = [

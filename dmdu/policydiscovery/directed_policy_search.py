@@ -121,26 +121,29 @@ def load_optimal_policy_dataframes(
         for seed_index in range(n_seeds):
             for n_reference in range(n_references):
 
-                problem_folder = f'{problem_formulation.name}_{nfe}'
-                seed_folder = f'seed_{seed_index}'
-                reference_folder = f'{reference_name}_{n_reference}'
-
-                current_directory = os.path.join(
-                    target_directory,
-                    problem_folder,
-                    seed_folder,
-                    reference_folder,
-                    'results.csv'
-                )
-
-                df = pd.read_csv(current_directory, index_col='Unnamed: 0')
-                df = df.loc[:, get_lever_names()]
-
-                if policies is None:
-                    policies = df
+                if (seed_index == 1) and ((n_reference == 2) or (n_reference == 3)) and (problem_formulation == ProblemFormulation.EGALITARIAN_DISAGGREGATED):
+                    continue
                 else:
-                    policies = pd.concat([policies, df])
-                    policies.index = list(range(len(policies)))
+                    problem_folder = f'{problem_formulation.name}_{nfe}'
+                    seed_folder = f'seed_{seed_index}'
+                    reference_folder = f'{reference_name}_{n_reference}'
+
+                    current_directory = os.path.join(
+                        target_directory,
+                        problem_folder,
+                        seed_folder,
+                        reference_folder,
+                        'results.csv'
+                    )
+
+                    df = pd.read_csv(current_directory, index_col='Unnamed: 0')
+                    df = df.loc[:, get_lever_names()]
+
+                    if policies is None:
+                        policies = df
+                    else:
+                        policies = pd.concat([policies, df])
+                        policies.index = list(range(len(policies)))
 
         optimal_policies[problem_formulation] = policies
 

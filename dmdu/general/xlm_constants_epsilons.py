@@ -223,6 +223,20 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
             outcomes: list of ScalarOutcomes
             epsilons: list of epsilon values (floats)
     """
+    regions_list = [
+        "US",
+        "OECD-Europe",
+        "Japan",
+        "Russia",
+        "Non-Russia Eurasia",
+        "China",
+        "India",
+        "Middle East",
+        "Africa",
+        "Latin America",
+        "OHI",
+        "Other non-OECD Asia",
+    ]
 
     dict_epsilons = {
         'Utility': 1.0,  # earlier: 0.005
@@ -253,8 +267,12 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         'Total Output': 1.0,
         'Total Aggregated Costs': 20,
         'Number of regions below consumption threshold': 1.0,
-        'Number of regions above damage threshold': 1.0
+        'Number of regions above damage threshold': 1.0,
     }
+
+    for region in regions_list:
+        dict_epsilons[f'Regional CPC {region}'] = 1.0
+        dict_epsilons[f'Regional DPC {region}'] = 1.0
 
     # Relevant years
     if years is None:
@@ -294,8 +312,12 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
         outcomes_maximize_names = [
             'Utility',
             'Total Output',
-            'Lowest income per capita'
+            'Lowest income per capita',
         ]
+
+        for region in regions_list:
+            outcomes_maximize_names.append(f'Regional CPC {region}')
+
         outcomes_minimize_names = [
             'Damages',
             'Disutility',
@@ -312,6 +334,10 @@ def get_outcomes_and_epsilons(problem_formulation, years=None, searchover="lever
             "Intratemporal consumption Gini",
             "Intratemporal damage Gini",
         ]
+
+        for region in regions_list:
+            outcomes_minimize_names.append(f'Regional DPC {region}')
+
         outcomes_maximize_aggregated = []
         outcomes_minimize_aggregated = []
         outcomes_info_aggregated = []
@@ -490,7 +516,9 @@ def get_all_kpi_names():
         'Damages',
         'Industrial Emission',
         'Atmospheric Temperature',
-        'Total Output'
+        'Total Output',
+        'Regional CPC',
+        'Regional DPC',
     ]
 
     return outcomes_all_names

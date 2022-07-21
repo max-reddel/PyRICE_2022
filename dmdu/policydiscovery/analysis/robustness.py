@@ -28,22 +28,22 @@ def get_robustness_dataframe(experiments, outcomes, problem_formulation):
         # Calculate Starr's domain criterion
         if outcome_name in ['Temperature overshoot 2105', 'Atmospheric Temperature 2105', 'Industrial Emission 2105']:
             robustness_value = starr(experiments, outcomes_dict, outcome_name, threshold=4, higher_is_better=False)
-            robust[f'starr({get_name_without_year(outcome_name)})'] = robustness_value
+            robust[f'starr\natmospheric\ntemperature'] = robustness_value
 
         # Calculate maximax
         elif outcome_name in ['Total Output 2105']:
             robustness_value = max_regret(experiments, outcomes_dict, outcome_name)
-            robust[f'minimax({get_name_without_year(outcome_name)})'] = robustness_value
+            robust[f'minimax\n{get_name_without_year(outcome_name)}'] = robustness_value
 
         # Calculate Hurwicz criterion
         elif outcome_name in ['Utility 2105']:
             robustness_value = hurwicz_criterion(experiments, outcomes_dict, outcome_name)
-            robust[f'hurwicz({get_name_without_year(outcome_name)})'] = robustness_value
+            robust[f'hurwicz\n{"welfare"}'] = robustness_value
 
         # Calculate 90th percentile minimax regret
-        elif outcome_name in ['Damages 2105']:
+        elif outcome_name in ['Disutility 2105']:
             robustness_value = percentile_90_minimax_regret(experiments, outcomes_dict, outcome_name)
-            robust[f'90minimax({get_name_without_year(outcome_name)})'] = robustness_value
+            robust[f'90minimax\n{"welfare loss"}'] = robustness_value
 
         # # Calculate maximin
         # elif outcome_name in []:

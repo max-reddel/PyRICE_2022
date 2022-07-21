@@ -20,18 +20,18 @@ import pandas as pd
 if __name__ == '__main__':
 
     scenario_types = ['references', 'bad', 'random_reused', 'random_not_reused']
-    scenario_type = scenario_types[2]  # Change index here
+    scenario_type = scenario_types[1]  # Change index here
 
     lever_names = get_lever_names()
     counter = PolicyCounter()
 
     problem_formulations = [
-        # ProblemFormulation.UTILITARIAN_AGGREGATED,
-        # ProblemFormulation.UTILITARIAN_DISAGGREGATED,
-        # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
-        # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
-        # ProblemFormulation.EGALITARIAN_AGGREGATED,
-        # ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.UTILITARIAN_AGGREGATED,
+        ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
         ProblemFormulation.PRIORITARIAN_AGGREGATED,
         ProblemFormulation.PRIORITARIAN_DISAGGREGATED
     ]
@@ -76,7 +76,7 @@ if __name__ == '__main__':
             n_policies=policy_list,
             saving_results=True,
             folder=saving_directory,
-            file_name=f'results_{problem_formulation.name}'
+            file_name=f'results_regional_{problem_formulation.name}'
         )
 
         # Overwrite scenarios to the specific set of scenarios that have been used in first iteration
