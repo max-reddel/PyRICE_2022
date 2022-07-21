@@ -2,6 +2,10 @@
 This module contains functions to visualize outcomes, hypervolume, etc.
 """
 from enum import Enum
+import types
+
+import matplotlib
+import numpy as np
 import plotly.graph_objects as go
 from ema_workbench.analysis import plotting, Density, parcoords
 import matplotlib.pyplot as plt
@@ -11,6 +15,7 @@ import seaborn as sns
 import os
 import matplotlib.cm as cm
 from matplotlib.colors import to_rgb
+from matplotlib.ticker import MaxNLocator
 
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
@@ -712,6 +717,122 @@ def plot_kpi_pathways_with_color(
         save_own_figure(fig, file_name, sub_folder)
 
 
+def plot_pathways_all_problem_formulations(
+        problem_formulations_dict,
+        outcome_name,
+        saving=False,
+        file_name=None
+):
+    """
+    Main functino for KPIs
+    Plots pathways given one problem formulation. This function considers the results from the
+    reference scenarios.
+
+    @param problem_formulations_dict: dictionary
+    @param outcome_name: String
+    @param saving: Booelean
+    @param file_name: String: file name for saving
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+
+    fig, axes = plt.subplots(
+        nrows=2,
+        ncols=4,
+        figsize=(30, 12),
+        tight_layout=True,
+        sharey='all'
+    )
+    plt.subplots_adjust(
+        left=None,
+        bottom=None,
+        right=None,
+        top=None,
+        wspace=0.6,
+        hspace=0.4
+    )
+
+    years = list(range(2005, 2310, 10))
+
+    y_labels = get_y_labels_dict()
+
+    axes_font_size = 20
+
+    # Collecting all outcomes
+    all_outcomes = None
+    for _, outcomes in problem_formulations_dict.items():
+        outcomes.index = list(range(len(outcomes)))
+        if all_outcomes is None:
+            all_outcomes = outcomes
+        else:
+            all_outcomes = pd.concat([all_outcomes, outcomes])
+
+    problem_formulations = [
+        ProblemFormulation.UTILITARIAN_AGGREGATED,
+        ProblemFormulation.UTILITARIAN_DISAGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED,
+        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED,
+        ProblemFormulation.EGALITARIAN_AGGREGATED,
+        ProblemFormulation.EGALITARIAN_DISAGGREGATED,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED,
+    ]
+    color_mapping = {}
+    for _, (problem_formulation, color) in enumerate(zip(problem_formulations, sns.color_palette('Paired'))):
+        color_mapping[problem_formulation.name] = color
+
+    # Actual plotting
+    for pf_idx, (problem_formulation, outcomes) in enumerate(problem_formulations_dict.items()):
+
+        outcomes.index = list(range(len(outcomes)))
+        df = outcomes.filter(regex=outcome_name, axis=1)  # Filter columns to include "name"
+
+        for row_idx, row in df.iterrows():
+            color = color_mapping[problem_formulation]
+
+            if pf_idx < 4:
+                row_idx = 0
+                col_idx = pf_idx
+            else:
+                row_idx = 1
+                col_idx = pf_idx - 4
+
+            axes[row_idx, col_idx].plot(
+                years,
+                row.iloc[:],
+                linewidth=0.5,
+                alpha=0.4,
+                linestyle='-',
+                color=color,
+            )
+
+            # Annotations
+            terms = problem_formulation.split('_')
+            short_name = f'{terms[0][0]}{terms[1][0]}'
+            axes[row_idx, col_idx].set_title(short_name, fontsize=30, pad=20)
+            axes[row_idx, col_idx].set_xlabel('time in years', fontsize=axes_font_size)
+            y_label = y_labels[outcome_name]
+            axes[row_idx, col_idx].set_ylabel(y_label, fontsize=axes_font_size)
+            if outcome_name == 'Atmospheric Temperature':
+                axes[row_idx, col_idx].yaxis.set_major_locator(MaxNLocator(6))
+            else:
+                axes[row_idx, col_idx].yaxis.set_major_locator(MaxNLocator(5))
+
+    # Show labels although sharing y-axis
+    for ax in axes.flatten():
+        # ax.xaxis.set_tick_params(labelbottom=True)
+        ax.yaxis.set_tick_params(labelleft=True)
+
+    plt.show()
+
+    if saving:
+        if file_name is None:
+            file_name = "pathways"
+        sub_folder = 'pathways'
+        save_own_figure(fig, file_name, sub_folder)
+
+
 def plot_one_pathway(experiments, outcomes, outcome_name, saving=False, file_name=None):
     """
     Plot the pathways of a specific objective grouped by their clusters.
@@ -911,9 +1032,9 @@ def get_y_labels_dict():
         'Utility': 'welfare',
         'Disutility': 'welfare loss',
         'Lowest income per capita': 'lowest income per capita ($1000)',
-        'Intratemporal consumption Gini': 'Gini index',
+        'Intratemporal consumption Gini': 'Gini consumption',
         'Highest damage per capita': 'highest damage per capita',
-        'Intratemporal damage Gini': 'intratemporal damage Gini',
+        'Intratemporal damage Gini': 'Gini damage',
         'Population below consumption threshold': 'population below\nconsumption threshold (million)',
         'Distance to consumption threshold': 'distance to\nconsumption threshold',
         'Population above damage threshold': 'population above\ndamage threshold (million)',
@@ -925,6 +1046,36 @@ def get_y_labels_dict():
         'Total Output': 'GWP (trillion $)',
         'Number of regions above damage threshold': 'Number of regions\nabove damage threshold',
         'Number of regions below consumption threshold': 'Number of region-quintiles\nbelow consumption threshold'
+    }
+
+    return info_dict
+
+
+def get_flat_y_labels_dict():
+    """
+    Returns a dictionary that provides y_label information for a given objective.
+    @return
+        info_dict: dictionary: {objective_name (string): name + units (string)}
+    """
+
+    info_dict = {
+        'Utility': 'welfare',
+        'Disutility': 'welfare loss',
+        'Lowest income per capita': 'lowest income per capita ',
+        'Intratemporal consumption Gini': 'Gini consumption',
+        'Highest damage per capita': 'highest damage per capita',
+        'Intratemporal damage Gini': 'Gini damage',
+        'Population below consumption threshold': 'population below consumption threshold',
+        'Distance to consumption threshold': 'distance to consumption threshold',
+        'Population above damage threshold': 'population above damage threshold',
+        'Distance to damage threshold': 'distance to damage threshold ',
+        'Temperature overshoot': '# of time steps with 2°C temperature overshoots',
+        'Damages': 'economic damages',
+        'Industrial Emission': 'global emissions',
+        'Atmospheric Temperature': 'increase in atmospheric temperature ',
+        'Total Output': 'GWP',
+        'Number of regions above damage threshold': 'Number of regions above damage threshold',
+        'Number of regions below consumption threshold': 'Number of region-quintiles below consumption threshold'
     }
 
     return info_dict
@@ -1130,7 +1281,7 @@ def plot_single_parallel_axis_plot(
     """
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
-    sns.set(rc={'figure.figsize': (12, 8)})
+    sns.set(rc={'figure.figsize': (5, 5)})
 
     minimize_list = [
         'damages',
@@ -1150,10 +1301,12 @@ def plot_single_parallel_axis_plot(
     problem_formulations = [
         ProblemFormulation.UTILITARIAN_AGGREGATED.name,
         ProblemFormulation.UTILITARIAN_DISAGGREGATED.name,
-        # ProblemFormulation.SUFFICIENTARIAN_AGGREGATED.name,
-        # ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name,
+        ProblemFormulation.SUFFICIENTARIAN_AGGREGATED.name,
+        ProblemFormulation.SUFFICIENTARIAN_DISAGGREGATED.name,
         ProblemFormulation.EGALITARIAN_AGGREGATED.name,
         ProblemFormulation.EGALITARIAN_DISAGGREGATED.name,
+        ProblemFormulation.PRIORITARIAN_AGGREGATED.name,
+        ProblemFormulation.PRIORITARIAN_DISAGGREGATED.name,
     ]
 
     if problem_formulation is None:
@@ -1181,16 +1334,16 @@ def plot_single_parallel_axis_plot(
         axes.plot(
             gray_df,
             color=to_rgb((230/256, 230/256, 230/256)),
-            linewidth=1,
-            alpha=1.0
+            linewidth=0.8,
+            alpha=0.9
         )
 
     axes.plot(
         df,
         color=color_mapping[problem_formulation],
         label=problem_formulation,
-        linewidth=2,
-        alpha=1.0
+        linewidth=0.5,
+        alpha=0.4
     )
 
     # Invert axes where necessary
@@ -1342,8 +1495,8 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
     nrows = len(outcome_names)
     ncols = 3
 
-    # figsize = (ncols * 9, nrows * 6)
-    figsize = (ncols * 4, nrows * 6)
+    figsize = (ncols * 9, nrows * 6)
+    # figsize = (ncols * 4, nrows * 6)
 
     fig, axes = plt.subplots(
         nrows=nrows,
@@ -1379,7 +1532,7 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
             all_outcomes = None
             for problem_formulation, outcomes in problem_formulations.items():
                 terms = problem_formulation.split('_')
-                outcomes['problem formulation'] = terms[0][0]  # + terms[1][0]  # comment in to show second letter of PF
+                outcomes['problem formulation'] = terms[0][0] + terms[1][0]  # comment in to show second letter of PF
                 if all_outcomes is None:
                     all_outcomes = outcomes
                 else:
@@ -1393,8 +1546,8 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
                 y=f'{outcome_name} {year}',
                 data=all_outcomes,
                 ax=axes[outcome_idx, dict_idx],
-                # palette=sns.color_palette('Paired'),
-                palette=delft_colors,
+                palette=sns.color_palette('Paired'),
+                # palette=delft_colors,
 
             )
 
@@ -1413,6 +1566,123 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
         if file_name is None:
             file_name = 'boxplots_3_ways'
         sub_folder = 'boxplots'
+        save_own_figure(fig, file_name, sub_folder)
+
+    plt.show()
+
+
+def compute_medians(problem_formulations_dict, kpi, year):
+    """
+    Compute the medians per problem formulations for a given KPI.
+    @param problem_formulations_dict: dictionary: {problem formulation: outcomes DataFrame}
+    @param kpi: string
+    @param year: int
+    @return:
+        pf_medians_dict: dictionary: {problem formulation: median}
+    """
+
+    column_name = f'{kpi} {year}'
+
+    pf_medians_dict = {}
+
+    for pf, outcomes in problem_formulations_dict.items():
+
+        kpi_median = outcomes.loc[:, column_name].median()
+
+        pf_medians_dict[pf] = kpi_median
+
+    return pf_medians_dict
+
+
+def compute_relative_values(medians_dict):
+    """
+    Compute relative differences between medians of problem formulations.
+    @param medians_dict:
+    @return:
+        data: np.array (2d)
+    """
+    data = np.zeros((len(medians_dict), len(medians_dict)))
+
+    # maximum difference
+    values = sorted(list(medians_dict.values()))
+    max_difference = abs(values[-1] - values[0])
+
+    for row_idx, (_, median_1) in enumerate(medians_dict.items()):
+        for col_idx, (_, median_2) in enumerate(medians_dict.items()):
+            dif = (median_1 - median_2) / max_difference
+            data[row_idx, col_idx] = dif
+
+    return data
+
+
+def plot_pf_median_relations(problem_formulations_dict, kpi, year, maximize, saving=False, file_name=None):
+    """
+    Plot a grid with colored cells. A cell represents the relation between two problem formulations.
+    @param problem_formulations_dict: dictionary: {problem formulation: outcomes DataFrame}
+    @param kpi: string
+    @param year: int
+    @param maximize: Boolean: should kpi be maximized?
+    @param saving: Boolean
+    @param file_name: String
+    """
+
+    sns.set(font_scale=1.8)
+    sns.set_style("whitegrid")
+    fig, ax = plt.subplots(figsize=(14, 12))
+
+    if maximize:
+        cmap = sns.diverging_palette(20, 145, as_cmap=True)
+    else:
+        cmap = sns.diverging_palette(145, 20, as_cmap=True)
+
+    medians_dict = compute_medians(problem_formulations_dict, kpi, year)
+
+    data = compute_relative_values(medians_dict)
+
+    plt.pcolormesh(data, cmap=cmap)
+    cbar = plt.colorbar()
+    cbar.set_label('relative performance', labelpad=15)
+
+    x_labels = ax.get_xticks().tolist()
+    y_labels = ax.get_yticks().tolist()
+
+    # Shorten problem formulation names
+    pf_strings = []
+    for pf in problem_formulations_dict.keys():
+        terms = pf.split('_')
+        short_pf = terms[0][0] + terms[1][0]
+        pf_strings.append(short_pf)
+
+    # Create new lables
+    new_labels = []
+    for pf in pf_strings:
+        # new_labels.append('')
+        new_labels.append(pf)
+    new_labels.append('')
+
+    # Shift ticks
+    SHIFT = -0.5  # Data coordinates
+    for label in ax.xaxis.get_majorticklabels():
+        label.customShiftValue = SHIFT
+        label.set_x = types.MethodType(lambda self, x: matplotlib.text.Text.set_x(self, x - self.customShiftValue),
+                                       label)
+
+    SHIFT = -0.5  # Data coordinates
+    for label in ax.yaxis.get_majorticklabels():
+        label.customShiftValue = SHIFT
+        label.set_y = types.MethodType(lambda self, y: matplotlib.text.Text.set_y(self, y - self.customShiftValue),
+                                       label)
+
+    plt.xticks(x_labels, new_labels)
+    plt.yticks(y_labels, new_labels)
+
+    name = get_flat_y_labels_dict()[kpi]
+    plt.title(f"{name}")
+
+    if saving:
+        if file_name is None:
+            file_name = f'kpi_medians_{name}'
+        sub_folder = 'relativemedians'
         save_own_figure(fig, file_name, sub_folder)
 
     plt.show()

@@ -2,7 +2,7 @@
 This module contains functions to specify uncertainties, outcomes, levers, constants, and to compute epsilon values for
 the optimization process.
 """
-import pandas as pd
+
 from ema_workbench import ScalarOutcome, RealParameter, IntegerParameter, Constant
 from model.enumerations import *
 
@@ -463,6 +463,34 @@ def get_all_outcome_names():
         "Distance to damage threshold",
         "Population above damage threshold",
         "Temperature overshoot",
+    ]
+
+    return outcomes_all_names
+
+
+def get_all_kpi_names():
+    """
+    Return the most important outcome variable names.
+    @return:
+        outcomes_all_names: list with Strings
+    """
+
+    outcomes_all_names = [
+        "Utility",
+        "Disutility",
+        "Intratemporal consumption Gini",
+        "Intratemporal damage Gini",
+        "Lowest income per capita",
+        "Highest damage per capita",
+        "Distance to consumption threshold",
+        "Population below consumption threshold",
+        "Distance to damage threshold",
+        "Population above damage threshold",
+        "Temperature overshoot",
+        'Damages',
+        'Industrial Emission',
+        'Atmospheric Temperature',
+        'Total Output'
     ]
 
     return outcomes_all_names

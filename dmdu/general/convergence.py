@@ -123,7 +123,12 @@ def plot_epsilon_progress(
         if file_name is None:
             file_name = 'convergence_epsilon_progress'
         file_name += '.png'
-        directory = os.path.join(os.path.dirname(os.getcwd()), 'outputimages', file_name)
+        directory = os.path.join(
+            os.path.dirname(os.path.dirname(os.getcwd())),
+            'outputimages',
+            'optimalpolicies',
+            file_name
+        )
         fig.savefig(directory, dpi=200, pad_inches=0.2)
 
 
