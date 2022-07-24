@@ -78,24 +78,27 @@ def plot_epsilon_progress(
                     'epsilon_progress.csv'
                 )
 
-                # load dataframe
-                df = pd.read_csv(directory)
+                # If statement because incomplete data for ED
+                if not ((reference_idx == 2 or reference_idx == 3) and seed_idx == 1 and problem_formulation == 'EGALITARIAN_DISAGGREGATED'):
 
-                # Plotting
-                axes[pf_idx, reference_idx].plot(
-                    df.nfe,
-                    df.epsilon_progress,
-                    color=color_mapping[seed_idx],
-                    label=f'seed {seed_idx}'
-                )
-                axes[pf_idx, reference_idx].yaxis.set_major_locator(plt.MaxNLocator(integer=True))
-                axes[pf_idx, reference_idx].set_ylabel(y_label, fontsize=axes_font_size)
-                clean_reference_name = ' '.join(reference_name.split('_'))
-                fig_title = f'{clean_reference_name} {reference_idx}'
-                axes[pf_idx, reference_idx].set_title(fig_title, fontsize=22)
-                axes[pf_idx, reference_idx].set_xlabel(x_label, fontsize=axes_font_size)
+                    # load dataframe
+                    df = pd.read_csv(directory)
 
-                axes[pf_idx, reference_idx].tick_params(axis='both', which='minor', labelsize=8)
+                    # Plotting
+                    axes[pf_idx, reference_idx].plot(
+                        df.nfe,
+                        df.epsilon_progress,
+                        color=color_mapping[seed_idx],
+                        label=f'seed {seed_idx}'
+                    )
+                    axes[pf_idx, reference_idx].yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+                    axes[pf_idx, reference_idx].set_ylabel(y_label, fontsize=axes_font_size)
+                    clean_reference_name = ' '.join(reference_name.split('_'))
+                    fig_title = f'{clean_reference_name} {reference_idx}'
+                    axes[pf_idx, reference_idx].set_title(fig_title, fontsize=22)
+                    axes[pf_idx, reference_idx].set_xlabel(x_label, fontsize=axes_font_size)
+
+                    axes[pf_idx, reference_idx].tick_params(axis='both', which='minor', labelsize=8)
 
     # Splitting strings for better readability
     problem_formulations = ['\n'.join(pf.split('_')) for pf in problem_formulations]

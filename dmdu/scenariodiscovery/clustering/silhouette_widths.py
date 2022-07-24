@@ -34,6 +34,36 @@ from dmdu.general.xlm_constants_epsilons import get_all_outcome_names
 from dmdu.general.timer import *
 
 
+def get_flat_y_labels_dict():
+    """
+    Returns a dictionary that provides y_label information for a given objective.
+    @return
+        info_dict: dictionary: {objective_name (string): name + units (string)}
+    """
+
+    info_dict = {
+        'Utility': 'welfare',
+        'Disutility': 'welfare loss',
+        'Lowest income per capita': 'lowest income per capita ',
+        'Intratemporal consumption Gini': 'Gini consumption',
+        'Highest damage per capita': 'highest damage per capita',
+        'Intratemporal damage Gini': 'Gini damage',
+        'Population below consumption threshold': 'population below consumption threshold',
+        'Distance to consumption threshold': 'distance to consumption threshold',
+        'Population above damage threshold': 'population above damage threshold',
+        'Distance to damage threshold': 'distance to damage threshold ',
+        'Temperature overshoot': '# of time steps with 2°C temperature overshoots',
+        'Damages': 'economic damages',
+        'Industrial Emission': 'global emissions',
+        'Atmospheric Temperature': 'increase in atmospheric temperature ',
+        'Total Output': 'GWP',
+        'Number of regions above damage threshold': 'Number of regions above damage threshold',
+        'Number of regions below consumption threshold': 'Number of region-quintiles below consumption threshold'
+    }
+
+    return info_dict
+
+
 def get_outcomes_reshaped(outcomes_df, objective_names):
     """
     Reshape outcomes such that it summarizes the objectives by year. Instead of 'Utility 2005', etc., there will be
@@ -53,6 +83,16 @@ def get_outcomes_reshaped(outcomes_df, objective_names):
 
     years = np.arange(2005, 2310, 10)
     outcomes_reshaped["TIME"] = np.array([years for _ in range(30000)])
+
+    # Renaming the keys
+    key_labels = get_flat_y_labels_dict()
+    key_labels['TIME'] = 'TIME'
+
+    # Renaming keys
+    pretty_dict = {key_labels[k]: v for k, v in outcomes_reshaped.items()}
+    outcomes_reshaped = pretty_dict
+    # for key in outcomes_reshaped.keys():
+    #     outcomes_reshaped[key_labels[key]] = outcomes_reshaped.pop(key)
 
     return outcomes_reshaped
 
@@ -221,6 +261,8 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
         left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8
     )
 
+    title_labels = get_flat_y_labels_dict()
+
     # Figures
     for i, ax in enumerate(axes.flat):
         if i >= len(objectives):
@@ -238,7 +280,7 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
         )
         ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
 
-        ax.set_title(objective, fontsize=30)
+        ax.set_title(title_labels[objective], fontsize=30)
         ax.set_xlabel("Number of clusters")
         ax.set_ylabel("Average silhouette width")
 
@@ -248,12 +290,12 @@ def plot_silhouette_widths(widths, saving=False, file_name=None):
     if saving:
 
         visualization_folder = (os.path.join(
-            os.path.dirname(os.path.dirname(os.getcwd())), 'outputimages')
+            os.path.dirname(os.path.dirname(os.getcwd())), 'outputimages', 'scenariodiscovery')
         )
         if file_name is None:
             file_name = "scenario_discovery_time_series_clustering_silhouette_widths"
         file_name += ".png"
-        fig.savefig(os.path.join(visualization_folder, file_name), dpi=200, pad_inches=0.2)
+        fig.savefig(os.path.join(visualization_folder, file_name), dpi=100, pad_inches=0.2)
 
 
 def get_experiments_with_clusters(
@@ -269,11 +311,13 @@ def get_experiments_with_clusters(
     """
 
     # Loading outcomes
-    target_directory = (os.path.join(
+    target_directory = os.path.join(
         os.path.dirname(os.path.dirname(os.getcwd())),
         'exploration',
-        'data'))
-    results = load_results(file_name=target_directory + results_name)
+        'data',
+        results_name
+    )
+    results = load_results(file_name=target_directory)
 
     experiments, outcomes = results
 
@@ -288,7 +332,6 @@ def get_experiments_with_clusters(
 
     # Save into dataframe
     x = experiments.copy()
-    # x['clusters'] = clusters.astype('int')
     x["clusters"] = clusters.astype("object")
 
     return x
@@ -301,6 +344,7 @@ def plot_clustered_pathways(outcomes, outcome_name, relevant_clusters):
     @param outcome_name: String
     @param relevant_clusters: list with integers
     """
+    sns.set_style("whitegrid")
     experiments_list = [
         get_experiments_with_clusters(objective=outcome_name, cluster_number=c)
         for c in relevant_clusters
@@ -309,16 +353,19 @@ def plot_clustered_pathways(outcomes, outcome_name, relevant_clusters):
         outcomes_df=outcomes, objective_names=[outcome_name]
     )
 
+    title_labels = get_flat_y_labels_dict()
+    title_labels['TIME'] = 'TIME'
+
     for idx, cluster in enumerate(relevant_clusters):
         fig, axes = plotting.lines(
             experiments=experiments_list[idx],
             outcomes=reshaphed_outcomes,
-            outcomes_to_show=outcome_name,
+            outcomes_to_show=title_labels[outcome_name],
             group_by="clusters",
             density=Density.BOXPLOT,
         )
         fig.set_size_inches(15, 8)
-        fig.suptitle(f"{outcome_name} with {cluster} clusters", y=1.1)
+        fig.suptitle(f"{title_labels[outcome_name]} with {cluster} clusters", y=1.1, fontsize=20)
         plt.show()
 
 

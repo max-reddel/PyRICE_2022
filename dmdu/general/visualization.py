@@ -77,12 +77,14 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
         ncols = 5
 
     fig, axes = plt.subplots(
-        nrows=nrows, ncols=ncols, figsize=(36, 24), tight_layout=True
+        nrows=nrows, ncols=ncols, figsize=(30, 20), tight_layout=True
     )
     plt.subplots_adjust(
         left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.8
     )
 
+    y_labels = get_y_labels_dict()
+    title_labels = get_flat_y_labels_dict()
     years = list(range(2005, 2310, 10))
 
     size_df = outcomes_df.shape[0]
@@ -112,9 +114,10 @@ def plot_pathways(outcomes_df, outcome_names, saving=False, file_name=None):
                 color='forestgreen',
             )
 
-        ax.set_title(name)
-        ax.set_xlabel('Time in years')
-        ax.set_ylabel(name)
+        ax.set_title(title_labels[name])
+        ax.set_xlabel('time in years')
+        ax.set_ylabel(y_labels[name])
+        ax.yaxis.set_major_locator(MaxNLocator(5))
 
     if len(outcome_names) > 6:
         axes[-1, -1].axis('off')
@@ -1175,7 +1178,6 @@ def get_y_labels_dict():
         'Number of regions above damage threshold': 'Number of regions\nabove damage threshold',
         'Number of regions below consumption threshold': 'Number of region-quintiles\nbelow consumption threshold'
     }
-
 
     return info_dict
 
