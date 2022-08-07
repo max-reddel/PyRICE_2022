@@ -153,42 +153,42 @@ The `model` directory contains all model relevant components, including the main
 The model uses four sub-models: `economy_model`, `carbon_cycle_model`, `climate_model`, and `utility_model`. Each is responsible for its own domain. The flow within one time step is depicted below.
 
 ![image info](images/model_flow.png)
-<figcaption align = "center"><b>Fig.1 - PyRICE Model Flow</b></figcaption>
+<figcaption align = "center"><b>Fig.2 - PyRICE Model Flow</b></figcaption>
 
 This simple representation of the model flow is useful but it obfiscuates the feedback loops within the model. For this purpose, we also want to show the following figure.
 
 ![image info](images/iam.png)
-<figcaption align = "center"><b>Fig.2 - IAM </b></figcaption>
+<figcaption align = "center"><b>Fig.3 - IAM </b></figcaption>
 
 ### 4.2 XLRM 
 
-Within the XLRM framework, the PyRICE model can be represented as seen in the figure 3. 
+Within the XLRM framework, the PyRICE model can be represented as seen in the figure 4. 
 
 ![image info](images/xlrm_pyrice.png)
-<figcaption align = "center"><b>Fig.3 - XLRM for PyRICE</b></figcaption>
+<figcaption align = "center"><b>Fig.4 - XLRM for PyRICE</b></figcaption>
 
 #### 4.2.1 X: Uncertainties
 
 ![image info](images/uncertainties.png)
-<figcaption align = "center"><b>Fig.4 - X: Uncertainties </b></figcaption>
+<figcaption align = "center"><b>Fig.5 - X: Uncertainties </b></figcaption>
 
 
 #### 4.2.2 L: Levers
 
 ![image info](images/levers.png)
-<figcaption align = "center"><b>Fig.4 - L: Levers </b></figcaption>
+<figcaption align = "center"><b>Fig.6 - L: Levers </b></figcaption>
 
 
 #### 4.2.3 M: Metrics
-The metrics depend on the exact problem formulation. There are 8 problem formulations, which is a combination of an ethical premise and an aggregation level. Figure 5 provides an overview.
+The metrics depend on the exact problem formulation. There are 8 problem formulations, which is a combination of an ethical premise and an aggregation level. Figure 7 provides an overview.
 
 ![image info](images/problem_formulations.png)
-<figcaption align = "center"><b>Fig.5 - Problem Formulations</b></figcaption>
+<figcaption align = "center"><b>Fig.7 - Problem Formulations</b></figcaption>
 
-The individual metrics are listed and explained in Figure 6 below.
+The individual metrics are listed and explained in Figure 8 below.
 
 ![image info](images/metrics.png)
-<figcaption align = "center"><b>Fig.4 - M: Metrics </b></figcaption>
+<figcaption align = "center"><b>Fig.8 - M: Metrics </b></figcaption>
 
 
 ### 4.3 Regions
