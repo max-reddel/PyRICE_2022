@@ -29,7 +29,6 @@ This is a simulation model implementation of the RICE2010 model by Nordhaus. It 
    2. [Run](#52-run-the-pyrice-model)
    3. [Results](#53-view-results)
 
-
 ---
 
 ## 1. Context
