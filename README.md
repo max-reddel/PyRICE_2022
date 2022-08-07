@@ -1,16 +1,23 @@
-# CAUTION: THIS README NEEDS UPDATES
-
 # The PyRICE Model
 
 
 ## Authored by Max Reddel
 
-This is a simulation model implementation of the RICE2010 model by Nordhaus. It is modified in a way, such that alternative ethical problem formulations can be selected. Concretely, next to the standard `utilitarian` problem formulation, the user can alternatively choose a `prioritarian`, `sufficientarian`, or an `egalitarian` problem formulation.
+This is a simulation model implementation of the RICE2010 model by Nordhaus. It is modified in a way, such that alternative ethical problem formulations and the level of aggregation can be selected. The aggregation levels refer whether to disaggregate utility and disutility.
 
+### Ethical Premises
+- `utilitarian`
+- `sufficientarian`
+- `egalitarian`
+- `prioritarian`
+
+### Aggregation Levels
+- `aggregated`
+- `disaggregated`
 
 
 ## Table of Contents
-1. [General Remarks](#1-general-remarks)
+1. [Context](#1-context)
 2. [Uncertainty Modules](#2-uncertainty-modules)
 3. [Repository Structure](#3-repository-structure)
 4. [The PyRICE Model](#4-the-pyrice-model)
@@ -22,71 +29,120 @@ This is a simulation model implementation of the RICE2010 model by Nordhaus. It 
    2. [Run](#52-run-the-pyrice-model)
    3. [Results](#53-view-results)
 
-    
 
-## 1. General Remarks
+---
 
-This project has been developed within a master's thesis at the **TU Delft** during the academic year 2021/22 Q3 and Q4. It is a continuation of the same author's work during his internship at the **Hippo DAI Lab** at the **TU Delft** during the academic year 2021/22 between Q1 and Q2. This model is based on the work of Ivar Tjallingii who developed a working version of PyRICE. The initial contribution (during the internship) of Max Reddel lies in refactoring the PyRICE model, such that modularity, object-orientation, and thus reusability are enabled. Ivar's original model can be found in [this repository](https://github.com/itjallingii/PyRICE2020). Further changes with respect to the exact design of the social welfare functions and the disaggregation of utility and disutility follow during this project.
+## 1. Context
+
+This project has been developed within a master's thesis at the **TU Delft** during the academic year 2021/22 (Q3 and Q4). It is a continuation of the same author's work during his internship at the **Hippo DAI Lab** at the **TU Delft** during the academic year 2021/22 between (Q1 and Q2). This model is based on the work of Ivar Tjallingii who developed a working version of PyRICE. The initial contribution (during the internship) of Max Reddel lies in refactoring the PyRICE model, such that modularity, object-orientation, and thus reusability are enabled. Ivar's original model can be found in [this repository](https://github.com/itjallingii/PyRICE2020). Further changes with respect to the exact design of the social welfare functions and the disaggregation of utility and disutility have followed during this project.
+
+The topic of **equity in climate change policy** is itself motivated by many international developments and especially the so-called **double inequality** The term \textit{double inequality} which has been coined to describe the inverse relationship of the distributions of risks and responsibilities. Figure 1 shows a visual representation. The left image shows Cumulative CO₂ emissions by Country. The right image shows the vulnerability that measures a country's exposure, sensitivity and ability to adapt to the negative impact of climate change. (The images have been created by Palok Biswas and can be found [here](https://www.datawrapper.de/_/sBfif/) and [here](https://www.datawrapper.de/_/Iy6d0/), respectively.) 
+
+![image info](images/double_inequality.png)
+<figcaption align = "center"><b>Fig.1 - Double Inequality </b></figcaption>
+
+
 
 ---
 
 ## 2. Uncertainty Modules
-The PyRICE has been connected to the SSP scenarios by aggregating country statistics into 12 RICE regions. Extra climate uncertainties have been added to analyze the expsosure of alternative abatement pathways to deep uncertainty in climate change. Within the model, it can be switched between a long-term and short-term uncertainty analysis. 
-
-To use the uncertainty modules, additional packages need to be installed to connect to the [EMA-workbench](https://emaworkbench.readthedocs.io/en/latest/).
+The PyRICE has been connected to the SSP scenarios by aggregating country statistics into 12 RICE regions. Extra climate uncertainties have been added to analyze the expsosure of alternative abatement pathways to deep uncertainty in climate change. To use the uncertainty modules, additional packages need to be installed to connect to the [ema_workbench](https://emaworkbench.readthedocs.io/en/latest/).
 
 
 ---
 ## 3. Repository Structure
 
 ```
-./PyRICE/
+./PyRICE_2022/
+├── dmdu
+│   ├── exploration   
+│   │   ├── data                                # resulting data from experiments          
+│   │   ├── epsilon_determination.ipynb         
+│   │   ├── exploration_damage_gini.ipynb
+│   │   ├── exploration_damage_threshold.ipynb
+│   │   ├── open_exploration.ipynb
+│   │   ├── perform_experiments.py
+│   │   └── sensitivity_analysis.ipynb
+│   ├── general         
+│   │   ├── convergence.py                        
+│   │   ├── directed_search.py
+│   │   ├── timer.py
+│   │   ├── visualization.py                    # functions for data visualization
+│   │   └── xlm_constants_epsilons.py           # functions to return X, L, M, epsilon values and constants
+│   ├── outputimages                            # images resulting from data visualization
+│   │   ├── boxplots
+│   │   ├── exploration
+│   │   ├── iEMSs
+│   │   ├── optimalpolicies
+│   │   ├── pathways
+│   │   ├── relativemedians
+│   │   ├── scenariodiscovery
+│   │   ├── seeds
+│   │   └── tradeoffs
+│   ├── policydiscovery
+│   │   ├── analysis
+│   │   │   ├── seedanalysis                    # scripts and notebooks for seed analysis
+│   │   │   ├── boxplots.ipynb
+│   │   │   ├── convergence.ipynb
+│   │   │   ├── high_level_pathways.ipynb
+│   │   │   ├── iEMSs.ipynb
+│   │   │   ├── more_pathways.ipynb
+│   │   │   ├── pareto_front.ipynb
+│   │   │   ├── pathways.ipynb
+│   │   │   ├── pf_median_grids.ipynb
+│   │   │   ├── policy_selection.ipynb
+│   │   │   ├── regional_pathways.ipynb
+│   │   │   ├── robustness.py
+│   │   │   ├── robustness_analysis.ipynb
+│   │   │   ├── selected_policies.ipynb
+│   │   │   └── trade_offs.ipynb
+│   │   ├── data                                # data from optimizations and consequent experiments
+│   │   ├── paretosorting                       # non-dominated sorting post optimization
+│   │   │   ├── data
+│   │   │   │   ├── final
+│   │   │   │   ├── input
+│   │   │   │   └── output
+│   │   │   ├── prepare_input.py
+│   │   │   ├── prepare_output.ipynb
+│   │   │   └── README.md
+│   │   ├── directed_policy_search.py
+│   │   ├── experimentation.py
+│   │   └── seed_experimentation.py
+│   └── scenariodiscovery         
+│       ├── clustering
+│       │   ├── data
+│       │   ├── clustering.ipynb
+│       │   ├── silhouette_widths.py
+│       │   └── worst_scenarios.ipynb
+│       ├── search
+│       │   ├── data
+│       │   ├── convergence.ipynb
+│       │   ├── directed_scenario_search.py
+│       │   └── worst_scenarios.ipynb
+│       └── selection
+│           ├── data
+│           ├── reference_scenarios.ipynb
+│           └── scenario_selection.py
 ├── examples
-│   ├── simulation.ipynb                  # Example notebook to run the PyRICE model    
-│   └── simulation.py                     # Example script to run PyRICE model
-├── images
-├── model                                 # Contains entire model implementaiton
+│   ├── simulation.ipynb                        # example notebook to run the PyRICE model    
+│   └── simulation.py                           # example script to run PyRICE model
+├── images                                      # images for md files
+├── model                                       # entire model implementation
 │   ├── inputdata                   
-│   ├── outputdata            
+│   ├── outputdata           
 │   ├── submodels                   
 │   │   ├── carbon_cycle_model.py     
 │   │   ├── climate_model.py          
 │   │   ├── economy_model.py         
-│   │   └── utility_model.py              # Contains different welfare functions
+│   │   └── utility_model.py               
 │   ├── data_sets.py                 
-│   ├── enumerations                      # Custom enums (model specification, social welfare function, damage function)   
+│   ├── enumerations                            # Custom enums   
 │   ├── model_limits.py                         
-│   └── pyrice.py                         # Main model
-├── optimization
-│   ├── outputimages         
-│   ├── problemformulations               # contains files to run optimizations w/ specific problem formulations
-│   │   ├── nordhaus_utilitarian.py          
-│   │   ├── nordhaus_sufficientarian.py         
-│   │   ├── weitzman_utilitarian.py      
-│   │   └── weitzman_sufficientarian.py   
-│   ├── results                           # contains results and convergence data in csv format 
-│   ├── visualizations                                
-│   │   ├── convergence.ipynb             # Notebook to visualize convergence
-│   │   ├── epsilon_progress.py           # Contains functions to compute and visualize epsilon progress
-│   │   ├── hypervolume.py                # Contains functions to compute and visualize Hypervolume
-│   │   ├── pathways.ipynb                # Notebook to visualize pathways 
-│   │   └── pathways.py                   # Contains functions to visualize pathways
-│   ├── outcomes_and_epsilons.py          # Contains function that returns outcomes and epsilons  
-│   ├── problem_formulation.py            # Contains definition of function to run an optimization 
-│   └── README.md    
-├── verification
-│   ├── pyrice                            # Used to check invariance throughout refactoring process
-│   │   ├── testdata                      # Contains pickled data from Ivar's original PyRICE model
-│   │   ├── check.py                      # Contains class for checking results for equality (current vs. original)
-│   │   ├── original_pyrice.ipynb         # Executes checks
-│   │   └── save_model_results.ipynb      # Run current model with parameter combos and save pickled results
-│   └── rice                              # Used to verify results of PyRICE model against original RICE2010 results
-│       ├── outputimages          
-│       └── original_rice.ipynb               
+│   └── pyrice.py                               # Main model       
 └── README.md          
 ```
 
-The `model` directory contains all model relevant components, including the main model `pyrice`, its submodels, data sets, etc. You can run the model by using the notebook `simulation.ipynb` which provides a walkthrough the most important parameters, how to run the model, and how to view the results. Verification can be found in the `verficiation` folder. There are two ways of verification. In `verification/rice`, the PyRICE model results are compared against the original RICE2010 model by Nordhaus. In `verification/pyrice`, one can find the components to check whether the original model results by Ivar Tjanllingii are the same as the current model results after refactoring. This way of verification has been introduced to make sure that the model yields the same results after refactoring.
+The `model` directory contains all model relevant components, including the main model `pyrice`, its submodels, data sets, etc. You can run the model by using the notebook `simulation.ipynb` which provides a walkthrough the most important parameters, how to run the model, and how to view the results. 
 
 ---
 ## 4. The PyRICE Model
@@ -99,13 +155,41 @@ The model uses four sub-models: `economy_model`, `carbon_cycle_model`, `climate_
 ![image info](images/model_flow.png)
 <figcaption align = "center"><b>Fig.1 - PyRICE Model Flow</b></figcaption>
 
+This simple representation of the model flow is useful but it obfiscuates the feedback loops within the model. For this purpose, we also want to show the following figure.
+
+![image info](images/iam.png)
+<figcaption align = "center"><b>Fig.2 - IAM </b></figcaption>
 
 ### 4.2 XLRM 
 
-Within the XLRM framework, the PyRICE model can be represented as seen in the figure 2. 
+Within the XLRM framework, the PyRICE model can be represented as seen in the figure 3. 
 
-![image info](images/xlrm.png)
-<figcaption align = "center"><b>Fig.2 - XLRM for PyRICE</b></figcaption>
+![image info](images/xlrm_pyrice.png)
+<figcaption align = "center"><b>Fig.3 - XLRM for PyRICE</b></figcaption>
+
+#### 4.2.1 X: Uncertainties
+
+![image info](images/uncertainties.png)
+<figcaption align = "center"><b>Fig.4 - X: Uncertainties </b></figcaption>
+
+
+#### 4.2.2 L: Levers
+
+![image info](images/levers.png)
+<figcaption align = "center"><b>Fig.4 - L: Levers </b></figcaption>
+
+
+#### 4.2.3 M: Metrics
+The metrics depend on the exact problem formulation. There are 8 problem formulations, which is a combination of an ethical premise and an aggregation level. Figure 5 provides an overview.
+
+![image info](images/problem_formulations.png)
+<figcaption align = "center"><b>Fig.5 - Problem Formulations</b></figcaption>
+
+The individual metrics are listed and explained in Figure 6 below.
+
+![image info](images/metrics.png)
+<figcaption align = "center"><b>Fig.4 - M: Metrics </b></figcaption>
+
 
 ### 4.3 Regions
 
@@ -190,8 +274,6 @@ All relevant outcome data is saved into a `results` object and can be accessed v
 | `df_cpc_pre_damage`       | `dataframe` | Pre-damage consumption per capita over regions over years                                                                                                                                                                                                                                           |
 | `df_cpc_post_damage`      | `dataframe` | Post-damage consumption per capita over regions over years                                                                                                                                                                                                                                          |
 | `df_main`                 | `dataframe` | Over years with following columns: <br> - damages <br> - utility lowest income per capita <br> - highest climate impact per capita <br> - distance to threshold <br> - population under threshold <br> - intratemporal utility GINI <br> - intratemporal impact GINI <br> - atmospheric temperature |
-
-
 
 
 You can also view the attributes in a convenient way with the method `model.view_better_formatted_results()`.
