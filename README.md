@@ -29,7 +29,6 @@ This is a simulation model implementation of the RICE2010 model by Nordhaus. It 
    2. [Run](#52-run-the-pyrice-model)
    3. [Results](#53-view-results)
 
-
 ---
 
 ## 1. Context
@@ -184,6 +183,8 @@ The metrics depend on the exact problem formulation. There are 8 problem formula
 
 ![image info](images/problem_formulations.png)
 <figcaption align = "center"><b>Fig.7 - Problem Formulations</b></figcaption>
+
+Each cell in this table represents one problem formulation. A **(+)** after an objective indicates that the desired optimization direction is maximization. The lack of such a symbol indicates minimization as the desired optimization direction.
 
 The individual metrics are listed and explained in Figure 8 below.
 
