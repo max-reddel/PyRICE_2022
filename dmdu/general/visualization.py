@@ -761,7 +761,7 @@ def plot_pathways_all_problem_formulations(
 
     y_labels = get_y_labels_dict()
 
-    axes_font_size = 20
+    axes_font_size = 30
 
     # Collecting all outcomes
     all_outcomes = None
@@ -813,8 +813,8 @@ def plot_pathways_all_problem_formulations(
 
             # Annotations
             terms = problem_formulation.split('_')
-            short_name = f'{terms[0][0]}{terms[1][0]}'
-            axes[row_idx, col_idx].set_title(short_name, fontsize=30, pad=20)
+            short_name = r'$%s_{%s}$' % (terms[0][0], terms[1][0])
+            axes[row_idx, col_idx].set_title(short_name, fontsize=35, pad=20)
             axes[row_idx, col_idx].set_xlabel('time in years', fontsize=axes_font_size)
             y_label = y_labels[outcome_name]
             axes[row_idx, col_idx].set_ylabel(y_label, fontsize=axes_font_size)
@@ -822,6 +822,9 @@ def plot_pathways_all_problem_formulations(
                 axes[row_idx, col_idx].yaxis.set_major_locator(MaxNLocator(6))
             else:
                 axes[row_idx, col_idx].yaxis.set_major_locator(MaxNLocator(5))
+
+            axes[row_idx, col_idx].tick_params(axis='both', which='major', labelsize=25)
+            axes[row_idx, col_idx].tick_params(axis='both', which='minor', labelsize=25)
 
     # Show labels although sharing y-axis
     for ax in axes.flatten():
@@ -896,7 +899,7 @@ def plot_regional_pathways(
 
     years = list(range(2005, 2310, 10))
 
-    axes_font_size = 20
+    axes_font_size = 30
 
     # Collecting all outcomes
     all_outcomes = None
@@ -943,12 +946,15 @@ def plot_regional_pathways(
 
                 # Annotations
                 terms = problem_formulation.split('_')
-                short_name = f'{terms[0][0]}{terms[1][0]}'
-                axes[region_idx, pf_idx].set_title(short_name, fontsize=30, pad=20)
+                short_name = r'$%s_{%s}$' % (terms[0][0], terms[1][0])
+                axes[region_idx, pf_idx].set_title(short_name, fontsize=40, pad=20)
                 axes[region_idx, pf_idx].set_xlabel('time in years', fontsize=axes_font_size)
-                y_label = outcome_name.split(' ')[1] + f' for \n{region}'
+                y_label = outcome_name.split(' ')[1] + f' for {region}'
                 axes[region_idx, pf_idx].set_ylabel(y_label, fontsize=axes_font_size)
                 axes[region_idx, pf_idx].yaxis.set_major_locator(MaxNLocator(5))
+
+                axes[region_idx, pf_idx].tick_params(axis='both', which='major', labelsize=25)
+                axes[region_idx, pf_idx].tick_params(axis='both', which='minor', labelsize=25)
 
     # Show labels although sharing y-axis
     for ax in axes.flatten():
@@ -1473,10 +1479,10 @@ def plot_single_parallel_axis_plot(
         df,
         color=color_mapping[problem_formulation],
         label=problem_formulation,
-        # linewidth=0.5,
-        # alpha=0.4,
-        linewidth=2.0,
-        alpha=1.0
+        linewidth=0.5,
+        alpha=0.4,
+        # linewidth=2.0,
+        # alpha=1.0
     )
 
     # Invert axes where necessary
@@ -1680,7 +1686,7 @@ def plot_boxplots(dict_list, outcome_names, year=2105, saving=False, file_name=N
             all_outcomes = None
             for problem_formulation, outcomes in problem_formulations.items():
                 terms = problem_formulation.split('_')
-                outcomes['problem formulation'] = terms[0][0] + terms[1][0]  # comment in to show second letter of PF
+                outcomes['problem formulation'] = r'$%s_{%s}$' % (terms[0][0], terms[1][0])
                 if all_outcomes is None:
                     all_outcomes = outcomes
                 else:
@@ -1789,7 +1795,7 @@ def plot_pf_median_relations(problem_formulations_dict, kpi, year, maximize, sav
 
     plt.pcolormesh(data, cmap=cmap)
     cbar = plt.colorbar()
-    cbar.set_label('relative performance', labelpad=15)
+    cbar.set_label('relative performance', labelpad=15, fontsize=30)
 
     x_labels = ax.get_xticks().tolist()
     y_labels = ax.get_yticks().tolist()
@@ -1798,7 +1804,7 @@ def plot_pf_median_relations(problem_formulations_dict, kpi, year, maximize, sav
     pf_strings = []
     for pf in problem_formulations_dict.keys():
         terms = pf.split('_')
-        short_pf = terms[0][0] + terms[1][0]
+        short_pf = r'$%s_{%s}$' % (terms[0][0], terms[1][0])
         pf_strings.append(short_pf)
 
     # Create new lables
@@ -1821,11 +1827,11 @@ def plot_pf_median_relations(problem_formulations_dict, kpi, year, maximize, sav
         label.set_y = types.MethodType(lambda self, y: matplotlib.text.Text.set_y(self, y - self.customShiftValue),
                                        label)
 
-    plt.xticks(x_labels, new_labels)
-    plt.yticks(y_labels, new_labels)
+    plt.xticks(x_labels, new_labels, fontsize=40)
+    plt.yticks(y_labels, new_labels, fontsize=40)
 
     name = get_flat_y_labels_dict()[kpi]
-    plt.title(f"{name}")
+    # plt.title(f"{name}")
 
     if saving:
         if file_name is None:

@@ -101,21 +101,26 @@ def plot_epsilon_progress(
                     axes[pf_idx, reference_idx].tick_params(axis='both', which='minor', labelsize=8)
 
     # Splitting strings for better readability
-    problem_formulations = ['\n'.join(pf.split('_')) for pf in problem_formulations]
+    # problem_formulations = ['\n'.join(pf.split('_')) for pf in problem_formulations]
+    new_problem_formulations = []
+    for pf in problem_formulations:
+        terms = pf.split('_')
+        new_pf = r'$%s_{%s}$' % (terms[0][0], terms[1][0])
+        new_problem_formulations.append(new_pf)
 
     # Annotation with row names
-    for ax, row in zip(axes[:, 0], problem_formulations):
+    for ax, row in zip(axes[:, 0], new_problem_formulations):
         ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0),
                     xycoords=ax.yaxis.label, textcoords='offset points',
-                    size='large', ha='right', va='center')
+                    ha='right', va='center', fontsize=25)
 
     handles, labels = fig.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    fig.suptitle(f'Convergence with {y_label}', y=1.05, fontsize=25)
+    # fig.suptitle(f'Convergence with {y_label}', y=1.05, fontsize=25)
     fig.legend(
         by_label.values(),
         by_label.keys(),
-        bbox_to_anchor=(0.5, 1.0),
+        bbox_to_anchor=(0.5, 1.02),
         loc='upper center',
         ncol=len(color_mapping)
     )
@@ -132,7 +137,7 @@ def plot_epsilon_progress(
             'optimalpolicies',
             file_name
         )
-        fig.savefig(directory, dpi=200, pad_inches=0.2)
+        fig.savefig(directory, dpi=150, pad_inches=0.2, bbox_inches='tight')
 
 
 def _define_problem(problem_formulation):
