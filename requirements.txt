@@ -1,0 +1,9 @@
+pandas~=1.4.2
+matplotlib~=3.5.2
+seaborn~=0.11.2
+Platypus~=1.0
+numpy~=1.23.0rc2
+plotly~=5.8.0
+scipy~=1.8.1
+sklearn~=0.0
+scikit-learn~=1.1.1
