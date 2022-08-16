@@ -8,7 +8,7 @@ from ema_workbench import Policy
 from dmdu.exploration.perform_experiments import perform_own_experiments
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from dmdu.policydiscovery.directed_policy_search import PolicyCounter
-from dmdu.scenariodiscovery.selection.scenario_selection import load_reference_scenarios
+from dmdu.scenarioselection.selection.scenario_selection import load_reference_scenarios
 from model.enumerations import ProblemFormulation
 import os
 import pandas as pd

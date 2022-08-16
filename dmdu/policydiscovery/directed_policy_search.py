@@ -9,7 +9,7 @@ import os
 import random
 import numpy as np
 import pandas as pd
-from dmdu.scenariodiscovery.selection.scenario_selection import load_reference_scenarios
+from dmdu.scenarioselection.selection.scenario_selection import load_reference_scenarios
 from dmdu.general.xlm_constants_epsilons import get_lever_names
 from ema_workbench import Policy
 

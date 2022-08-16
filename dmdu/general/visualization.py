@@ -18,7 +18,7 @@ from matplotlib.colors import to_rgb
 from matplotlib.ticker import MaxNLocator
 
 from dmdu.general.xlm_constants_epsilons import get_lever_names
-from dmdu.scenariodiscovery.clustering.silhouette_widths import get_outcomes_reshaped
+from dmdu.scenarioselection.clustering.silhouette_widths import get_outcomes_reshaped
 from model.enumerations import ProblemFormulation
 
 
