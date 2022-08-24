@@ -42,7 +42,7 @@ class PyRICE(object):
         self.tperiod = []
         self.start_year = 2005
         self.end_year = 2305
-        self.steps = int((self.end_year - self.start_year) / self.tstep + 1)  # = 31
+        self.steps = int((self.end_year - self.start_year) / self.tstep + 1)  # = 31 #take this for RBF time step calculation -Palok 24-Aug-22
 
         self.model_spec = model_specification
         self.damage_function = damage_function
@@ -136,6 +136,7 @@ class PyRICE(object):
             "Other non-OECD Asia",
         ]
 
+        #miu_period instead of miu is the lever - Palok - 24-Aug-22
         # Set up levers
         self.set_up_levers(
             sr,
@@ -229,12 +230,20 @@ class PyRICE(object):
             self.Y,
         )
 
+        #All calculations happening in this for loop - Palok - 24-Aug-22
+
+        #DEBUG Messages:- Palok - 24-Aug-22
+        # print("Total time steps for the run: ")
+        # print(self.steps)
+
         # Run model
+        #total time steps, self.steps is 31
         for t in range(1, self.steps):
 
             # keep track of year per timestep for dicts used
             self.year = self.start_year + self.tstep * t
 
+            #taking in miu_period lever - Palok - 24-Aug-22
             # Run gross economy in economic sub-model
             E, Y_gross = self.econ_model.run_gross_economy(
                 scenario_pop_gdp,
@@ -256,9 +265,34 @@ class PyRICE(object):
             fco22x, forc, self.E_worldwilde_per_year = self.carbon_model.run(t, E)
 
             # Run climate sub-model
+            #shape of temp_atm is (31,) - Palok - 24-Aug-22
             self.temp_atm = self.climate_model.run(
                 t, fco22x, forc, self.t2xco2, Y_gross
             )
+            #DEBUG Messages:- Palok - 24-Aug-22 Printing temp_atm 
+            print("printing t: ")
+            print(t)
+
+            # print("Printing shape of self.temp_atm")
+            # print(self.temp_atm.shape)
+            print("Temp_atm output from Climate sub_model at idx 0: ")
+            print(self.temp_atm[0]) 
+            
+            print("Temp_atm at idx 1: ")
+            print(self.temp_atm[1])
+
+            print("Temp_atm at idx 2: ")
+            print(self.temp_atm[2])
+
+            #DEBUG Messages:- Palok - 24-Aug-22
+            print("Checking miu calc at idx 0: " )
+            print(self.miu[:,0])
+
+            print("Checking miu calc at idx 1: " )
+            print(self.miu[:,1])
+
+            print("Checking miu calc at idx 2: " )
+            print(self.miu[:,2])
 
             # Run net economy
             (
