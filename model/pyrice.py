@@ -83,6 +83,9 @@ class PyRICE(object):
         irstp_damage=0.015,
         emdd=0.8,
         precision=10,
+        c_i,
+        r_i,
+        w_i,
         **kwargs,
     ):
         """
@@ -148,6 +151,9 @@ class PyRICE(object):
             egalitarian_discounting,
             prioritarian_discounting,
             miu_period,
+            c_i,
+            r_i,
+            w_i,
         )
 
         # Equilibrium temperature impact [dC per doubling CO2]/(3.2 RICE OPT)
@@ -419,6 +425,10 @@ class PyRICE(object):
 
         return samples_t2xco2
 
+    #why miu_period is the lever instead of miu -Palok -24-Aug-22
+
+    #adding RBF levers -Palok 24-Aug-22
+
     def set_up_levers(
         self,
         sr,
@@ -430,6 +440,11 @@ class PyRICE(object):
         egalitarian_discounting,
         prioritarian_discounting,
         miu_period,
+
+        c_i,
+        r_i,
+        w_i,
+        
     ):
         """
         Setting up the levers.
