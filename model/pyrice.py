@@ -83,9 +83,16 @@ class PyRICE(object):
         irstp_damage=0.015,
         emdd=0.8,
         precision=10,
-        c_i,
-        r_i,
-        w_i,
+        c1 = 0.25,
+        c2 = 0.25,
+        c3 = 0.25,
+        r1 = 0.5,
+        r2 = 0.5,
+        r3 = 0.5,
+        w0 = 0.5, w1 = 0.5, w2 = 0.5, w3 = 0.5, w4 = 0.5, w5 = 0.5, w6 = 0.5, w7 = 0.5, w8 = 0.5, w9 = 0.5, w10 = 0.5, 
+        w11 = 0.5, w12 = 0.5, w13 = 0.5, w14 = 0.5, w15 = 0.5, w16 = 0.5, w17 = 0.5, w18 = 0.5, w19 = 0.5, 
+        w20 = 0.5, w21 = 0.5, w22 = 0.5, w23 = 0.5, w24 = 0.5, w25 = 0.5, w26 = 0.5, w27 = 0.5, w28 = 0.5, 
+        w29 = 0.5, w30 = 0.5, w31 = 0.5, w32 = 0.5, w33 = 0.5, w34 = 0.5, w35 = 0.5, w36 = 0.5,
         **kwargs,
     ):
         """
@@ -151,9 +158,16 @@ class PyRICE(object):
             egalitarian_discounting,
             prioritarian_discounting,
             miu_period,
-            c_i,
-            r_i,
-            w_i,
+            c1,
+            c2,
+            c3,
+            r1,
+            r2,
+            r3,
+            w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, 
+        w11, w12, w13, w14, w15, w16, w17, w18, w19, 
+        w20, w21, w22, w23, w24, w25, w26, w27, w28, 
+        w29, w30, w31, w32, w33, w34, w35, w36
         )
 
         # Equilibrium temperature impact [dC per doubling CO2]/(3.2 RICE OPT)
@@ -441,9 +455,16 @@ class PyRICE(object):
         prioritarian_discounting,
         miu_period,
 
-        c_i,
-        r_i,
-        w_i,
+        c1,
+        c2,
+        c3,
+        r1,
+        r2,
+        r3,
+        w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, 
+        w11, w12, w13, w14, w15, w16, w17, w18, w19, 
+        w20, w21, w22, w23, w24, w25, w26, w27, w28, 
+        w29, w30, w31, w32, w33, w34, w35, w36,
         
     ):
         """
