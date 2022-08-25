@@ -165,9 +165,9 @@ class PyRICE(object):
             r2,
             r3,
             w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, 
-        w11, w12, w13, w14, w15, w16, w17, w18, w19, 
-        w20, w21, w22, w23, w24, w25, w26, w27, w28, 
-        w29, w30, w31, w32, w33, w34, w35,
+            w11, w12, w13, w14, w15, w16, w17, w18, w19, 
+            w20, w21, w22, w23, w24, w25, w26, w27, w28, 
+            w29, w30, w31, w32, w33, w34, w35,
         )
 
         # Equilibrium temperature impact [dC per doubling CO2]/(3.2 RICE OPT)
@@ -302,11 +302,13 @@ class PyRICE(object):
             #palok-25-Aug-22 Taking t as the index because it starts at 1 stops at 30. t-1 for temp and t for miu should work
             #EMODPS implementation
 
-            c_array = np.asarray([[self.c1], [self.c2], [self.c3]])
-            r_array = np.asarray([[self.r1], [self.r2], [self.r3]])
-            w_array = np.asarray([[self.w0, self.w1, self.w2, self.w3, self.w4, self.w5, self.w6, self.w7, self.w8, self.w9, self.w10, self.w11],
-                                  [self.w12, self.w13, self.w14, self.w15, self.w16, self.w17, self.w18, self.w19, self.w20, self.w21, self.w22, self.w23], 
-                                  [self.w24, self.w25, self.w26, self.w27, self.w28, self.w29, self.w30, self.w31, self.w32, self.w33, self.w34, self.w35] ])
+
+
+            c_array = np.asarray([[c1], [c2], [c3]])
+            r_array = np.asarray([[r1], [r2], [r3]])
+            w_array = np.asarray([[w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11],
+                                  [w12, w13, w14, w15, w16, w17, w18, w19, w20, w21, w22, w23], 
+                                  [w24, w25, w26, w27, w28, w29, w30, w31, w32, w33, w34, w35] ])
 
             
             normalized_temp_atm = np.asarray([self.temp_atm[t-1]/self.limits.temp_atm_up])
@@ -391,8 +393,8 @@ class PyRICE(object):
 
 
         #print out final temp and miu array - Palok - 25-Aug-22 #Max miu is indeed 1.000 so no need to scale the output
-        # print("Printing whole miu")
-        # print(self.miu)
+        print("Printing whole miu")
+        print(self.miu)
 
         # Prepare final outcomes of interest
         costs = self.econ_model.get_costs()
