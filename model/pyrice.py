@@ -14,7 +14,7 @@ from model.submodels.economy_model import *
 from model.submodels.carbon_cycle_model import *
 from model.submodels.climate_model import *
 from model.submodels.utility_model import *
-
+from rbf import rbf_functions
 
 class PyRICE(object):
     """
@@ -92,7 +92,7 @@ class PyRICE(object):
         w0 = 0.5, w1 = 0.5, w2 = 0.5, w3 = 0.5, w4 = 0.5, w5 = 0.5, w6 = 0.5, w7 = 0.5, w8 = 0.5, w9 = 0.5, w10 = 0.5, 
         w11 = 0.5, w12 = 0.5, w13 = 0.5, w14 = 0.5, w15 = 0.5, w16 = 0.5, w17 = 0.5, w18 = 0.5, w19 = 0.5, 
         w20 = 0.5, w21 = 0.5, w22 = 0.5, w23 = 0.5, w24 = 0.5, w25 = 0.5, w26 = 0.5, w27 = 0.5, w28 = 0.5, 
-        w29 = 0.5, w30 = 0.5, w31 = 0.5, w32 = 0.5, w33 = 0.5, w34 = 0.5, w35 = 0.5, w36 = 0.5,
+        w29 = 0.5, w30 = 0.5, w31 = 0.5, w32 = 0.5, w33 = 0.5, w34 = 0.5, w35 = 0.5,
         **kwargs,
     ):
         """
@@ -167,7 +167,7 @@ class PyRICE(object):
             w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, 
         w11, w12, w13, w14, w15, w16, w17, w18, w19, 
         w20, w21, w22, w23, w24, w25, w26, w27, w28, 
-        w29, w30, w31, w32, w33, w34, w35, w36
+        w29, w30, w31, w32, w33, w34, w35,
         )
 
         # Equilibrium temperature impact [dC per doubling CO2]/(3.2 RICE OPT)
@@ -286,6 +286,11 @@ class PyRICE(object):
 
             # Run climate sub-model
             #shape of temp_atm is (31,) - Palok - 24-Aug-22
+
+            #check temp_atm max limit -Palok -25-Aug-22
+            print("checking temp_atm max")
+            print(self.limits.temp_atm_up)
+
             self.temp_atm = self.climate_model.run(
                 t, fco22x, forc, self.t2xco2, Y_gross
             )
@@ -293,26 +298,44 @@ class PyRICE(object):
             print("printing t: ")
             print(t)
 
+
+            #palok-25-Aug-22 Taking t as the index because it starts at 1 stops at 30. t-1 for temp and t for miu should work
+            #EMODPS implementation
+
+            c_array = np.asarray([[self.c1], [self.c2], [self.c3]])
+            r_array = np.asarray([[self.r1], [self.r2], [self.r3]])
+            w_array = np.asarray([[self.w0, self.w1, self.w2, self.w3, self.w4, self.w5, self.w6, self.w7, self.w8, self.w9, self.w10, self.w11],
+                                  [self.w12, self.w13, self.w14, self.w15, self.w16, self.w17, self.w18, self.w19, self.w20, self.w21, self.w22, self.w23], 
+                                  [self.w24, self.w25, self.w26, self.w27, self.w28, self.w29, self.w30, self.w31, self.w32, self.w33, self.w34, self.w35] ])
+
+            
+            normalized_temp_atm = np.asarray([self.temp_atm[t-1]/self.limits.temp_atm_up])
+
+            #same init value for policy params?
+            #overwrite? or ?
+
+            self.miu[:, t] = rbf_functions.squared_exponential_rbf(normalized_temp_atm, c_array, r_array, w_array)
+
             # print("Printing shape of self.temp_atm")
             # print(self.temp_atm.shape)
-            print("Temp_atm output from Climate sub_model at idx 0: ")
-            print(self.temp_atm[0]) 
+            # print("Temp_atm output from Climate sub_model at idx 0: ")
+            # print(self.temp_atm[0]) 
             
-            print("Temp_atm at idx 1: ")
-            print(self.temp_atm[1])
+            # print("Temp_atm at idx 1: ")
+            # print(self.temp_atm[1])
 
-            print("Temp_atm at idx 2: ")
-            print(self.temp_atm[2])
+            # print("Temp_atm at idx 2: ")
+            # print(self.temp_atm[2])
 
             #DEBUG Messages:- Palok - 24-Aug-22
-            print("Checking miu calc at idx 0: " )
-            print(self.miu[:,0])
+            # print("Checking miu calc at idx 0: " )
+            # print(self.miu[:,0])
 
-            print("Checking miu calc at idx 1: " )
-            print(self.miu[:,1])
+            # print("Checking miu calc at idx 1: " )
+            # print(self.miu[:,1])
 
-            print("Checking miu calc at idx 2: " )
-            print(self.miu[:,2])
+            # print("Checking miu calc at idx 2: " )
+            # print(self.miu[:,2])
 
             # Run net economy
             (
@@ -365,6 +388,11 @@ class PyRICE(object):
                 CPC_post_damage,
                 emdd,
             )
+
+
+        #print out final temp and miu array - Palok - 25-Aug-22 #Max miu is indeed 1.000 so no need to scale the output
+        # print("Printing whole miu")
+        # print(self.miu)
 
         # Prepare final outcomes of interest
         costs = self.econ_model.get_costs()
@@ -464,7 +492,7 @@ class PyRICE(object):
         w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, 
         w11, w12, w13, w14, w15, w16, w17, w18, w19, 
         w20, w21, w22, w23, w24, w25, w26, w27, w28, 
-        w29, w30, w31, w32, w33, w34, w35, w36,
+        w29, w30, w31, w32, w33, w34, w35,
         
     ):
         """

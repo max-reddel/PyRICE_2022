@@ -35,6 +35,10 @@ def squared_exponential_rbf(rbf_input, centers, radii, weights):
     return output
 
 
+def set_decision_var():
+
+
+    pass
 
 class RBF:
     def __init__(
