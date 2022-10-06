@@ -138,7 +138,8 @@ The PyRICE has been connected to the SSP scenarios by aggregating country statis
 │   ├── enumerations                            # Custom enums   
 │   ├── model_limits.py                         
 │   └── pyrice.py                               # Main model       
-└── README.md          
+├── README.md 
+└── requirements.txt         
 ```
 
 The `model` directory contains all model relevant components, including the main model `pyrice`, its submodels, data sets, etc. You can run the model by using the notebook `simulation.ipynb` which provides a walkthrough the most important parameters, how to run the model, and how to view the results. 
