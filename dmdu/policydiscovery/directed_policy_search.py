@@ -173,7 +173,7 @@ if __name__ == "__main__":
                 # Run optimizations
                 run_optimization(
                     problem_formulation=problem_formulation,
-                    nfe=2000,  #200000
+                    nfe=200000,  #200000
                     searchover='levers',
                     seed_index=seed_index,
                     reference=(reference_index, reference_scenario),
