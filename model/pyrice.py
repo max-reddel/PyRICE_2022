@@ -288,15 +288,15 @@ class PyRICE(object):
             #shape of temp_atm is (31,) - Palok - 24-Aug-22
 
             #check temp_atm max limit -Palok -25-Aug-22
-            print("checking temp_atm max")
-            print(self.limits.temp_atm_up)
+            # print("checking temp_atm max")
+            # print(self.limits.temp_atm_up)
 
             self.temp_atm = self.climate_model.run(
                 t, fco22x, forc, self.t2xco2, Y_gross
             )
             #DEBUG Messages:- Palok - 24-Aug-22 Printing temp_atm 
-            print("printing t: ")
-            print(t)
+            # print("printing t: ")
+            # print(t)
 
 
             #palok-25-Aug-22 Taking t as the index because it starts at 1 stops at 30. t-1 for temp and t for miu should work
@@ -393,8 +393,8 @@ class PyRICE(object):
 
 
         #print out final temp and miu array - Palok - 25-Aug-22 #Max miu is indeed 1.000 so no need to scale the output
-        print("Printing whole miu")
-        print(self.miu)
+        # print("Printing whole miu")
+        # print(self.miu)
 
         # Prepare final outcomes of interest
         costs = self.econ_model.get_costs()
