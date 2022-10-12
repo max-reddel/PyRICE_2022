@@ -17,9 +17,57 @@ def get_xlc():
     """
     levers = [
         RealParameter("sr", 0.1, 0.5),
-        RealParameter("miu", 2065, 2300),
+        #RealParameter("miu", 2065, 2300),
         RealParameter("irstp_consumption", 0.001, 0.015),
         RealParameter("irstp_damage", 0.001, 0.015),
+
+        RealParameter("c1", -1.0, 1.0),
+        RealParameter("c2", -1.0, 1.0),
+        RealParameter("c3", -1.0, 1.0),
+
+        RealParameter("r1", 0.0, 1.0),
+        RealParameter("r2", 0.0, 1.0),
+        RealParameter("r3", 0.0, 1.0),
+
+
+        RealParameter("w0", 0.0, 1.0),
+        RealParameter("w1", 0.0, 1.0),
+        RealParameter("w2", 0.0, 1.0),
+        RealParameter("w3", 0.0, 1.0),
+        RealParameter("w4", 0.0, 1.0),
+        RealParameter("w5", 0.0, 1.0),
+        RealParameter("w6", 0.0, 1.0),
+        RealParameter("w7", 0.0, 1.0),
+        RealParameter("w8", 0.0, 1.0),
+        RealParameter("w9", 0.0, 1.0),
+        RealParameter("w10", 0.0, 1.0),
+        RealParameter("w11", 0.0, 1.0),
+
+        RealParameter("w12", 0.0, 1.0),
+        RealParameter("w13", 0.0, 1.0),
+        RealParameter("w14", 0.0, 1.0),
+        RealParameter("w15", 0.0, 1.0),
+        RealParameter("w16", 0.0, 1.0), 
+        RealParameter("w17", 0.0, 1.0),  
+        RealParameter("w18", 0.0, 1.0),
+        RealParameter("w19", 0.0, 1.0),
+        RealParameter("w20", 0.0, 1.0),
+        RealParameter("w21", 0.0, 1.0),
+        RealParameter("w22", 0.0, 1.0), 
+        RealParameter("w23", 0.0, 1.0),  
+
+        RealParameter("w24", 0.0, 1.0),
+        RealParameter("w25", 0.0, 1.0),
+        RealParameter("w26", 0.0, 1.0),
+        RealParameter("w27", 0.0, 1.0),
+        RealParameter("w28", 0.0, 1.0), 
+        RealParameter("w29", 0.0, 1.0),  
+        RealParameter("w30", 0.0, 1.0),
+        RealParameter("w31", 0.0, 1.0),
+        RealParameter("w32", 0.0, 1.0),
+        RealParameter("w33", 0.0, 1.0),
+        RealParameter("w34", 0.0, 1.0), 
+        RealParameter("w35", 0.0, 1.0),
     ]
 
     uncertainties = [
