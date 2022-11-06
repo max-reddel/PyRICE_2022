@@ -458,7 +458,7 @@ def plot_conference_pathways(
 
     sns.set(font_scale=1.8)
     sns.set_style("whitegrid")
-    #
+
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(22, 12), tight_layout=False, sharey='row')
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.2)
 
@@ -489,8 +489,8 @@ def plot_conference_pathways(
 
     # Setting up a color mapper
     norm = mpl.colors.Normalize(vmin=color_variable_min, vmax=color_variable_max, clip=True)
-    palette = 'rocket_r'
-    # palette = 'flare'
+    # palette = 'rocket_r'
+    palette = "crest"
     cmap = sns.color_palette(palette, as_cmap=True)
 
     mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
